@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSSMC – Modelling and Suppression of Regenerative Chatter</title>
+  <meta name="description" content="Interactive research archive documenting the design of a
+    Predictive Smoothed Sliding Mode Controller for chatter suppression in CNC turning." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./assets/css/style.css" />
+
+  <!-- Scripts -->
+  <script defer src="./assets/js/main.js"></script>
+</head>
+
+<body>
+  <!-- Skip link -->
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+
+    <!-- Logo / brand -->
+    <a class="brand-mark" href="./index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring" />
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18"
+              class="mark-wave" />
+        <path d="M18 22h12" class="mark-line" />
+      </svg>
+      <span>PSSMC</span>
+    </a>
+
+    <!-- Nav -->
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="./index.html" aria-current="page">Home</a>
+      <a href="./gateway.html">Research Pathway</a>
+      <button class="theme-btn" data-theme-toggle
+              aria-label="Switch colour theme" type="button"></button>
+    </nav>
+
+  </header>
+
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="hero-home" aria-label="Introduction">
+
+      <div class="hero-copy">
+        <p class="eyebrow">Interactive research archive</p>
+        <h1>Predictive&nbsp;Sliding Mode&nbsp;Control</h1>
+        <p class="lead">
+          A structured, interactive journey that follows one CNC turning
+          study from raw cutting&#8209;force measurements, through empirical
+          modelling, to a control&#8209;ready dynamic plant for chatter
+          suppression.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="studies\Kasprowiak.html">
+            Other Studies
+          </a>
+
+          <a class="btn btn-primary" href="./gateway.html">
+            Enter Research
+          </a>
+
+          <button class="btn btn-secondary" type="button"
+                  data-overlay="ol-about">
+            About the project
+          </button>
+        </div>
+      </div>
+
+      <!-- Animated visual -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="signal signal-a"></div>
+        <div class="signal signal-b"></div>
+        <div class="signal signal-c"></div>
+        <div class="hero-card">
+          <p class="hc-label">Study material</p>
+          <p class="hc-value">AISI&nbsp;1045</p>
+          <p class="hc-sub">Medium&#8209;carbon steel &mdash; CNC turning</p>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- METRICS BAND -->
+    <div class="metrics-band" aria-label="Key project numbers">
+
+      <article class="metric">
+        <span class="metric-value" data-count="15">0</span>
+        <span class="metric-label">Experimental runs</span>
+      </article>
+
+      <article class="metric">
+        <span class="metric-value" data-count="0.881">0</span>
+        <span class="metric-label">Model fit R&sup2;</span>
+      </article>
+
+      <article class="metric">
+        <span class="metric-value">0.0227&thinsp;s</span>
+        <span class="metric-label">
+          Cutting time constant &tau;<sub>c</sub>
+        </span>
+      </article>
+
+      <article class="metric">
+        <span class="metric-value">0.17&thinsp;s</span>
+        <span class="metric-label">
+          Servo time constant &tau;<sub>s</sub>
+        </span>
+      </article>
+
+    </div>
+
+
+    <!-- WHY THIS MATTERS -->
+    <section class="why-section" aria-labelledby="why-heading">
+      <div class="why-inner">
+
+        <p class="eyebrow">Research relevance</p>
+        <h2 id="why-heading" class="section-title">Why this matters</h2>
+
+        <p>
+          Chatter vibration in CNC turning quietly limits how far a process
+          can be pushed &mdash; it spoils surface finish, shortens tool life,
+          and forces conservative parameter choices that reduce throughput.
+          The problem is especially persistent because it is self&#8209;excited:
+          each new cut is shaped by the waviness left by the previous one,
+          and small disturbances can grow rapidly into destructive oscillations.
+        </p>
+
+        <p>
+          This project traces a single study that starts with measured
+          cutting&#8209;force and vibration data, builds a power&#8209;law
+          force model, and lifts that static relation into a dynamic plant
+          that a predictive sliding mode controller can shape. Every step is
+          documented as it is completed, so the reasoning behind each
+          modelling choice is transparent and easy to follow.
+        </p>
+
+        <div class="chip-row">
+          <button class="chip" type="button" data-overlay="ol-chatter">
+            What is chatter?
+          </button>
+          <button class="chip" type="button" data-overlay="ol-powerlaw">
+            Empirical model
+          </button>
+          <button class="chip" type="button" data-overlay="ol-plant">
+            Dynamic plant
+          </button>
+          <button class="chip" type="button" data-overlay="ol-smc">
+            Sliding mode control
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- RESEARCH STAGES PREVIEW -->
+    <section class="preview-section" aria-labelledby="stages-heading">
+
+      <p class="eyebrow">Study status</p>
+      <h2 id="stages-heading" class="section-title">Research stages</h2>
+
+      <div class="preview-grid">
+
+        <!-- Step 1 -->
+        <a class="stage-card" href="./steps/step-1.html">
+          <span class="stage-step">Step 1</span>
+          <h3>Experimental Cutting Data</h3>
+          <p>
+            Fifteen measured turning runs on AISI&nbsp;1045 steel, spanning
+            cutting speed, feed rate, and depth of cut.
+          </p>
+          <span class="badge badge-live">Available</span>
+        </a>
+
+        <!-- Step 2 -->
+        <a class="stage-card" href="./steps/step-2.html">
+          <span class="stage-step">Step 2</span>
+          <h3>Empirical Power-Law Model</h3>
+          <p>
+            A regression&#8209;fitted force relation that reveals how each
+            cutting parameter shapes the measured force.
+          </p>
+          <span class="badge badge-live">Available</span>
+        </a>
+
+        <!-- Step 3 -->
+        <a class="stage-card" href="./steps/step-3.html">
+          <span class="stage-step">Step 3</span>
+          <h3>Dynamic Plant Formulation</h3>
+          <p>
+            First&#8209;order time constants combined into a control&#8209;ready
+            second&#8209;order plant transfer function.
+          </p>
+          <span class="badge badge-live">Available</span>
+        </a>
+
+        <!-- Step 4 — construction -->
+        <a class="stage-card" href="./steps/step-4.html">
+          <span class="stage-step">Step 4</span>
+          <h3>PSSMC Controller Design</h3>
+          <p>
+            Predictive smoothed sliding mode controller derivation
+            &mdash; currently in progress.
+          </p>
+          <span class="badge badge-progress">In Progress</span>
+        </a>
+
+        <!-- Step 5 — construction -->
+        <button class="stage-card muted" type="button"
+                data-overlay="ol-construction">
+          <span class="stage-step">Step 5</span>
+          <h3>Simulation &amp; Evaluation</h3>
+          <p>
+            MATLAB/Simulink closed&#8209;loop comparison of PSSMC,
+            conventional SMC, and PID.
+          </p>
+          <span class="badge badge-soon">Pending</span>
+        </button>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">
+      Developed as part of an ongoing PSSMC research journey at the
+      University of Dar es Salaam, Department of Mechanical and
+      Industrial Engineering.
+    </p>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  OVERLAYS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- About the project -->
+  <div class="overlay" id="ol-about" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-about-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-about-title">About this project</h2>
+      <p>
+        This archive documents the complete research pipeline for designing
+        a <strong>Predictive Smoothed Sliding Mode Controller (PSSMC)</strong>
+        that suppresses regenerative chatter in the turning of AISI&nbsp;1045
+        steel by dynamically adjusting depth of cut in real time. 
+        Hoping to extend this novelty throughout all materials in turning operations. 
+      </p>
+      <p>
+        The study is carried out by His Majesty <strong>Shuma Fadhil</strong>
+        (Reg:&nbsp;2024&#8209;06&#8209;02219), 
+        with his sensei <strong> Dr. Harryson </strong> at the University of Dar es
+        Salaam, Department of Mechanical and Industrial Engineering. 
+        Each stage is documented as it is completed, making this site a live
+        companion to the research rather than a retrospective summary.
+      </p>
+      <p>
+        The project is ongoing, so check back regularly for updates and new
+        content as the study progresses through modelling, controller design,
+        and evaluation.
+    </div>
+  </div>
+
+  <!-- What is chatter -->
+  <div class="overlay" id="ol-chatter" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-chatter-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-chatter-title">Chatter vibration</h2>
+      <p>
+        Chatter is a self&#8209;excited machining vibration driven by a
+        regenerative mechanism: the tool cuts a surface that already carries
+        waviness from the previous pass. If the phase and amplitude conditions
+        are right, each cut amplifies the waviness left by the last one, and
+        the oscillation grows until the tool loses contact or the material
+        behaves nonlinearly.
+      </p>
+      <p>
+        In practice, chatter is heard as a loud, harsh tone and is visible
+        as a regular ripple pattern on the finished surface. Suppressing it
+        means either changing the operating point or actively adjusting a
+        process parameter &mdash; in this study, depth of cut &mdash; to
+        steer the system away from the unstable regime.
+      </p>
+    </div>
+  </div>
+
+  <!-- Empirical model -->
+  <div class="overlay" id="ol-powerlaw" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-powerlaw-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-powerlaw-title">Empirical power-law model</h2>
+      <p>
+        An empirical model is built directly from measured data rather than
+        derived from first principles. Here, the cutting force is expressed
+        as a product of power&#8209;law terms in cutting speed, depth of cut,
+        and feed rate. Taking logarithms of both sides converts the nonlinear
+        relation into a linear problem that ordinary least squares regression
+        solves in a single step.
+      </p>
+      <p>
+        The result is a compact, interpretable formula that quantifies
+        exactly how much each process parameter contributes to the force,
+        and that can be evaluated instantly for any operating point within
+        the experimental range.
+      </p>
+    </div>
+  </div>
+
+  <!-- Dynamic plant -->
+  <div class="overlay" id="ol-plant" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-plant-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-plant-title">Dynamic plant</h2>
+      <p>
+        The plant is the mathematical model of the physical system the
+        controller must regulate. Here it captures two time&#8209;scale
+        effects: the cutting process itself, which responds to feed changes
+        with a time constant of around 23&thinsp;ms, and the CNC servo
+        actuator with a 170&thinsp;ms lag. Together they form a
+        second&#8209;order transfer function that the PSSMC stabilises.
+      </p>
+    </div>
+  </div>
+
+  <!-- Sliding mode control -->
+  <div class="overlay" id="ol-smc" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-smc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-smc-title">Sliding mode control</h2>
+      <p>
+        Sliding mode control drives the system state onto a
+        designer&#8209;chosen surface in state space and keeps it there
+        with a switching control action. Because the switching is faster
+        than the system dynamics, the closed&#8209;loop behaviour on the
+        sliding surface is largely independent of parameter variations and
+        disturbances &mdash; exactly the robustness needed for a
+        chatter&#8209;prone machining process.
+      </p>
+      <p>
+        The <em>predictive smoothed</em> variant adds a preview horizon
+        that anticipates vibration growth before it becomes severe, and
+        replaces discontinuous switching with a smooth hyperbolic tangent
+        to reduce actuator wear.
+      </p>
+    </div>
+  </div>
+
+  <!-- Under construction -->
+  <div class="overlay" id="ol-construction" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-construction-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-construction-title">Stage not yet available</h2>
+      <p>
+        Step&nbsp;4 and Step&nbsp;5 are still being completed. The page
+        structure is ready and content will appear here as each stage is
+        finalised. Check back soon.
+      </p>
+    </div>
+  </div>
+
+
+</body>
+</html>

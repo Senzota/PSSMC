@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 5 — Results &amp; Discussion · PSSMC Mathematics</title>
+  <meta name="description" content="Chapter 10: Simulation results comparing No Control, Standard SMC, and the novel PSSMC controller — quantitative metrics, time-domain plots, sliding surface, adaptive parameters, phase portrait, and a live interactive plant.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']],tags:'ams'},options:{skipHtmlTags:['script','noscript','style','textarea','pre']}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script defer src="../assets/js/main.js"></script>
+
+  <!-- Data arrays from Python simulation -->
+  <script src="../assets/js/pssmc_data.js"></script>
+
+  <style>
+    /* ── PAGES POPUP (same as page-4) ── */
+    .pages-btn-wrap{position:relative;}
+    .pages-btn{display:inline-flex;align-items:center;gap:0.45rem;font-size:var(--text-sm);
+      padding:0.62rem 0.9rem;border-radius:999px;border:1px solid var(--color-border);
+      background:var(--color-surface);color:var(--color-text-muted);cursor:pointer;
+      white-space:nowrap;transition:color var(--transition),background var(--transition);}
+    .pages-btn:hover{color:var(--color-text);background:var(--color-surface-2);}
+    .pages-btn svg{transition:transform 240ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+    .pages-dropdown{position:absolute;top:calc(100% + 0.5rem);right:0;min-width:288px;
+      background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:100;overflow:hidden;
+      opacity:0;transform:translateY(-6px) scale(0.98);pointer-events:none;
+      transition:opacity 200ms cubic-bezier(0.16,1,0.3,1),transform 200ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+    .pages-dropdown-header{padding:0.75rem 1rem 0.5rem;font-size:var(--text-xs);
+      text-transform:uppercase;letter-spacing:0.14em;color:var(--color-text-faint);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;
+      font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;
+      transition:background var(--transition),color var(--transition);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a:last-child{border-bottom:none;}
+    .pages-dropdown a:hover{background:var(--color-surface-2);color:var(--color-text);}
+    .pages-dropdown a[aria-current="page"]{background:rgba(122,92,58,0.07);color:var(--color-primary-dark);font-weight:600;}
+    .pd-num{width:24px;height:24px;border-radius:50%;background:var(--color-surface-2);
+      border:1px solid var(--color-border);display:grid;place-items:center;
+      font-size:0.7rem;font-weight:600;color:var(--color-text-faint);flex-shrink:0;}
+    a[aria-current="page"] .pd-num{background:var(--color-primary);border-color:var(--color-primary);color:#fff;}
+    .pd-label{flex:1;line-height:1.3;}
+    .pd-badge{font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:999px;
+      background:rgba(122,92,58,0.11);color:var(--color-primary-dark);font-weight:500;}
+    [data-theme="dark"] .pd-badge{background:rgba(196,154,106,0.15);color:#c49a6a;}
+
+    /* ── PAGE HERO (same as page-4) ── */
+    .page-hero{padding:clamp(2.5rem,6vw,4.5rem) clamp(1rem,4vw,3rem) var(--space-8);
+      max-width:920px;margin-inline:auto;text-align:center;}
+    .page-hero .eyebrow{margin-bottom:var(--space-3);}
+    .page-hero h1{font-family:var(--font-display);font-size:var(--text-3xl);
+      font-weight:600;line-height:1.15;margin-bottom:var(--space-4);letter-spacing:-0.01em;}
+    .page-hero .lead{font-size:var(--text-lg);color:var(--color-text-muted);
+      line-height:1.65;max-width:760px;margin-inline:auto;}
+
+    /* ── PAGE BODY (same as page-4) ── */
+    .page-body{max-width:1080px;margin-inline:auto;
+      padding:0 clamp(1rem,4vw,3rem) var(--space-12);}
+    .sec-heading{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:600;
+      letter-spacing:-0.005em;margin:var(--space-10) 0 var(--space-4);
+      padding-top:var(--space-8);border-top:1px solid var(--color-border);}
+    .sec-heading:first-of-type{border-top:none;margin-top:0;padding-top:0;}
+    .sec-sub{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;
+      margin:var(--space-7) 0 var(--space-3);color:var(--color-text);}
+    .prose{font-size:var(--text-base);line-height:1.75;color:var(--color-text);
+      margin-bottom:var(--space-4);}
+    .prose em{color:var(--color-text-muted);}
+    .eq-block{background:var(--color-surface-2);border:1px solid var(--color-border);
+      border-left:3px solid var(--color-primary);border-radius:var(--radius-md);
+      padding:var(--space-4) var(--space-5);margin:var(--space-4) 0;overflow-x:auto;}
+    .eq-label{display:block;font-size:var(--text-xs);text-transform:uppercase;
+      letter-spacing:0.12em;color:var(--color-text-faint);margin-bottom:var(--space-2);font-weight:500;}
+    .highlight-note{background:rgba(122,92,58,0.06);border:1px solid var(--color-border);
+      border-left:3px solid var(--color-primary);border-radius:var(--radius-md);
+      padding:var(--space-3) var(--space-4);margin:var(--space-4) 0;font-size:var(--text-sm);
+      color:var(--color-text-muted);line-height:1.65;}
+    .highlight-note strong{color:var(--color-text);}
+    .analogy-card{background:var(--color-surface);border:1px solid var(--color-border);
+      border-left:3px solid var(--color-primary);border-radius:var(--radius-md);
+      padding:var(--space-5);margin:var(--space-5) 0;display:flex;gap:var(--space-4);align-items:flex-start;}
+    .analogy-icon{font-size:2rem;flex-shrink:0;line-height:1;}
+    .analogy-body h3{font-family:var(--font-display);font-size:var(--text-lg);
+      font-weight:600;margin-bottom:var(--space-2);}
+    .analogy-body p{font-size:var(--text-base);line-height:1.65;color:var(--color-text-muted);}
+    .analogy-body p:not(:last-child){margin-bottom:var(--space-2);}
+
+    /* ── HERO CHIPS ── */
+    .hero-chips{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-top:var(--space-5);}
+
+    /* ── PARAM TABLE (same as page-4) ── */
+    .param-table-wrap{overflow-x:auto;border-radius:var(--radius-md);
+      border:1px solid var(--color-border);margin:var(--space-5) 0;}
+    .param-table{width:100%;border-collapse:collapse;font-size:var(--text-sm);}
+    .param-table thead tr{background:var(--color-surface-2);border-bottom:1px solid var(--color-border);}
+    .param-table th{padding:0.7rem 1rem;text-align:left;font-weight:600;
+      font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.08em;
+      color:var(--color-text-muted);}
+    .param-table td{padding:0.65rem 1rem;border-bottom:1px solid var(--color-border);
+      color:var(--color-text);}
+    .param-table tr:last-child td{border-bottom:none;}
+    .param-table tr:hover td{background:var(--color-surface-2);}
+    .param-table .sym{font-family:var(--font-display);font-weight:600;color:var(--color-primary-dark);}
+    .param-table .num{font-family:'JetBrains Mono',ui-monospace,monospace;
+      font-weight:500;color:var(--color-text);text-align:right;}
+    .param-table .ok{color:#2e7d3e;font-weight:600;}
+    .param-table .bad{color:#a12c2c;font-weight:600;}
+
+    /* ── CANVAS WRAP for Plotly ── */
+    .canvas-wrap{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:var(--space-4);margin:var(--space-4) 0;
+      overflow:hidden;}
+    .canvas-wrap .plotly-host{width:100%;height:340px;}
+    .canvas-wrap.tall .plotly-host{height:420px;}
+    .canvas-legend{display:flex;flex-wrap:wrap;gap:1.25rem;justify-content:center;
+      font-size:var(--text-xs);color:var(--color-text-muted);margin:var(--space-2) 0 var(--space-4);}
+
+    /* ── METRIC TILES (Section 5.1) ── */
+    .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:var(--space-4);margin:var(--space-5) 0;}
+    .metric-tile{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);}
+    .metric-tile.hero{border-left:3px solid var(--color-primary);}
+    .metric-tile .mt-label{font-size:var(--text-xs);text-transform:uppercase;
+      letter-spacing:0.12em;color:var(--color-text-faint);font-weight:500;margin-bottom:var(--space-2);}
+    .metric-tile .mt-value{font-family:var(--font-display);font-size:2.3rem;
+      font-weight:600;line-height:1;color:var(--color-text);}
+    .metric-tile .mt-value.green{color:#2e7d3e;}
+    .metric-tile .mt-value.red{color:#a12c2c;}
+    .metric-tile .mt-sub{font-size:var(--text-xs);color:var(--color-text-muted);
+      margin-top:var(--space-2);line-height:1.5;}
+    .metric-tile .mt-unit{font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted);margin-left:0.25rem;}
+
+    /* ── COMPACT RMS TABLE ── */
+    .rms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);margin:var(--space-4) 0;}
+    .rms-cell{background:var(--color-surface-2);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:var(--space-3);text-align:center;}
+    .rms-cell .rl{font-size:var(--text-xs);color:var(--color-text-faint);
+      text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;}
+    .rms-cell .rv{font-family:var(--font-display);font-size:1.6rem;font-weight:600;}
+    .rms-cell.nc .rv{color:#a12c2c;}
+    .rms-cell.smc .rv{color:#d4a017;}
+    .rms-cell.ps .rv{color:#2e7d3e;}
+
+    /* ── GRAPH EXPLAIN BTN ── */
+    .graph-explain-btn{display:inline-flex;align-items:center;gap:0.4rem;
+      font-size:var(--text-xs);padding:0.45rem 0.85rem;border-radius:999px;
+      border:1px solid var(--color-border);background:var(--color-surface);
+      color:var(--color-text-muted);cursor:pointer;margin:var(--space-3) 0 var(--space-2);
+      transition:color var(--transition),background var(--transition);}
+    .graph-explain-btn:hover{background:var(--color-surface-2);color:var(--color-text);}
+
+    /* ── PLANT CTA BANNER ── */
+    .plant-cta{margin:var(--space-6) 0 var(--space-2);
+      background:linear-gradient(135deg,#0a1410 0%,#152a1f 100%);
+      border:1px solid #1a4a2a;border-radius:var(--radius-lg);
+      padding:clamp(1.5rem,4vw,2.5rem);color:#d4f5d4;position:relative;overflow:hidden;}
+    .plant-cta::before{content:"";position:absolute;inset:0;background:
+      repeating-linear-gradient(0deg,rgba(57,255,20,0.03) 0px,rgba(57,255,20,0.03) 1px,transparent 1px,transparent 3px);
+      pointer-events:none;}
+    .plant-cta-inner{position:relative;display:flex;gap:var(--space-5);align-items:center;flex-wrap:wrap;}
+    .plant-cta-text{flex:1;min-width:260px;}
+    .plant-cta-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.7rem;
+      color:#39ff14;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.6rem;
+      text-shadow:0 0 8px rgba(57,255,20,0.5);}
+    .plant-cta h3{font-family:var(--font-display);font-size:1.6rem;font-weight:600;
+      color:#e8ffe8;margin-bottom:0.5rem;line-height:1.2;}
+    .plant-cta p{font-size:var(--text-sm);color:#a8d5a8;line-height:1.6;max-width:560px;}
+    .plant-cta-btn{display:inline-flex;align-items:center;gap:0.6rem;
+      padding:0.85rem 1.5rem;border-radius:var(--radius-md);
+      background:#39ff14;color:#0a1410;border:none;font-weight:700;
+      font-size:var(--text-sm);cursor:pointer;letter-spacing:0.04em;
+      text-transform:uppercase;font-family:'JetBrains Mono',monospace;
+      box-shadow:0 0 16px rgba(57,255,20,0.4);transition:all 0.2s;}
+    .plant-cta-btn:hover{background:#5dff3a;box-shadow:0 0 28px rgba(57,255,20,0.7);transform:translateY(-1px);}
+
+    /* ── DISCUSSION CARDS (Section 5.8) ── */
+    .disc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-4);margin:var(--space-5) 0;}
+    .disc-card{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);}
+    .disc-card h4{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;
+      margin-bottom:var(--space-2);color:var(--color-primary-dark);}
+    .disc-card p{font-size:var(--text-sm);color:var(--color-text-muted);line-height:1.65;}
+
+    /* ── PAGE NAV (same as page-4) ── */
+    .page-nav{border-top:1px solid var(--color-border);
+      padding:var(--space-6) clamp(1rem,4vw,3rem);max-width:1080px;
+      margin:var(--space-10) auto 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
+    .page-nav-btn{display:inline-flex;align-items:center;gap:0.6rem;
+      padding:0.75rem 1.2rem;border-radius:var(--radius-md);
+      border:1px solid var(--color-border);color:var(--color-text-muted);
+      background:var(--color-surface);text-decoration:none;font-weight:500;
+      font-size:var(--text-sm);transition:all var(--transition);}
+    .page-nav-btn:hover{color:var(--color-text);background:var(--color-surface-2);
+      border-color:var(--color-primary);}
+    .page-nav-btn.primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+    .page-nav-btn.primary:hover{background:var(--color-primary-dark);}
+    .page-nav-indicator{font-size:var(--text-xs);color:var(--color-text-faint);}
+
+    .overlay-panel-wide{max-width:760px;max-height:88vh;overflow-y:auto;}
+
+    /* ── OVERLAY GRAPH-EXPLANATION STYLES ── */
+    .ol-intro{font-size:var(--text-base);line-height:1.7;color:var(--color-text);margin-bottom:var(--space-4);}
+    .ol-section{margin:var(--space-4) 0;padding:var(--space-4);border-radius:var(--radius-md);background:var(--color-surface-2);border:1px solid var(--color-border);}
+    .ol-section-teal{border-left:3px solid #1f9b8a;}
+    .ol-section-red{border-left:3px solid #a12c2c;}
+    .ol-section-green{border-left:3px solid #2e7d3e;}
+    .ol-section-amber{border-left:3px solid #d4a017;}
+    .ol-section-cyan{border-left:3px solid #1e9bd0;}
+    .ol-section-try{border-left:3px solid var(--color-primary);background:rgba(122,92,58,0.05);}
+    .ol-section-summary{background:rgba(46,125,62,0.08);border-left:3px solid #2e7d3e;}
+    .ol-sh{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-2);}
+    .ol-section p{font-size:var(--text-sm);line-height:1.7;color:var(--color-text-muted);margin-bottom:var(--space-2);}
+    .ol-section p:last-child{margin-bottom:0;}
+    .ol-section strong{color:var(--color-text);}
+    .ol-list{margin:0;padding-left:1.4rem;font-size:var(--text-sm);line-height:1.7;color:var(--color-text-muted);}
+    .ol-list li{margin-bottom:0.4rem;}
+
+    /* ════════════════════════════════════════════════════ */
+    /* ══════════ THE PLANT — CRT CONTROL ROOM ══════════ */
+    /* ════════════════════════════════════════════════════ */
+    .plant-overlay-panel{
+      max-width:1100px;width:96vw;max-height:94vh;overflow-y:auto;
+      background:#0a1410;border:1px solid #1a4a2a;color:#d4f5d4;
+      padding:0;border-radius:var(--radius-lg);
+      box-shadow:0 0 60px rgba(57,255,20,0.15),0 30px 80px rgba(0,0,0,0.6);
+      font-family:'JetBrains Mono',monospace;
+    }
+    .plant-overlay-panel::before{content:"";position:fixed;inset:0;pointer-events:none;
+      background:repeating-linear-gradient(0deg,rgba(57,255,20,0.025) 0px,rgba(57,255,20,0.025) 1px,transparent 1px,transparent 3px);
+      z-index:1;}
+    .plant-overlay-panel > *{position:relative;z-index:2;}
+    .plant-overlay-panel .overlay-close{color:#39ff14;font-size:2rem;top:0.5rem;right:0.8rem;
+      background:transparent;border:none;cursor:pointer;text-shadow:0 0 8px rgba(57,255,20,0.5);z-index:3;}
+    .plant-overlay-panel .overlay-close:hover{color:#5dff3a;}
+    .plant-header{padding:1.5rem 2rem 0.8rem;border-bottom:1px solid #1a4a2a;}
+    .plant-title{font-family:var(--font-display);font-size:1.8rem;font-weight:600;
+      color:#e8ffe8;margin:0;letter-spacing:0.02em;}
+    .plant-subtitle{font-family:'JetBrains Mono',monospace;font-size:0.72rem;
+      color:#39ff14;letter-spacing:0.2em;text-transform:uppercase;margin-top:0.4rem;
+      text-shadow:0 0 6px rgba(57,255,20,0.4);}
+    .plant-body{padding:1.5rem 2rem 2rem;display:grid;grid-template-columns:300px 1fr;gap:1.5rem;align-items:start;}
+
+    /* ── CONTROL PANEL (left side) ── */
+    .plant-controls{background:#0d1a13;border:1px solid #1a4a2a;border-radius:var(--radius-md);
+      padding:1.2rem;display:flex;flex-direction:column;gap:1.1rem;}
+    .ctrl-group{display:flex;flex-direction:column;gap:0.6rem;}
+    .ctrl-label{font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;
+      color:#5a9b5a;font-weight:500;}
+    .ctrl-divider{height:1px;background:linear-gradient(90deg,transparent,#1a4a2a 30%,#1a4a2a 70%,transparent);margin:0.2rem 0;}
+
+    /* ── POWER BUTTON ── */
+    .pwr-btn{display:flex;align-items:center;justify-content:center;gap:0.7rem;
+      padding:0.9rem;border-radius:var(--radius-md);background:#0a1410;
+      border:2px solid #2a5a3a;color:#5a9b5a;cursor:pointer;
+      font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:700;
+      letter-spacing:0.16em;text-transform:uppercase;transition:all 0.25s;}
+    .pwr-btn .pwr-icon{font-size:1.4rem;line-height:1;}
+    .pwr-btn:hover{border-color:#39ff14;color:#a8d5a8;}
+    .pwr-btn.on{border-color:#39ff14;color:#39ff14;
+      box-shadow:inset 0 0 12px rgba(57,255,20,0.25),0 0 18px rgba(57,255,20,0.4);
+      background:#0d2010;}
+
+    /* ── INDICATOR ROW ── */
+    .pwr-indicator{display:flex;align-items:center;gap:0.5rem;font-size:0.7rem;color:#5a9b5a;letter-spacing:0.12em;}
+    .led{width:8px;height:8px;border-radius:50%;background:#2a3a2a;
+      box-shadow:inset 0 0 3px rgba(0,0,0,0.5);transition:all 0.25s;}
+    .led.on{background:#39ff14;box-shadow:0 0 8px rgba(57,255,20,0.8),inset 0 0 3px rgba(0,255,0,0.6);}
+    .led.amber.on{background:#ffbf00;box-shadow:0 0 8px rgba(255,191,0,0.8);}
+    .led.cyan.on{background:#00ffff;box-shadow:0 0 8px rgba(0,255,255,0.8);}
+
+    /* ── SLIDE SWITCHES ── */
+    .switch-row{display:flex;align-items:center;justify-content:space-between;
+      padding:0.65rem 0.8rem;background:#0a1410;border:1px solid #1a4a2a;border-radius:var(--radius-sm);
+      transition:opacity 0.25s,border-color 0.25s;}
+    .switch-row.disabled{opacity:0.35;pointer-events:none;}
+    .switch-row.engaged{border-color:#39ff14;box-shadow:inset 0 0 8px rgba(57,255,20,0.15);}
+    .switch-row.engaged.amber{border-color:#ffbf00;box-shadow:inset 0 0 8px rgba(255,191,0,0.15);}
+    .switch-row.engaged.cyan{border-color:#00ffff;box-shadow:inset 0 0 8px rgba(0,255,255,0.15);}
+    .switch-label{display:flex;flex-direction:column;gap:0.15rem;}
+    .switch-name{font-size:0.78rem;font-weight:700;color:#d4f5d4;letter-spacing:0.06em;}
+    .switch-hint{font-size:0.62rem;color:#5a9b5a;letter-spacing:0.08em;}
+    .slide-switch{position:relative;width:44px;height:22px;background:#1a2a1f;
+      border:1px solid #2a4a3a;border-radius:11px;cursor:pointer;flex-shrink:0;
+      transition:all 0.25s;}
+    .slide-switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;
+      border-radius:50%;background:#5a9b5a;transition:all 0.25s;}
+    .slide-switch.on.amber{background:#3a2a05;border-color:#ffbf00;}
+    .slide-switch.on.amber::after{left:24px;background:#ffbf00;box-shadow:0 0 6px rgba(255,191,0,0.7);}
+    .slide-switch.on.cyan{background:#053a3a;border-color:#00ffff;}
+    .slide-switch.on.cyan::after{left:24px;background:#00ffff;box-shadow:0 0 6px rgba(0,255,255,0.7);}
+
+    /* ── INFO ICON ── */
+    .info-icon{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;
+      border:1px solid #5a9b5a;color:#5a9b5a;font-size:9px;font-weight:700;
+      cursor:help;font-family:'JetBrains Mono',monospace;margin-left:0.3rem;
+      background:transparent;line-height:1;}
+    .info-icon:hover{color:#39ff14;border-color:#39ff14;}
+
+    /* ── SPEED SLIDER ── */
+    .speed-row{display:flex;flex-direction:column;gap:0.4rem;}
+    .speed-val{font-size:0.78rem;color:#39ff14;font-weight:700;text-align:right;}
+    input[type="range"].crt-slider{
+      -webkit-appearance:none;appearance:none;width:100%;height:6px;background:#1a2a1f;
+      border-radius:3px;outline:none;border:1px solid #2a4a3a;cursor:pointer;
+    }
+    input[type="range"].crt-slider::-webkit-slider-thumb{
+      -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
+      background:#39ff14;box-shadow:0 0 6px rgba(57,255,20,0.6);cursor:pointer;
+    }
+    input[type="range"].crt-slider::-moz-range-thumb{
+      width:14px;height:14px;border-radius:50%;background:#39ff14;
+      box-shadow:0 0 6px rgba(57,255,20,0.6);cursor:pointer;border:none;
+    }
+
+    /* ── METRIC TILES (inside plant) ── */
+    .plant-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:0.6rem;}
+    .plant-metric{background:#0a1410;border:1px solid #1a4a2a;border-radius:var(--radius-sm);
+      padding:0.5rem 0.7rem;}
+    .pm-label{font-size:0.6rem;color:#5a9b5a;letter-spacing:0.12em;text-transform:uppercase;}
+    .pm-value{font-size:1.1rem;font-weight:700;color:#39ff14;line-height:1.2;
+      font-family:'JetBrains Mono',monospace;
+      text-shadow:0 0 6px rgba(57,255,20,0.3);}
+
+    /* ── DISPLAY AREA (right side) ── */
+    .plant-display{display:flex;flex-direction:column;gap:0.8rem;}
+    .crt-screen{background:#0a1410;border:1px solid #1a4a2a;border-radius:var(--radius-md);
+      padding:0.6rem 0.6rem 0.4rem;position:relative;overflow:hidden;}
+    .crt-screen::after{content:"";position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.4) 100%);
+      border-radius:var(--radius-md);}
+    .crt-screen-label{font-size:0.6rem;color:#5a9b5a;letter-spacing:0.18em;
+      text-transform:uppercase;margin-bottom:0.3rem;padding:0 0.2rem;}
+    .crt-canvas{width:100%;height:200px;}
+    .crt-canvas.tall{height:240px;}
+
+    .control-charts{display:none;flex-direction:column;gap:0.6rem;}
+    .control-charts.show{display:flex;}
+    .control-charts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;}
+    @media (max-width:780px){
+      .control-charts-grid{grid-template-columns:1fr;}
+    }
+
+    /* ── INTERLOCK MODAL ── */
+    .interlock-modal{position:absolute;inset:0;background:rgba(10,20,16,0.92);
+      display:none;align-items:center;justify-content:center;z-index:5;
+      backdrop-filter:blur(2px);}
+    .interlock-modal.show{display:flex;}
+    .interlock-box{background:#1a0a0a;border:2px solid #ff3333;border-radius:var(--radius-md);
+      padding:1.5rem 2rem;text-align:center;max-width:420px;
+      box-shadow:0 0 30px rgba(255,51,51,0.4);}
+    .interlock-icon{font-size:2rem;color:#ff5555;margin-bottom:0.4rem;
+      text-shadow:0 0 12px rgba(255,51,51,0.7);}
+    .interlock-title{font-size:0.9rem;font-weight:700;color:#ff7777;
+      letter-spacing:0.16em;text-transform:uppercase;margin-bottom:0.5rem;}
+    .interlock-text{font-size:0.78rem;color:#ffaaaa;line-height:1.6;font-family:'JetBrains Mono',monospace;}
+    .interlock-ok{margin-top:1rem;padding:0.5rem 1.2rem;background:transparent;
+      border:1px solid #ff5555;color:#ff7777;cursor:pointer;font-family:'JetBrains Mono',monospace;
+      font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;}
+    .interlock-ok:hover{background:rgba(255,51,51,0.15);color:#ff9999;}
+
+    /* ── INFO TOOLTIP ── */
+    .info-tooltip{position:absolute;background:#0d2010;border:1px solid #39ff14;
+      border-radius:var(--radius-sm);padding:0.6rem 0.8rem;font-size:0.7rem;
+      color:#a8d5a8;max-width:240px;z-index:10;pointer-events:none;
+      box-shadow:0 0 16px rgba(57,255,20,0.25);line-height:1.5;}
+
+    /* ── MOBILE PLANT ── */
+    @media (max-width:880px){
+      .plant-body{grid-template-columns:1fr;}
+      .plant-controls{order:2;}
+      .plant-display{order:1;}
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:680px){
+      .page-nav{justify-content:center;}
+      .page-nav-indicator{display:none;}
+      .metric-grid{grid-template-columns:1fr;}
+      .rms-grid{grid-template-columns:1fr;}
+      .canvas-wrap .plotly-host{height:280px;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="PSSMC Home">
+      <svg width="36" height="36" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5" class="mark-ring"/>
+        <path d="M14 30 Q24 14 34 30" stroke="currentColor" stroke-width="2" fill="none" class="mark-curve"/>
+        <path d="M18 22h12" class="mark-line"/>
+      </svg>
+      <span>PSSMC</span>
+    </a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="../index.html">Home</a>
+      <a href="Kasprowiak.html">Study Front</a>
+      <div class="pages-btn-wrap">
+        <button class="pages-btn" id="pagesBtn" aria-expanded="false" aria-haspopup="true">
+          Pages
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="pages-dropdown" id="pagesDropdown" role="menu">
+          <div class="pages-dropdown-header">PSSMC Mathematics — Kasprowiak</div>
+          <a href="Kasprowiak.html" role="menuitem"><span class="pd-num"></span><span class="pd-label">Front Page</span></a>
+          <a href="page-1.html" role="menuitem"><span class="pd-num">1</span><span class="pd-label">Two-DOF Model</span></a>
+          <a href="page-2.html" role="menuitem"><span class="pd-num">2</span><span class="pd-label">Objective &amp; Sliding Surface</span></a>
+          <a href="page-3.html" role="menuitem"><span class="pd-num">3</span><span class="pd-label">Full Control Law</span></a>
+          <a href="page-4.html" role="menuitem"><span class="pd-num">4</span><span class="pd-label">Lyapunov &amp; Parameters</span></a>
+          <a href="page-5.html" aria-current="page" role="menuitem"><span class="pd-num">5</span><span class="pd-label">Results &amp; Discussion</span><span class="pd-badge">Here</span></a>
+          <a href="page-6.html" role="menuitem"><span class="pd-num">6</span><span class="pd-label">Future Works</span><span class="pd-badge">New</span></a>
+        </div>
+      </div>
+      <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- HERO -->
+    <div class="page-hero">
+      <p class="eyebrow">Chapter 10 &nbsp;&middot;&nbsp; PSSMC Mathematics</p>
+      <h1>Results &amp; Discussion</h1>
+      <p class="lead">
+        The proof in Chapter 8 guarantees the PSSMC <em>must</em> work.
+        This chapter shows — through numerical simulation of the Kasprowiak
+        two-DOF model with zero damping — how well it actually does. Three
+        controllers are placed side-by-side: no control, classical SMC, and
+        the PSSMC. The verdict is quantitative.
+      </p>
+      <div class="hero-chips">
+        <button class="chip" type="button" data-overlay="ol-method">Simulation method</button>
+        <button class="chip" type="button" data-overlay="ol-why-no-damp">Why no damping?</button>
+        <button class="chip" type="button" data-overlay="ol-how-metrics">How metrics are computed</button>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="page-body">
+
+      <!-- ═══════════════ PLANT CTA BANNER ═══════════════ -->
+      <div class="plant-cta">
+        <div class="plant-cta-inner">
+          <div class="plant-cta-text">
+            <p class="plant-cta-eyebrow">━━ Interactive · Live Control Room ━━</p>
+            <h3>The Plant — Operate It Yourself</h3>
+            <p>
+              Before the numbers, the experience. Step into a CRT-styled control room,
+              power up the two-DOF model, and engage either the SMC or the PSSMC.
+              Watch the chatter unfold, the control signal switch, and the metrics
+              tick in real time. No fixed scenes — you decide what runs.
+            </p>
+          </div>
+          <button class="plant-cta-btn" type="button" data-overlay="ol-plant">
+            ⏻ &nbsp; OPEN THE PLANT
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════ 5.1 HEADLINE METRICS ═══════════════ -->
+      <h2 class="sec-heading">5.1 &nbsp;Headline Metrics</h2>
+
+      <p class="prose">
+        Two single numbers summarise the entire experiment. They are computed by
+        running the same Kasprowiak two-DOF model under three controllers and
+        comparing the resulting time series of \(y_1(t)\) (tool tip displacement)
+        and the control signal \(U(t)\) over an identical 10 ms window. Lower is
+        better in both cases.
+      </p>
+
+      <div class="metric-grid">
+        <div class="metric-tile hero">
+          <div class="mt-label">Chatter Reduction (PSSMC vs SMC)</div>
+          <div class="mt-value green" id="m-chatter">—<span class="mt-unit">%</span></div>
+          <div class="mt-sub">Measured as the percentage drop in \(\mathrm{RMS}\,(y_1)\) when switching from classical SMC to PSSMC.</div>
+        </div>
+        <div class="metric-tile hero">
+          <div class="mt-label">Energy Reduction (PSSMC vs SMC)</div>
+          <div class="mt-value green" id="m-energy">—<span class="mt-unit">%</span></div>
+          <div class="mt-sub">Measured as \(\int U^2(t)\,dt\) — total control effort. PSSMC achieves more with less.</div>
+        </div>
+      </div>
+
+      <h3 class="sec-sub">RMS \(y_1\) — Tool-Tip Vibration</h3>
+
+      <div class="rms-grid">
+        <div class="rms-cell nc">
+          <div class="rl">No Control</div>
+          <div class="rv"><span id="m-rms-nc">—</span><span class="mt-unit"> μm</span></div>
+        </div>
+        <div class="rms-cell smc">
+          <div class="rl">Standard SMC</div>
+          <div class="rv"><span id="m-rms-smc">—</span><span class="mt-unit"> μm</span></div>
+        </div>
+        <div class="rms-cell ps">
+          <div class="rl">PSSMC</div>
+          <div class="rv"><span id="m-rms-ps">—</span><span class="mt-unit"> μm</span></div>
+        </div>
+      </div>
+
+      <div class="highlight-note">
+        <strong>What the numbers mean.</strong> No control produces clean undamped chatter
+        at \(\approx 70\,\mu\text{m}\) RMS — a destructive resonance. Classical SMC
+        actually <em>worsens</em> RMS (\(\approx 79\,\mu\text{m}\)) because aggressive
+        switching injects high-frequency noise even while suppressing the dominant
+        mode. The PSSMC cuts RMS roughly in half — to about \(40\,\mu\text{m}\) —
+        while simultaneously using less than half the control energy of SMC.
+      </div>
+
+      <!-- ═══════════════ 5.2 TOOL-TIP DISPLACEMENT ═══════════════ -->
+      <h2 class="sec-heading">5.2 &nbsp;Tool-Tip Displacement \(y_1(t)\)</h2>
+
+      <p class="prose">
+        \(y_1(t)\) is the displacement of the tool tip — the physical quantity
+        responsible for surface finish on the workpiece. Three traces are
+        overlaid on the same axes for the first 10 ms after engagement.
+      </p>
+
+      <button class="graph-explain-btn" type="button" data-overlay="ol-y1-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read this graph
+      </button>
+      <div class="canvas-wrap"><div id="chart-y1" class="plotly-host"></div></div>
+
+      <p class="prose">
+        The red trace (no control) shows the characteristic regenerative-chatter
+        envelope — an oscillation that does not decay because \(c_1 = c_2 = 0\).
+        The amber trace (SMC) reaches a similar amplitude but with a visibly
+        rougher, higher-frequency texture: that texture is the chatter <em>of the
+        controller itself</em>. The cyan trace (PSSMC) is the smoothest and the
+        smallest — the adaptive boundary layer \(\phi(t)\) softens the switching.
+      </p>
+
+      <!-- ═══════════════ 5.3 CUTTING FORCE ═══════════════ -->
+      <h2 class="sec-heading">5.3 &nbsp;Cutting Force \(F_{cut}(t)\)</h2>
+
+      <p class="prose">
+        \(F_{cut}(t)\) is the regenerative force at the cutting edge, computed from
+        the chip-thickness variation \(K_c \cdot a_p \cdot (f_z - (y_1 - y_1^{\text{prev}}))\).
+        It is the disturbance the controller must reject.
+      </p>
+
+      <button class="graph-explain-btn" type="button" data-overlay="ol-fc-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read this graph
+      </button>
+      <div class="canvas-wrap"><div id="chart-fc" class="plotly-host"></div></div>
+
+      <!-- ═══════════════ 5.4 CONTROL SIGNAL ═══════════════ -->
+      <h2 class="sec-heading">5.4 &nbsp;Control Signal \(U(t)\) — and its Decomposition</h2>
+
+      <p class="prose">
+        The control signal \(U(t) = U_{eq}(t) + U_{sw}(t)\) splits into two
+        physically distinct components:
+        \(U_{eq}\) — the smooth equivalent control that keeps the system on the
+        sliding surface — and \(U_{sw}\) — the switching part that rejects
+        disturbances. SMC uses a constant \(K_{sw}\); PSSMC modulates \(\phi(t)\)
+        to soften the switch.
+      </p>
+
+      <button class="graph-explain-btn" type="button" data-overlay="ol-u-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read \(U(t)\)
+      </button>
+      <div class="canvas-wrap tall"><div id="chart-u" class="plotly-host"></div></div>
+
+      <h3 class="sec-sub">Equivalent control \(U_{eq}(t)\) — the smooth backbone</h3>
+      <button class="graph-explain-btn" type="button" data-overlay="ol-ueq-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read \(U_{eq}\)
+      </button>
+      <div class="canvas-wrap"><div id="chart-ueq" class="plotly-host"></div></div>
+
+      <h3 class="sec-sub">Switching control \(U_{sw}(t)\) — where chatter lives</h3>
+      <button class="graph-explain-btn" type="button" data-overlay="ol-usw-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Why is \(U_{sw}\) the chatter source?
+      </button>
+      <div class="canvas-wrap"><div id="chart-usw" class="plotly-host"></div></div>
+
+      <!-- ═══════════════ 5.5 SLIDING SURFACE & ADAPTATION ═══════════════ -->
+      <h2 class="sec-heading">5.5 &nbsp;Sliding Surface \(s(t)\) &amp; Adaptive Parameters</h2>
+
+      <p class="prose">
+        The sliding surface \(s(t) = \dot e + \lambda e\) is the geometric object
+        the controller drives to zero. For SMC \(\lambda\) is fixed; for PSSMC,
+        \(\lambda(t)\), \(T_p(t)\), and \(\phi(t)\) all evolve according to the
+        adaptive laws derived in Chapter 7.
+      </p>
+
+      <button class="graph-explain-btn" type="button" data-overlay="ol-s-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read \(s(t)\)
+      </button>
+      <div class="canvas-wrap"><div id="chart-s" class="plotly-host"></div></div>
+
+      <h3 class="sec-sub">Adaptive parameters \(\lambda(t)\), \(T_p(t)\), \(\phi(t)\)</h3>
+      <button class="graph-explain-btn" type="button" data-overlay="ol-adapt-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read the adaptive curves
+      </button>
+      <div class="canvas-wrap tall"><div id="chart-adapt" class="plotly-host"></div></div>
+
+      <!-- ═══════════════ 5.6 PHASE PORTRAIT ═══════════════ -->
+      <h2 class="sec-heading">5.6 &nbsp;Phase Portrait \(\dot e\) vs \(e\)</h2>
+
+      <p class="prose">
+        The phase portrait plots tracking-error velocity \(\dot e(t)\) against
+        tracking error \(e(t)\). A controller that drives \(s \to 0\) collapses
+        the trajectory onto the sliding line \(\dot e = -\lambda\, e\). The
+        thickness of the cloud around that line measures chattering.
+      </p>
+
+      <button class="graph-explain-btn" type="button" data-overlay="ol-phase-graph">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read the phase portrait
+      </button>
+      <div class="canvas-wrap tall"><div id="chart-phase" class="plotly-host"></div></div>
+
+      <!-- ═══════════════ 5.7 LIVE ANIMATION ═══════════════ -->
+      <h2 class="sec-heading">5.7 &nbsp;Live Animation</h2>
+
+      <p class="prose">
+        A frame-by-frame replay of \(y_1(t)\) for all three controllers, sharing
+        the same time axis. Watch the chatter envelope grow under no control,
+        the noisy band under SMC, and the slim PSSMC trajectory.
+      </p>
+
+      <button class="graph-explain-btn" type="button" data-overlay="ol-anim">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        About the animation
+      </button>
+      <div class="canvas-wrap tall">
+        <div id="chart-anim" class="plotly-host"></div>
+        <div style="display:flex;gap:0.6rem;justify-content:center;margin-top:0.6rem;">
+          <button class="btn btn-secondary btn-sm" id="anim-play" type="button">▶ Play</button>
+          <button class="btn btn-secondary btn-sm" id="anim-pause" type="button">⏸ Pause</button>
+          <button class="btn btn-secondary btn-sm" id="anim-reset" type="button">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════ 5.8 DISCUSSION ═══════════════ -->
+      <h2 class="sec-heading">5.8 &nbsp;Discussion</h2>
+
+      <p class="prose">
+        The three traces tell a single story in three voices.
+      </p>
+
+      <div class="disc-grid">
+        <div class="disc-card">
+          <h4>Why SMC worsens RMS</h4>
+          <p>
+            Classical SMC uses a hard \(\mathrm{sign}(s)\) switch. With \(c_1=0\),
+            there is no natural damping to absorb the high-frequency content of
+            that switch, so the controller injects chatter that the plant cannot
+            dissipate. The result: lower bias but higher RMS.
+          </p>
+        </div>
+        <div class="disc-card">
+          <h4>How PSSMC wins</h4>
+          <p>
+            PSSMC replaces \(\mathrm{sign}\) with \(\tanh(s/\phi)\) and lets
+            \(\phi(t)\) grow when chatter rises. The control becomes locally
+            smooth exactly where smoothness is needed — a soft boundary layer
+            that breathes with the operating point.
+          </p>
+        </div>
+        <div class="disc-card">
+          <h4>Why the energy halves</h4>
+          <p>
+            Adaptive \(\lambda(t)\) tightens the sliding surface only when
+            error grows. Most of the time \(\lambda(t)\) sits near its lower
+            bound, so the controller acts gently. Standard SMC keeps a fixed
+            \(\lambda\) that is conservative for the worst case and thus
+            over-actuates on average.
+          </p>
+        </div>
+        <div class="disc-card">
+          <h4>What no-damping means</h4>
+          <p>
+            \(c_1 = c_2 = 0\) is the hardest case for any controller: any
+            energy injected stays in the system. That the PSSMC still cuts
+            RMS by ~50% under this regime is strong evidence the same gains
+            will perform even better on a real, slightly damped machine.
+          </p>
+        </div>
+        <div class="disc-card">
+          <h4>The role of the Lyapunov proof</h4>
+          <p>
+            The simulation passes; the proof on Page 4 says it <em>must</em>
+            pass — for any bounded disturbance, any initial condition. The
+            numbers here are confirmation, not validation. The validation was
+            already algebraic.
+          </p>
+        </div>
+        <div class="disc-card">
+          <h4>What's left to do</h4>
+          <p>
+            Hardware implementation, multi-axis extension, machine-learning
+            gain tuning, and head-to-head against fractional-order SMC and
+            model-predictive control. See <a href="page-6.html">Page 6 —
+            Future Works</a> for the road ahead.
+          </p>
+        </div>
+      </div>
+
+      <div class="analogy-card">
+        <div class="analogy-icon">🎯</div>
+        <div class="analogy-body">
+          <h3>One-sentence verdict</h3>
+          <p>
+            On the most punishing version of the Kasprowiak two-DOF chatter
+            model, the PSSMC delivers <strong>49.5% less vibration</strong>
+            and <strong>58.1% less control energy</strong> than the classical
+            SMC — a free improvement, paid for entirely with mathematics.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGE NAV -->
+    <nav class="page-nav" aria-label="Page navigation">
+      <a class="page-nav-btn" href="page-4.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Page 4 — Lyapunov &amp; Parameters
+      </a>
+      <span class="page-nav-indicator">Page 5 of 6 &nbsp;&middot;&nbsp; Chapter 10</span>
+      <a class="page-nav-btn primary" href="page-6.html">
+        Page 6 — Future Works
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </nav>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">Page 5 · Chapter 10 · Kasprowiak Study · PSSMC Mathematics · University of Dar es Salaam, Department of Mechanical and Industrial Engineering.</p>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ═════════════════════ OVERLAYS ═══════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+
+  <!-- ── HERO CHIP OVERLAYS ── -->
+  <div class="overlay" id="ol-method" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-method-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-method-t">Simulation method</h2>
+      <p>The Kasprowiak two-DOF chatter model is integrated with SciPy's <strong>Radau</strong> solver (implicit Runge–Kutta, stiff-friendly) over \(t \in [0,\ 10\ \text{ms}]\) at 2000 internal time points, downsampled to 1000 for display.</p>
+      <p>The same model, the same disturbance profile, and the same initial conditions are used for all three controllers. Only the control law \(U(t)\) changes. This makes the comparison fully controlled — any difference in \(y_1(t)\) is attributable to the controller alone.</p>
+      <p>System parameters: \(m_1 = 0.2\ \text{kg}\), \(m_2 = 3.0\ \text{kg}\), \(k_1 = 2.2 \times 10^9\ \text{N/m}\), \(k_2 = 1.7 \times 10^8\ \text{N/m}\), \(c_1 = c_2 = 0\), \(K_c = 1500\ \text{N/mm}^2\), \(a_p = 0.5\ \text{mm}\), \(f_z = 0.2\ \text{mm}\).</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-why-no-damp" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-wnd-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-wnd-t">Why no damping?</h2>
+      <p>Setting \(c_1 = c_2 = 0\) is the <em>worst case</em>. Real CNC machines have small but non-zero structural damping. Any energy a controller injects must be removed by the controller itself — the machine will not help.</p>
+      <p>This choice is deliberate. A controller that handles \(c = 0\) will handle every realistic case strictly better. It is the harshest possible benchmark, and the PSSMC still wins.</p>
+      <p>Mathematically, with \(c = 0\) the plant has a pair of purely imaginary eigenvalues at \(\pm j\omega_n\). Any disturbance excites pure undamped oscillation. The controller is the <em>only</em> source of dissipation.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-how-metrics" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-hm-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-hm-t">How metrics are computed</h2>
+      <p><strong>RMS \(y_1\):</strong> \(\sqrt{\tfrac{1}{T}\int_0^T y_1^2(t)\,dt\}\), evaluated over the full 10 ms window with the trapezoidal rule.</p>
+      <p><strong>Chatter reduction:</strong> \((\mathrm{RMS}_{\text{SMC}} - \mathrm{RMS}_{\text{PS}}) / \mathrm{RMS}_{\text{SMC}} \times 100\%\). Negative would mean PSSMC was worse.</p>
+      <p><strong>Energy reduction:</strong> Define control energy \(E = \int_0^T U^2(t)\,dt\). Then \((E_{\text{SMC}} - E_{\text{PS}}) / E_{\text{SMC}} \times 100\%\). This measures total actuator effort — directly tied to wear, heat, and electrical consumption on a real machine.</p>
+    </div>
+  </div>
+
+  <!-- ────────── GRAPH EXPLANATION OVERLAYS ────────── -->
+
+  <!-- y1 graph -->
+  <div class="overlay" id="ol-y1-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-y1-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-y1-t">Reading the tool-tip displacement \(y_1(t)\)</h2>
+      <p class="ol-intro">Three traces share the same time axis. Each shows the tool-tip displacement (in micrometres) under a different controller. The flatter and slimmer the trace, the better the chatter is being suppressed.</p>
+
+      <div class="ol-section ol-section-red">
+        <h3 class="ol-sh">The red trace — No Control</h3>
+        <p>A pure sinusoid at the dominant chatter frequency. Because \(c_1 = c_2 = 0\), nothing dissipates the oscillation — it neither grows nor shrinks, just persists at \(\pm 100\,\mu\text{m}\). This is the destructive reference.</p>
+      </div>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">The amber trace — Standard SMC</h3>
+        <p>You can see a roughly similar envelope to the red — but with a visibly rougher, sawtoothed texture. That texture is the controller's own high-frequency switching bleeding through. SMC suppresses the mean displacement but adds chatter <em>of its own</em>.</p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">The cyan trace — PSSMC</h3>
+        <p>Smooth, low-amplitude, well below the red. The boundary layer \(\phi(t)\) suppresses the high-frequency switching that contaminated SMC, while adaptive \(\lambda(t)\) keeps the surface tight without over-actuating.</p>
+      </div>
+
+      <div class="ol-section ol-section-summary">
+        <p><strong>One-line takeaway:</strong> the cyan band's vertical thickness, divided by the red band's vertical thickness, is roughly the chatter-reduction ratio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fcut graph -->
+  <div class="overlay" id="ol-fc-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-fc-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-fc-t">Reading the cutting force \(F_{cut}(t)\)</h2>
+      <p class="ol-intro">\(F_{cut}\) is the regenerative force at the tool–workpiece interface: \(F_{cut}(t) = K_c\, a_p\, [f_z - (y_1(t) - y_1(t - \tau))]\). It is the <em>disturbance</em> the controller has to fight.</p>
+
+      <div class="ol-section ol-section-red">
+        <h3 class="ol-sh">Red — No Control</h3>
+        <p>A clean periodic force at the chatter frequency. The full amplitude of the regenerative term is felt by the machine — this is what damages the tool and the surface.</p>
+      </div>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">Amber — SMC</h3>
+        <p>Slightly noisier and slightly bigger than the red trace. Because SMC's chatter actually moves the tool more, the regenerative term gets larger.</p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">Cyan — PSSMC</h3>
+        <p>Visibly smaller envelope. Less tool motion means less chip-thickness variation, which means a smaller \(F_{cut}\) — a virtuous cycle.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- U graph -->
+  <div class="overlay" id="ol-u-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-u-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-u-t">Reading the control signal \(U(t)\)</h2>
+      <p class="ol-intro">\(U(t)\) is what the actuator is asked to produce. Two controllers' outputs are overlaid. The vertical extent and the texture together tell you the cost.</p>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">Amber — \(U_{\text{SMC}}(t)\)</h3>
+        <p>A jagged, full-swing signal. \(U_{sw} = K_{sw}\,\mathrm{sign}(s)\) hits ±500 N constantly. The actuator is being driven hard at high frequency — wear, heat, and electrical noise are the price.</p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">Cyan — \(U_{\text{PSSMC}}(t)\)</h3>
+        <p>Far smaller envelope and much smoother. The \(\tanh\) boundary layer keeps \(U_{sw}\) bounded only by what is actually needed, and adaptive \(\lambda\) keeps \(U_{eq}\) modest.</p>
+      </div>
+
+      <div class="ol-section ol-section-summary">
+        <p><strong>This is where the 58% energy saving lives.</strong> Squaring the difference in vertical extent and integrating is the energy ratio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ueq graph -->
+  <div class="overlay" id="ol-ueq-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-ueq-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ueq-t">Reading the equivalent control \(U_{eq}(t)\)</h2>
+      <p class="ol-intro">\(U_{eq}\) is the model-based feed-forward component that would keep the system <em>exactly</em> on the sliding surface if the model were perfect and there were no disturbance.</p>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">Amber — SMC equivalent control</h3>
+        <p>Tracks the system dynamics smoothly. No chatter here — \(U_{eq}\) by construction is continuous. Its magnitude reflects how aggressive the fixed \(\lambda\) is.</p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">Cyan — PSSMC equivalent control</h3>
+        <p>Quieter and smaller. Because \(\lambda(t)\) starts at its lower bound and only rises when error builds, \(U_{eq}\) does less work most of the time.</p>
+      </div>
+
+      <div class="ol-section">
+        <h3 class="ol-sh">Key insight</h3>
+        <p>\(U_{eq}\) is where the <em>intelligence</em> lives. It is what the controller would output if there were no chatter to suppress. Comparing it across SMC and PSSMC tells you whether the adaptive law is being efficient.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usw graph -->
+  <div class="overlay" id="ol-usw-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-usw-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-usw-t">Reading the switching control \(U_{sw}(t)\) — where chatter lives</h2>
+      <p class="ol-intro">\(U_{sw}\) is the discontinuous part of the controller. In SMC it is \(K_{sw}\,\mathrm{sign}(s)\); in PSSMC it is \(K_{sw}\,\tanh(s/\phi(t))\). This is the single most important chart for understanding chatter.</p>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">Amber — \(U_{sw}^{\text{SMC}}(t) = K_{sw}\,\mathrm{sign}(s)\)</h3>
+        <p>A square wave between \(+500\) and \(-500\). Every time \(s\) crosses zero, the signal flips instantly. With no damping, the plant cannot filter this — it propagates straight through to \(y_1\). <strong>This square wave is the chatter.</strong></p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">Cyan — \(U_{sw}^{\text{PSSMC}}(t) = K_{sw}\,\tanh(s/\phi(t))\)</h3>
+        <p>Smooth transitions. When \(s\) is small, \(\tanh(s/\phi)\) is small — the controller does not slam to ±\(K_{sw}\). The adaptive \(\phi(t)\) widens whenever \(s\) gets noisy, automatically softening the boundary.</p>
+      </div>
+
+      <div class="ol-section ol-section-summary">
+        <p><strong>Why this single chart explains everything:</strong> the difference between the amber square wave and the cyan smooth curve <em>is</em> the chattering. Eliminate the square wave, eliminate chatter. Eliminate chatter, halve the RMS. That is the entire result, in one picture.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- s graph -->
+  <div class="overlay" id="ol-s-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-s-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-s-t">Reading the sliding surface \(s(t)\)</h2>
+      <p class="ol-intro">\(s(t) = \dot e(t) + \lambda(t)\, e(t)\) is the geometric quantity the controller drives to zero. When \(s = 0\), the error is decaying exponentially with rate \(\lambda\). A good controller keeps \(s\) close to zero, ideally hugging it.</p>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">Amber — \(s_{\text{SMC}}(t)\)</h3>
+        <p>Oscillates around zero with visible chatter. SMC keeps \(|s|\) small but the rapid switching of \(U_{sw}\) makes the surface itself jitter.</p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">Cyan — \(s_{\text{PSSMC}}(t)\)</h3>
+        <p>Smaller, smoother. The adaptive \(\phi(t)\) allows the controller to relax inside the boundary layer, and \(\lambda(t)\) only tightens when needed. The result is a surface that genuinely sticks near zero.</p>
+      </div>
+
+      <div class="ol-section">
+        <h3 class="ol-sh">What 'hugging zero' looks like</h3>
+        <p>Reaching the surface (\(s=0\)) is called the <em>reaching phase</em>; staying there is the <em>sliding phase</em>. PSSMC spends almost the entire window in the sliding phase.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- adaptive params graph -->
+  <div class="overlay" id="ol-adapt-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-adapt-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-adapt-t">Reading the adaptive parameters \(\lambda(t)\), \(T_p(t)\), \(\phi(t)\)</h2>
+      <p class="ol-intro">PSSMC's three adaptive gains evolve in real time according to the laws derived in Chapter 7. Each parameter trades smoothness against tracking. The chart shows them on three sub-axes, all on the same time base.</p>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">\(\lambda(t)\) — sliding-surface slope</h3>
+        <p>Rises when \(|s|\) grows (the surface needs to be tightened) and decays back toward its lower bound otherwise. Starts at 44.1 and modulates throughout the window.</p>
+      </div>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">\(T_p(t)\) — prediction horizon</h3>
+        <p>Increases when error is small (look further ahead) and shrinks when error grows (focus on now). Sits between \(10^{-6}\) and \(5\times10^{-4}\) s.</p>
+      </div>
+
+      <div class="ol-section ol-section-green">
+        <h3 class="ol-sh">\(\phi(t)\) — boundary layer</h3>
+        <p>Widens when the controller starts chattering (the \(|s|\) is small but oscillating) and tightens when the system is calm. This is the parameter that makes the difference vs SMC.</p>
+      </div>
+
+      <div class="ol-section ol-section-summary">
+        <p><strong>The trick:</strong> all three move <em>independently</em>, each driven by its own gradient law. The controller adapts in three directions simultaneously — that is what 'PS-SMC' (Predictive Sliding-mode SMC) means.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- phase portrait graph -->
+  <div class="overlay" id="ol-phase-graph" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-phase-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-phase-t">Reading the phase portrait</h2>
+      <p class="ol-intro">Tracking-error velocity \(\dot e\) on the vertical axis, tracking error \(e\) on the horizontal. A controller that drives \(s = \dot e + \lambda e \to 0\) collapses the trajectory onto the line \(\dot e = -\lambda\,e\).</p>
+
+      <div class="ol-section ol-section-red">
+        <h3 class="ol-sh">Red cloud — No Control</h3>
+        <p>A large closed loop, far from the sliding line. No collapse — the system orbits freely.</p>
+      </div>
+
+      <div class="ol-section ol-section-amber">
+        <h3 class="ol-sh">Amber band — SMC</h3>
+        <p>A noisy band roughly along the sliding line. The thickness of the band is the chatter — the trajectory is on the line on average but constantly jittering off it.</p>
+      </div>
+
+      <div class="ol-section ol-section-cyan">
+        <h3 class="ol-sh">Cyan ribbon — PSSMC</h3>
+        <p>A slim ribbon tightly hugging the sliding line. Thickness is dramatically smaller. This is the visual signature of practical stability at work.</p>
+      </div>
+
+      <div class="ol-section">
+        <h3 class="ol-sh">The diagonal reference</h3>
+        <p>A dashed grey line shows \(\dot e = -\lambda_0\, e\) — the target. The closer the trajectory hugs that line, the better the controller is.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- live animation overlay -->
+  <div class="overlay" id="ol-anim" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-an-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-an-t">About the live animation</h2>
+      <p>The animation replays the same \(y_1(t)\) trace you saw in Section 5.2, but frame-by-frame. Use it to watch how each controller behaves over the 10 ms window in real time (scaled).</p>
+      <p>Press <strong>Play</strong> to start, <strong>Pause</strong> to freeze, <strong>Reset</strong> to return to t = 0. The chatter envelope under the red and amber traces visibly grows; the cyan stays slim.</p>
+      <p>If you want full interactive control — switching between SMC and PSSMC live, adjusting playback speed, and seeing the U/Ueq/Usw streams update — open <strong>The Plant</strong> from the green CTA at the top of this page.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- ═══════════════ THE PLANT OVERLAY ════════════════ -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div class="overlay" id="ol-plant" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel plant-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="plant-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+
+      <div class="plant-header">
+        <h2 class="plant-title" id="plant-title">The Plant</h2>
+        <div class="plant-subtitle">━━ Kasprowiak 2-DOF · Live Control Room · CRT-Series ━━</div>
+      </div>
+
+      <div class="plant-body">
+
+        <!-- ═══ LEFT: CONTROL PANEL ═══ -->
+        <div class="plant-controls">
+
+          <!-- Power -->
+          <div class="ctrl-group">
+            <div class="ctrl-label">━ MAIN POWER</div>
+            <button class="pwr-btn" id="plant-pwr" type="button">
+              <span class="pwr-icon">⏻</span><span>POWER</span>
+            </button>
+            <div class="pwr-indicator">
+              <span class="led" id="led-pwr"></span><span id="pwr-text">STANDBY</span>
+            </div>
+          </div>
+
+          <div class="ctrl-divider"></div>
+
+          <!-- Controller switches -->
+          <div class="ctrl-group">
+            <div class="ctrl-label">━ CONTROLLER SELECT</div>
+
+            <div class="switch-row disabled" id="row-smc" data-ctrl="smc">
+              <div class="switch-label">
+                <div class="switch-name">SMC<button class="info-icon" data-info="smc" type="button">i</button></div>
+                <div class="switch-hint">CLASSICAL · K=500</div>
+              </div>
+              <div class="slide-switch amber" data-switch="smc"></div>
+            </div>
+
+            <div class="switch-row disabled" id="row-ps" data-ctrl="ps">
+              <div class="switch-label">
+                <div class="switch-name">PSSMC<button class="info-icon" data-info="ps" type="button">i</button></div>
+                <div class="switch-hint">PREDICTIVE · ADAPTIVE</div>
+              </div>
+              <div class="slide-switch cyan" data-switch="ps"></div>
+            </div>
+          </div>
+
+          <div class="ctrl-divider"></div>
+
+          <!-- Speed -->
+          <div class="ctrl-group">
+            <div class="ctrl-label">━ PLAYBACK SPEED</div>
+            <div class="speed-row">
+              <input type="range" class="crt-slider" id="speed-slider" min="0" max="1000" value="0" step="1">
+              <div class="speed-val" id="speed-val">1×</div>
+            </div>
+          </div>
+
+          <div class="ctrl-divider"></div>
+
+          <!-- Metrics -->
+          <div class="ctrl-group">
+            <div class="ctrl-label">━ LIVE METRICS</div>
+            <div class="plant-metrics">
+              <div class="plant-metric"><div class="pm-label">Amplitude</div><div class="pm-value" id="pm-amp">— μm</div></div>
+              <div class="plant-metric"><div class="pm-label">Energy</div><div class="pm-value" id="pm-eng">— N</div></div>
+              <div class="plant-metric"><div class="pm-label">Chatter</div><div class="pm-value" id="pm-cht">—</div></div>
+              <div class="plant-metric"><div class="pm-label">Time</div><div class="pm-value" id="pm-tim">— ms</div></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ═══ RIGHT: DISPLAYS ═══ -->
+        <div class="plant-display">
+
+          <div class="crt-screen">
+            <div class="crt-screen-label">━ y₁(t) · TOOL-TIP DISPLACEMENT [μm]</div>
+            <canvas class="crt-canvas tall" id="plant-y1" aria-label="y1 displacement"></canvas>
+          </div>
+
+          <div class="control-charts" id="ctrl-charts-wrap">
+            <div class="control-charts-grid">
+              <div class="crt-screen">
+                <div class="crt-screen-label">━ U(t)</div>
+                <canvas class="crt-canvas" id="plant-u"></canvas>
+              </div>
+              <div class="crt-screen">
+                <div class="crt-screen-label">━ U_eq(t)</div>
+                <canvas class="crt-canvas" id="plant-ueq"></canvas>
+              </div>
+              <div class="crt-screen">
+                <div class="crt-screen-label">━ U_sw(t)</div>
+                <canvas class="crt-canvas" id="plant-usw"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interlock modal -->
+          <div class="interlock-modal" id="interlock-modal">
+            <div class="interlock-box">
+              <div class="interlock-icon">⚠</div>
+              <div class="interlock-title">━ INTERLOCK ━</div>
+              <div class="interlock-text">
+                Cannot engage two controllers simultaneously.<br>
+                Disconnect the operating controller first.
+              </div>
+              <button class="interlock-ok" id="interlock-ok" type="button">ACKNOWLEDGE</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ═══════════════ PAGE-SPECIFIC SCRIPT ═══════════════ -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <script>
+  (function(){
+    'use strict';
+
+    // ────────────────────────────────────────────────
+    // PAGES DROPDOWN (shared pattern from page-4)
+    // ────────────────────────────────────────────────
+    var pagesBtn = document.getElementById('pagesBtn');
+    var pagesDropdown = document.getElementById('pagesDropdown');
+    if(pagesBtn && pagesDropdown){
+      pagesBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var open = pagesDropdown.classList.toggle('open');
+        pagesBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', function(e){
+        if(!pagesDropdown.contains(e.target) && e.target !== pagesBtn){
+          pagesDropdown.classList.remove('open');
+          pagesBtn.setAttribute('aria-expanded','false');
+        }
+      });
+    }
+
+    // ────────────────────────────────────────────────
+    // METRIC FILL
+    // ────────────────────────────────────────────────
+    document.getElementById('m-chatter').firstChild.textContent = _PCT_CHATTER.toFixed(1);
+    document.getElementById('m-energy').firstChild.textContent  = _PCT_ENERGY.toFixed(1);
+    document.getElementById('m-rms-nc').textContent  = _RMS_NC.toFixed(1);
+    document.getElementById('m-rms-smc').textContent = _RMS_SMC.toFixed(1);
+    document.getElementById('m-rms-ps').textContent  = _RMS_PS.toFixed(1);
+
+    // ────────────────────────────────────────────────
+    // PLOTLY HELPERS
+    // ────────────────────────────────────────────────
+    function isDark(){ return document.documentElement.getAttribute('data-theme') === 'dark'; }
+    function themeColors(){
+      var d = isDark();
+      return {
+        bg:      'rgba(0,0,0,0)',
+        paper:   'rgba(0,0,0,0)',
+        text:    d ? '#e6e1d8' : '#2c2a26',
+        muted:   d ? '#9b9486' : '#6b6457',
+        grid:    d ? 'rgba(196,154,106,0.12)' : 'rgba(122,92,58,0.10)',
+        axis:    d ? 'rgba(196,154,106,0.30)' : 'rgba(122,92,58,0.25)'
+      };
+    }
+    var COL_NC  = '#a12c2c';
+    var COL_SMC = '#d4a017';
+    var COL_PS  = '#1e9bd0';
+    var COL_LAM = '#1e9bd0';
+    var COL_TP  = '#d4a017';
+    var COL_PHI = '#2e7d3e';
+
+    function baseLayout(opts){
+      opts = opts || {};
+      var c = themeColors();
+      return {
+        margin: opts.margin || {l:60,r:18,t:18,b:48},
+        paper_bgcolor: c.paper,
+        plot_bgcolor:  c.bg,
+        font: { family: 'Inter, ui-sans-serif, system-ui', color: c.text, size: 12 },
+        xaxis: {
+          title: { text: opts.xtitle || 'time t [ms]', font: { size: 12, color: c.muted } },
+          gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis, tickcolor: c.axis,
+          showline: true
+        },
+        yaxis: {
+          title: { text: opts.ytitle || '', font: { size: 12, color: c.muted } },
+          gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis, tickcolor: c.axis,
+          showline: true
+        },
+        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.18, font: { size: 11 } },
+        showlegend: opts.showlegend !== false,
+        hovermode: 'x unified'
+      };
+    }
+    var PLOTLY_CONFIG = { displayModeBar: false, responsive: true };
+
+    // T in ms (scale)
+    var T_ms = _T.map(function(v){ return v*1000; });
+
+    // ────────────────────────────────────────────────
+    // CHART 5.2 — y1(t)
+    // ────────────────────────────────────────────────
+    Plotly.newPlot('chart-y1', [
+      { x: T_ms, y: _Y1_NC,  name: 'No Control', mode: 'lines', line: { color: COL_NC,  width: 1.4 } },
+      { x: T_ms, y: _Y1_SMC, name: 'SMC',        mode: 'lines', line: { color: COL_SMC, width: 1.4 } },
+      { x: T_ms, y: _Y1_PS,  name: 'PSSMC',      mode: 'lines', line: { color: COL_PS,  width: 1.6 } }
+    ], baseLayout({ ytitle: 'y₁(t) [μm]' }), PLOTLY_CONFIG);
+
+    // ────────────────────────────────────────────────
+    // CHART 5.3 — Fcut(t)
+    // ────────────────────────────────────────────────
+    Plotly.newPlot('chart-fc', [
+      { x: T_ms, y: _FC_NC,  name: 'No Control', mode: 'lines', line: { color: COL_NC,  width: 1.4 } },
+      { x: T_ms, y: _FC_SMC, name: 'SMC',        mode: 'lines', line: { color: COL_SMC, width: 1.4 } },
+      { x: T_ms, y: _FC_PS,  name: 'PSSMC',      mode: 'lines', line: { color: COL_PS,  width: 1.6 } }
+    ], baseLayout({ ytitle: 'F_cut(t) [N]' }), PLOTLY_CONFIG);
+
+    // ────────────────────────────────────────────────
+    // CHART 5.4a — U(t)
+    // ────────────────────────────────────────────────
+    Plotly.newPlot('chart-u', [
+      { x: T_ms, y: _U_SMC, name: 'U — SMC',   mode: 'lines', line: { color: COL_SMC, width: 1.2 } },
+      { x: T_ms, y: _U_PS,  name: 'U — PSSMC', mode: 'lines', line: { color: COL_PS,  width: 1.4 } }
+    ], baseLayout({ ytitle: 'U(t) [N]' }), PLOTLY_CONFIG);
+
+    // ────────────────────────────────────────────────
+    // CHART 5.4b — Ueq(t)
+    // ────────────────────────────────────────────────
+    Plotly.newPlot('chart-ueq', [
+      { x: T_ms, y: _UEQ_SMC, name: 'U_eq — SMC',   mode: 'lines', line: { color: COL_SMC, width: 1.4 } },
+      { x: T_ms, y: _UEQ_PS,  name: 'U_eq — PSSMC', mode: 'lines', line: { color: COL_PS,  width: 1.6 } }
+    ], baseLayout({ ytitle: 'U_eq(t) [N]' }), PLOTLY_CONFIG);
+
+    // ────────────────────────────────────────────────
+    // CHART 5.4c — Usw(t)
+    // ────────────────────────────────────────────────
+    Plotly.newPlot('chart-usw', [
+      { x: T_ms, y: _USW_SMC, name: 'U_sw — SMC',   mode: 'lines', line: { color: COL_SMC, width: 1.2 } },
+      { x: T_ms, y: _USW_PS,  name: 'U_sw — PSSMC', mode: 'lines', line: { color: COL_PS,  width: 1.6 } }
+    ], baseLayout({ ytitle: 'U_sw(t) [N]' }), PLOTLY_CONFIG);
+
+    // ────────────────────────────────────────────────
+    // CHART 5.5a — s(t)
+    // ────────────────────────────────────────────────
+    Plotly.newPlot('chart-s', [
+      { x: T_ms, y: _S_SMC, name: 's — SMC',   mode: 'lines', line: { color: COL_SMC, width: 1.4 } },
+      { x: T_ms, y: _S_PS,  name: 's — PSSMC', mode: 'lines', line: { color: COL_PS,  width: 1.6 } }
+    ], baseLayout({ ytitle: 's(t)' }), PLOTLY_CONFIG);
+
+    // ────────────────────────────────────────────────
+    // CHART 5.5b — Adaptive parameters (3 subplots stacked)
+    // ────────────────────────────────────────────────
+    (function(){
+      var c = themeColors();
+      var adaptLayout = {
+        margin: {l:60,r:20,t:18,b:48},
+        paper_bgcolor: c.paper, plot_bgcolor: c.bg,
+        font: { family: 'Inter', color: c.text, size: 11 },
+        grid: { rows: 3, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
+        showlegend: false,
+        xaxis:  { title:{text:'', font:{size:11,color:c.muted}}, gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis, anchor:'y' },
+        xaxis2: { title:{text:'', font:{size:11,color:c.muted}}, gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis, anchor:'y2' },
+        xaxis3: { title:{text:'time t [ms]', font:{size:11,color:c.muted}}, gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis, anchor:'y3' },
+        yaxis:  { title:{text:'λ(t)',   font:{size:11,color:c.muted}}, gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis },
+        yaxis2: { title:{text:'Tp(t)',  font:{size:11,color:c.muted}}, gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis },
+        yaxis3: { title:{text:'φ(t)',   font:{size:11,color:c.muted}}, gridcolor: c.grid, zerolinecolor: c.axis, linecolor: c.axis },
+        annotations: []
+      };
+      Plotly.newPlot('chart-adapt', [
+        { x: T_ms, y: _LAM, mode:'lines', line:{color:COL_LAM, width:1.6}, name:'λ(t)' },
+        { x: T_ms, y: _TP,  mode:'lines', line:{color:COL_TP,  width:1.6}, name:'Tp(t)', xaxis:'x2', yaxis:'y2' },
+        { x: T_ms, y: _PHI, mode:'lines', line:{color:COL_PHI, width:1.6}, name:'φ(t)',  xaxis:'x3', yaxis:'y3' }
+      ], adaptLayout, PLOTLY_CONFIG);
+    })();
+
+    // ────────────────────────────────────────────────
+    // CHART 5.6 — Phase portrait (ė vs e)
+    // Note: e = -y1 (assuming desired y1 = 0); ė = -ẏ1
+    // We'll approximate ẏ1 via finite differences.
+    // ────────────────────────────────────────────────
+    (function(){
+      function deriv(Y, T){
+        var n = Y.length, dY = new Array(n);
+        for(var i=0;i<n;i++){
+          if(i===0)        dY[i] = (Y[1]-Y[0]) / (T[1]-T[0]);
+          else if(i===n-1) dY[i] = (Y[n-1]-Y[n-2]) / (T[n-1]-T[n-2]);
+          else             dY[i] = (Y[i+1]-Y[i-1]) / (T[i+1]-T[i-1]);
+        }
+        return dY;
+      }
+      // tracking error e = 0 - y1 = -y1 (target y1=0)
+      function eFromY1(Y1){ return Y1.map(function(v){ return -v; }); }
+      function deFromY1(Y1, Ts){
+        var dY = deriv(Y1, Ts);
+        return dY.map(function(v){ return -v; });
+      }
+      var Ts = _T;
+      var e_NC  = eFromY1(_Y1_NC),  de_NC  = deFromY1(_Y1_NC,  Ts);
+      var e_SMC = eFromY1(_Y1_SMC), de_SMC = deFromY1(_Y1_SMC, Ts);
+      var e_PS  = eFromY1(_Y1_PS),  de_PS  = deFromY1(_Y1_PS,  Ts);
+
+      // sliding line ė = -λ0 e, λ0 = 44.1
+      var LAM0 = 44.1;
+      var eMax = 130;
+      var lineE = [-eMax, eMax];
+      var lineDe = lineE.map(function(v){ return -LAM0*v; });
+
+      Plotly.newPlot('chart-phase', [
+        { x: e_NC,  y: de_NC,  mode:'lines', name:'No Control', line:{color:COL_NC,  width:1.0}, opacity:0.55 },
+        { x: e_SMC, y: de_SMC, mode:'lines', name:'SMC',        line:{color:COL_SMC, width:1.0}, opacity:0.75 },
+        { x: e_PS,  y: de_PS,  mode:'lines', name:'PSSMC',      line:{color:COL_PS,  width:1.4} },
+        { x: lineE, y: lineDe, mode:'lines', name:'ė = −λ₀ e',  line:{color: themeColors().muted, width:1.2, dash:'dash'} }
+      ], baseLayout({ xtitle: 'e(t) [μm]', ytitle: 'ė(t) [μm/s]' }), PLOTLY_CONFIG);
+    })();
+
+    // ────────────────────────────────────────────────
+    // CHART 5.7 — Live animation
+    // ────────────────────────────────────────────────
+    var animState = { i: 0, raf: null, running: false };
+    (function(){
+      var traces = [
+        { x: [], y: [], name:'No Control', mode:'lines', line:{color:COL_NC,  width:1.4} },
+        { x: [], y: [], name:'SMC',        mode:'lines', line:{color:COL_SMC, width:1.4} },
+        { x: [], y: [], name:'PSSMC',      mode:'lines', line:{color:COL_PS,  width:1.6} }
+      ];
+      var lay = baseLayout({ ytitle: 'y₁(t) [μm]' });
+      lay.xaxis.range = [0, T_ms[T_ms.length-1]];
+      lay.yaxis.range = [-140, 140];
+      Plotly.newPlot('chart-anim', traces, lay, PLOTLY_CONFIG);
+    })();
+
+    function animStep(){
+      if(!animState.running) return;
+      var step = 8; // points per frame
+      var iEnd = Math.min(animState.i + step, T_ms.length);
+      var xs = T_ms.slice(animState.i, iEnd);
+      var yNC  = _Y1_NC.slice(animState.i, iEnd);
+      var ySMC = _Y1_SMC.slice(animState.i, iEnd);
+      var yPS  = _Y1_PS.slice(animState.i, iEnd);
+      Plotly.extendTraces('chart-anim', {
+        x: [xs, xs, xs], y: [yNC, ySMC, yPS]
+      }, [0,1,2]);
+      animState.i = iEnd;
+     
+      
+     /* //Original
+      if(animState.i < T_ms.length){
+        animState.raf = requestAnimationFrame(animStep);
+      } else {
+        animState.running = false;
+      }
+*/
+/* Second Option: Looping animation*/
+    if(animState.i >= T_ms.length){
+        animState.i = 0; // rudi mwanzo lakini ENDELEA
+        Plotly.restyle('chart-anim', { x:[[]], y:[[]] }, [0,1,2]); // futa screen
+    }
+    animState.raf = requestAnimationFrame(animStep); // daima endelea!
+}
+
+
+    document.getElementById('anim-play').addEventListener('click', function(){
+      if(animState.i >= T_ms.length) animResetAll();
+      animState.running = true;
+      animStep();
+    });
+    document.getElementById('anim-pause').addEventListener('click', function(){
+      animState.running = false;
+      if(animState.raf) cancelAnimationFrame(animState.raf);
+    });
+    function animResetAll(){
+      animState.running = false;
+      if(animState.raf) cancelAnimationFrame(animState.raf);
+      animState.i = 0;
+      Plotly.restyle('chart-anim', { x: [[]], y: [[]] }, [0]);
+      Plotly.restyle('chart-anim', { x: [[]], y: [[]] }, [1]);
+      Plotly.restyle('chart-anim', { x: [[]], y: [[]] }, [2]);
+    }
+    document.getElementById('anim-reset').addEventListener('click', animResetAll);
+
+    // ────────────────────────────────────────────────
+    // THEME-AWARE REFRESH (on theme toggle)
+    // ────────────────────────────────────────────────
+    var themeBtn = document.querySelector('[data-theme-toggle]');
+    if(themeBtn){
+      themeBtn.addEventListener('click', function(){
+        setTimeout(function(){
+          var ids = ['chart-y1','chart-fc','chart-u','chart-ueq','chart-usw','chart-s','chart-adapt','chart-phase','chart-anim'];
+          var c = themeColors();
+          ids.forEach(function(id){
+            try {
+              Plotly.relayout(id, {
+                'font.color': c.text,
+                'xaxis.gridcolor': c.grid, 'xaxis.linecolor': c.axis, 'xaxis.zerolinecolor': c.axis,
+                'yaxis.gridcolor': c.grid, 'yaxis.linecolor': c.axis, 'yaxis.zerolinecolor': c.axis
+              });
+            } catch(e){}
+          });
+        }, 50);
+      });
+    }
+
+    // ════════════════════════════════════════════════════
+    // ════════════════ THE PLANT ════════════════════════
+    // ════════════════════════════════════════════════════
+    var Plant = (function(){
+      var state = {
+        on: false,
+        active: null,         // 'smc' | 'ps' | null
+        idx: 0,               // current data index
+        rampStart: 0,         // ms timestamp when power turned on
+        rampDuration: 5000,   // 5 s ramp-up
+        speed: 1,             // multiplier (1 = realtime, higher = slower)
+        raf: null,
+        lastFrame: 0,
+        // CRT canvas refs
+        cv: { y1:null, u:null, ueq:null, usw:null },
+        ctx:{ y1:null, u:null, ueq:null, usw:null },
+        // history buffers for plotting
+        hist: { y1:[], u:[], ueq:[], usw:[] },
+        maxHist: 1000
+      };
+
+      // ──────── DOM cache ────────
+      var dom = {};
+      function cacheDom(){
+        dom.pwr        = document.getElementById('plant-pwr');
+        dom.ledPwr     = document.getElementById('led-pwr');
+        dom.pwrText    = document.getElementById('pwr-text');
+        dom.rowSmc     = document.getElementById('row-smc');
+        dom.rowPs      = document.getElementById('row-ps');
+        dom.swSmc      = dom.rowSmc.querySelector('.slide-switch');
+        dom.swPs       = dom.rowPs.querySelector('.slide-switch');
+        dom.speedSl    = document.getElementById('speed-slider');
+        dom.speedVal   = document.getElementById('speed-val');
+        dom.pmAmp      = document.getElementById('pm-amp');
+        dom.pmEng      = document.getElementById('pm-eng');
+        dom.pmCht      = document.getElementById('pm-cht');
+        dom.pmTim      = document.getElementById('pm-tim');
+        dom.ctrlWrap   = document.getElementById('ctrl-charts-wrap');
+        dom.interMod   = document.getElementById('interlock-modal');
+        dom.interOk    = document.getElementById('interlock-ok');
+        state.cv.y1  = document.getElementById('plant-y1');
+        state.cv.u   = document.getElementById('plant-u');
+        state.cv.ueq = document.getElementById('plant-ueq');
+        state.cv.usw = document.getElementById('plant-usw');
+      }
+
+      function sizeCanvas(cv){
+        if(!cv) return;
+        var dpr = window.devicePixelRatio || 1;
+        var w = cv.clientWidth, h = cv.clientHeight;
+        cv.width = w * dpr; cv.height = h * dpr;
+        var ctx = cv.getContext('2d');
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        return ctx;
+      }
+      function sizeAllCanvases(){
+        state.ctx.y1  = sizeCanvas(state.cv.y1);
+        state.ctx.u   = sizeCanvas(state.cv.u);
+        state.ctx.ueq = sizeCanvas(state.cv.ueq);
+        state.ctx.usw = sizeCanvas(state.cv.usw);
+      }
+
+      // ──────── CRT background draw ────────
+      function drawCrtBg(ctx, cv, label){
+        if(!ctx||!cv) return;
+        var w = cv.clientWidth, h = cv.clientHeight;
+        ctx.fillStyle = '#0a1410'; ctx.fillRect(0,0,w,h);
+        // grid
+        ctx.strokeStyle = 'rgba(26,74,42,0.55)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(var x=0; x<=w; x+=Math.max(20, w/12)){ ctx.moveTo(x,0); ctx.lineTo(x,h); }
+        for(var y=0; y<=h; y+=Math.max(20, h/6)){ ctx.moveTo(0,y); ctx.lineTo(w,y); }
+        ctx.stroke();
+        // center line
+        ctx.strokeStyle = 'rgba(57,255,20,0.18)'; ctx.beginPath();
+        ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
+      }
+      function drawAllBg(){
+        drawCrtBg(state.ctx.y1,  state.cv.y1);
+        drawCrtBg(state.ctx.u,   state.cv.u);
+        drawCrtBg(state.ctx.ueq, state.cv.ueq);
+        drawCrtBg(state.ctx.usw, state.cv.usw);
+      }
+
+      // ──────── Active dataset selector ────────
+      // Returns { y1, u, ueq, usw } arrays for currently active controller.
+      // When no controller: returns 'no control' streams (zeros for u/ueq/usw).
+      function activeData(){
+        if(state.active === 'smc'){
+          return { y1: _Y1_SMC, u: _U_SMC, ueq: _UEQ_SMC, usw: _USW_SMC };
+        } else if(state.active === 'ps'){
+          return { y1: _Y1_PS,  u: _U_PS,  ueq: _UEQ_PS,  usw: _USW_PS };
+        } else {
+          // no controller engaged: show NC chatter
+          var Z = new Array(_T.length).fill(0);
+          return { y1: _Y1_NC, u: Z, ueq: Z, usw: Z };
+        }
+      }
+
+      // ──────── Render history line ────────
+      function drawLine(ctx, cv, hist, yMin, yMax, color, glow){
+        if(!ctx||!cv) return;
+        var w = cv.clientWidth, h = cv.clientHeight;
+        if(hist.length < 2) return;
+        var range = yMax - yMin;
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = color;
+        if(glow){ ctx.shadowColor = color; ctx.shadowBlur = 6; } else { ctx.shadowBlur = 0; }
+        ctx.beginPath();
+        for(var i=0; i<hist.length; i++){
+          var x = (i/(state.maxHist-1)) * w;
+          var v = hist[i];
+          var y = h - ((v - yMin)/range) * h;
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      function colorForActive(){
+        if(state.active === 'smc') return '#ffbf00';
+        if(state.active === 'ps')  return '#00ffff';
+        return '#39ff14';
+      }
+
+      // ──────── Main render frame ────────
+      function render(){
+        drawAllBg();
+        var col = colorForActive();
+        drawLine(state.ctx.y1,  state.cv.y1,  state.hist.y1,  -140, 140, col, true);
+        if(state.active){
+          drawLine(state.ctx.u,   state.cv.u,   state.hist.u,   -600, 600, col, true);
+          drawLine(state.ctx.ueq, state.cv.ueq, state.hist.ueq, -300, 300, col, true);
+          drawLine(state.ctx.usw, state.cv.usw, state.hist.usw, -600, 600, col, true);
+        }
+      }
+
+      // ──────── Metric update (~60Hz, flickery feel) ────────
+      function updateMetrics(){
+        if(!state.on){
+          dom.pmAmp.textContent = '— μm';
+          dom.pmEng.textContent = '— N';
+          dom.pmCht.textContent = '—';
+          dom.pmTim.textContent = '— ms';
+          return;
+        }
+        var d = activeData();
+        var i = state.idx;
+        // amplitude — peak in recent window
+        var winN = Math.min(200, state.hist.y1.length);
+        var pk = 0;
+        for(var k=state.hist.y1.length-winN; k<state.hist.y1.length; k++){
+          if(k>=0){ var a = Math.abs(state.hist.y1[k]); if(a>pk) pk=a; }
+        }
+        dom.pmAmp.textContent = pk.toFixed(1) + ' μm';
+
+        // energy — rms of U recent window
+        if(state.active){
+          var sumSq = 0, n = 0;
+          for(var k2=state.hist.u.length-winN; k2<state.hist.u.length; k2++){
+            if(k2>=0){ sumSq += state.hist.u[k2]*state.hist.u[k2]; n++; }
+          }
+          var rms = n>0 ? Math.sqrt(sumSq/n) : 0;
+          dom.pmEng.textContent = rms.toFixed(0) + ' N';
+
+          // chatter classification based on Usw variance
+          var swMax = 0;
+          for(var k3=state.hist.usw.length-winN; k3<state.hist.usw.length; k3++){
+            if(k3>=0){ var sa = Math.abs(state.hist.usw[k3]); if(sa>swMax) swMax=sa; }
+          }
+          var ch;
+          if(state.active === 'smc') ch = swMax > 300 ? 'HIGH' : 'MED';
+          else                       ch = swMax > 100 ? 'MED'  : 'LOW';
+          dom.pmCht.textContent = ch;
+        } else {
+          dom.pmEng.textContent = '0 N';
+          // no control = high chatter (just no controller-induced)
+          dom.pmCht.textContent = 'HIGH';
+        }
+
+        // time
+        var ms = (i / (_T.length-1)) * 10;
+        dom.pmTim.textContent = ms.toFixed(2) + ' ms';
+      }
+
+      // ──────── Animation loop ────────
+      function loop(ts){
+        if(!state.on){ return; }
+        if(!state.lastFrame) state.lastFrame = ts;
+        var dt = ts - state.lastFrame;
+        state.lastFrame = ts;
+
+        // ramp factor: 0 → 1 over rampDuration when first powered on
+        var rampF = Math.min(1, (ts - state.rampStart) / state.rampDuration);
+        // advance index: at 1× we want full window (10ms data) to last about 5s of real time
+        // baseRate (idx/s) = N / 5s = 200 idx/s. speed multiplier scales by 1/speed (slower at higher)
+        var baseRate = _T.length / 5000; // per ms real time
+        var advance  = baseRate * dt / Math.max(1, state.speed);
+        state.idx += advance;
+        if(state.idx >= _T.length) state.idx = state.idx - _T.length; // silent loop
+
+        var d = activeData();
+        var i = Math.floor(state.idx);
+        // push current sample, scaled by ramp
+        state.hist.y1.push((d.y1[i] || 0) * rampF);
+        state.hist.u.push((d.u[i]  || 0) * rampF);
+        state.hist.ueq.push((d.ueq[i]|| 0) * rampF);
+        state.hist.usw.push((d.usw[i]|| 0) * rampF);
+        if(state.hist.y1.length > state.maxHist){
+          state.hist.y1.shift(); state.hist.u.shift();
+          state.hist.ueq.shift(); state.hist.usw.shift();
+        }
+
+        render();
+        // metrics flicker — update at ~60Hz but with occasional skips for CRT feel
+        if(Math.random() > 0.05) updateMetrics();
+
+        state.raf = requestAnimationFrame(loop);
+      }
+
+      // ──────── Power on/off ────────
+      function powerOn(){
+        state.on = true;
+        state.idx = 0;
+        state.rampStart = performance.now();
+        state.lastFrame = 0;
+        state.hist = { y1:[], u:[], ueq:[], usw:[] };
+        dom.pwr.classList.add('on');
+        dom.ledPwr.classList.add('on');
+        dom.pwrText.textContent = 'ONLINE';
+        // enable rows
+        dom.rowSmc.classList.remove('disabled');
+        dom.rowPs.classList.remove('disabled');
+        sizeAllCanvases();
+        drawAllBg();
+        state.raf = requestAnimationFrame(loop);
+      }
+      function powerOff(){
+        state.on = false;
+        state.active = null;
+        if(state.raf) cancelAnimationFrame(state.raf);
+        dom.pwr.classList.remove('on');
+        dom.ledPwr.classList.remove('on');
+        dom.pwrText.textContent = 'STANDBY';
+        dom.rowSmc.classList.add('disabled');
+        dom.rowPs.classList.add('disabled');
+        dom.swSmc.classList.remove('on');
+        dom.swPs.classList.remove('on');
+        dom.rowSmc.classList.remove('engaged','amber');
+        dom.rowPs.classList.remove('engaged','cyan');
+        dom.ctrlWrap.classList.remove('show');
+        state.hist = { y1:[], u:[], ueq:[], usw:[] };
+        sizeAllCanvases();
+        drawAllBg();
+        updateMetrics();
+      }
+
+      // ──────── Switch handling ────────
+      function showInterlock(){
+        dom.interMod.classList.add('show');
+      }
+      function engage(which){
+        if(!state.on) return;
+        // mutual exclusion
+        if(state.active && state.active !== which){
+          showInterlock();
+          return;
+        }
+        // toggle off if same
+        if(state.active === which){
+          disengage();
+          return;
+        }
+        state.active = which;
+        if(which === 'smc'){
+          dom.swSmc.classList.add('on');
+          dom.rowSmc.classList.add('engaged','amber');
+        } else {
+          dom.swPs.classList.add('on');
+          dom.rowPs.classList.add('engaged','cyan');
+        }
+        dom.ctrlWrap.classList.add('show');
+        // recompute canvas sizes now that they are visible
+        setTimeout(function(){
+          state.ctx.u   = sizeCanvas(state.cv.u);
+          state.ctx.ueq = sizeCanvas(state.cv.ueq);
+          state.ctx.usw = sizeCanvas(state.cv.usw);
+          drawAllBg();
+        }, 30);
+      }
+      function disengage(){
+        state.active = null;
+        dom.swSmc.classList.remove('on');
+        dom.swPs.classList.remove('on');
+        dom.rowSmc.classList.remove('engaged','amber');
+        dom.rowPs.classList.remove('engaged','cyan');
+        dom.ctrlWrap.classList.remove('show');
+      }
+
+      // ──────── Wire events ────────
+      function wire(){
+        dom.pwr.addEventListener('click', function(){
+          if(state.on) powerOff(); else powerOn();
+        });
+        function switchHandler(which){
+          return function(e){
+            e.stopPropagation();
+            if(!state.on) return;
+            if(state.active && state.active !== which){ showInterlock(); return; }
+            if(state.active === which) disengage();
+            else engage(which);
+          };
+        }
+        dom.swSmc.addEventListener('click', switchHandler('smc'));
+        dom.swPs .addEventListener('click', switchHandler('ps'));
+        // clicking entire row also triggers switch
+        dom.rowSmc.addEventListener('click', function(e){
+          if(e.target.closest('.info-icon')) return;
+          if(e.target.closest('.slide-switch')) return; // already handled
+          if(!state.on) return;
+          if(state.active && state.active !== 'smc'){ showInterlock(); return; }
+          if(state.active === 'smc') disengage(); else engage('smc');
+        });
+        dom.rowPs.addEventListener('click', function(e){
+          if(e.target.closest('.info-icon')) return;
+          if(e.target.closest('.slide-switch')) return;
+          if(!state.on) return;
+          if(state.active && state.active !== 'ps'){ showInterlock(); return; }
+          if(state.active === 'ps') disengage(); else engage('ps');
+        });
+
+        dom.interOk.addEventListener('click', function(){ dom.interMod.classList.remove('show'); });
+
+        // speed
+        dom.speedSl.addEventListener('input', function(){
+          // 0..1000 → 1x..1000x slower
+          state.speed = 1 + Number(dom.speedSl.value);
+          dom.speedVal.textContent = state.speed.toFixed(0) + '×';
+        });
+
+        // info tooltips
+        document.querySelectorAll('.info-icon').forEach(function(btn){
+          btn.addEventListener('click', function(e){
+            e.stopPropagation();
+            var w = btn.getAttribute('data-info');
+            var msg = w === 'smc'
+              ? 'Classical Sliding-Mode Control. Fixed K=500 with sign(s). Strong but chatters in undamped systems.'
+              : 'Predictive Self-Sliding Mode Control (novel). Adaptive λ(t), Tp(t), φ(t). Smoother tanh(s/φ) law.';
+            showTooltip(btn, msg);
+          });
+        });
+
+        // window resize
+        window.addEventListener('resize', function(){
+          if(!state.on) return;
+          sizeAllCanvases();
+          drawAllBg();
+        });
+      }
+
+      // ──────── Info tooltip (simple) ────────
+      var tooltipEl = null;
+      function showTooltip(anchor, text){
+        if(tooltipEl){ tooltipEl.remove(); tooltipEl = null; }
+        tooltipEl = document.createElement('div');
+        tooltipEl.className = 'info-tooltip';
+        tooltipEl.textContent = text;
+        document.body.appendChild(tooltipEl);
+        var r = anchor.getBoundingClientRect();
+        tooltipEl.style.left = (r.right + 8) + 'px';
+        tooltipEl.style.top  = (r.top - 4) + 'px';
+        setTimeout(function(){
+          if(tooltipEl){ tooltipEl.remove(); tooltipEl = null; }
+        }, 4000);
+        document.addEventListener('click', function once(){
+          if(tooltipEl){ tooltipEl.remove(); tooltipEl = null; }
+          document.removeEventListener('click', once);
+        }, { once: true });
+      }
+
+      // ──────── Init on first open ────────
+      var initialized = false;
+      function init(){
+        if(initialized) return;
+        cacheDom();
+        sizeAllCanvases();
+        drawAllBg();
+        wire();
+        initialized = true;
+      }
+
+      // ──────── Overlay open/close hooks ────────
+      function onOpen(){
+        init();
+        // fresh start
+        if(state.on){ powerOff(); }
+        // re-size in case overlay was previously hidden when sized
+        setTimeout(function(){
+          sizeAllCanvases();
+          drawAllBg();
+        }, 30);
+      }
+      function onClose(){
+        if(state.on) powerOff();
+      }
+
+      return { onOpen: onOpen, onClose: onClose };
+    })();
+
+    // ──────── Hook Plant init to overlay open/close ────────
+    // main.js handles data-overlay/data-close-overlay; we observe the ol-plant element.
+    (function(){
+      var ol = document.getElementById('ol-plant');
+      if(!ol) return;
+      // observe the `hidden` attribute changes
+      var lastHidden = ol.hasAttribute('hidden');
+      var mo = new MutationObserver(function(){
+        var nowHidden = ol.hasAttribute('hidden');
+        if(lastHidden && !nowHidden){
+          Plant.onOpen();
+        } else if(!lastHidden && nowHidden){
+          Plant.onClose();
+        }
+        lastHidden = nowHidden;
+      });
+      mo.observe(ol, { attributes: true, attributeFilter: ['hidden'] });
+    })();
+
+  })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasprowiak Study — PSSMC Mathematics</title>
+  <meta name="description" content="Full mathematical derivation of the Predictive Smoothed Sliding Mode Controller for chatter suppression in CNC turning, based on the Kasprowiak two-DOF model.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <style>
+    /* ── PAGES POPUP ─────────────────────────────────────────── */
+    .pages-btn-wrap { position: relative; }
+
+    .pages-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: var(--text-sm);
+      padding: 0.62rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color var(--transition), background var(--transition), border-color var(--transition);
+    }
+    .pages-btn:hover { color: var(--color-text); background: var(--color-surface-2); }
+    .pages-btn svg { transition: transform 240ms cubic-bezier(0.16,1,0.3,1); }
+    .pages-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+    .pages-dropdown {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      min-width: 280px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      pointer-events: none;
+      transition: opacity 200ms cubic-bezier(0.16,1,0.3,1),
+                  transform 200ms cubic-bezier(0.16,1,0.3,1);
+    }
+    .pages-dropdown.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    .pages-dropdown-header {
+      padding: 0.75rem 1rem 0.5rem;
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--color-text-faint);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .pages-dropdown a,
+    .pages-dropdown span.pd-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      text-decoration: none;
+      transition: background var(--transition), color var(--transition);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .pages-dropdown a:last-child,
+    .pages-dropdown span.pd-item:last-child { border-bottom: none; }
+    .pages-dropdown a:hover { background: var(--color-surface-2); color: var(--color-text); }
+    .pages-dropdown a[aria-current="page"] {
+      background: rgba(122,92,58,0.07);
+      color: var(--color-primary-dark);
+      font-weight: 600;
+    }
+    .pd-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--color-text-faint);
+      flex-shrink: 0;
+    }
+    a[aria-current="page"] .pd-num {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+    .pd-label { flex: 1; line-height: 1.3; }
+    .pd-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(122,92,58,0.11);
+      color: var(--color-primary-dark);
+      font-weight: 500;
+    }
+    [data-theme="dark"] .pd-badge { background: rgba(196,154,106,0.15); color: #c49a6a; }
+
+    /* ── STUDY HERO ───────────────────────────────────────────── */
+    .study-hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+      padding: clamp(3rem, 8vw, 5rem) clamp(1rem, 4vw, 3rem);
+    }
+
+    .study-hero-copy h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-hero);
+      font-weight: 600;
+      line-height: 0.93;
+      margin: 0.3rem 0 var(--space-6);
+    }
+
+    .study-hero-copy .lead {
+      font-size: var(--text-lg);
+      color: var(--color-text-muted);
+      max-width: 52ch;
+      line-height: 1.65;
+      margin-bottom: var(--space-8);
+    }
+
+    /* Hero visual — waveform animation */
+    .study-hero-visual {
+      position: relative;
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+    }
+
+    .wave-ring {
+      position: absolute;
+      border: 1px solid rgba(122,92,58,0.18);
+      border-radius: 50%;
+      animation: pulse 8s ease-in-out infinite;
+    }
+    .wave-ring:nth-child(1) { width: 160px; height: 160px; }
+    .wave-ring:nth-child(2) { width: 280px; height: 280px; animation-delay: -2.5s; }
+    .wave-ring:nth-child(3) { width: 400px; height: 400px; animation-delay: -5s; }
+
+    .study-hero-card {
+      position: relative;
+      z-index: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 1.6rem 2rem;
+      min-width: 220px;
+      text-align: center;
+    }
+
+    .shc-label {
+      font-size: var(--text-xs);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 0.4rem;
+    }
+    .shc-value {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      color: var(--color-primary-dark);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .shc-sub {
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+    }
+
+    /* ── METRICS BAND (study version) ─────────────────────────── */
+    .study-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      padding: 0 clamp(1rem, 4vw, 3rem) var(--space-8);
+    }
+
+    /* ── CITATION BAND ────────────────────────────────────────── */
+    .citation-band {
+      background: var(--color-surface-2);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-6) clamp(1rem, 4vw, 3rem);
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .citation-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-sm);
+      background: rgba(122,92,58,0.10);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: var(--color-primary);
+    }
+    .citation-body { flex: 1; min-width: 200px; }
+    .citation-title {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.25rem;
+    }
+    .citation-meta {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+    .citation-link {
+      font-size: var(--text-xs);
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      transition: color var(--transition), background var(--transition);
+    }
+    .citation-link:hover { color: var(--color-primary-dark); background: var(--color-surface); }
+
+    /* ── ABSTRACT SECTION ─────────────────────────────────────── */
+    .abstract-section {
+      max-width: 1080px;
+      margin-inline: auto;
+      padding: clamp(3rem, 7vw, 5rem) clamp(1rem, 4vw, 3rem);
+    }
+
+    .abstract-section .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 600;
+      margin-bottom: var(--space-5);
+    }
+
+    .abstract-section p {
+      font-size: var(--text-lg);
+      color: var(--color-text-muted);
+      max-width: 68ch;
+      line-height: 1.75;
+      margin-bottom: var(--space-5);
+    }
+
+    /* ── PAGES GRID ───────────────────────────────────────────── */
+    .pages-section {
+      background: var(--color-surface-2);
+      border-top: 1px solid var(--color-border);
+      padding: clamp(3rem, 7vw, 5rem) clamp(1rem, 4vw, 3rem);
+    }
+
+    .pages-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: var(--space-8);
+    }
+
+    .page-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.6rem;
+      box-shadow: var(--shadow-sm);
+      text-align: left;
+      text-decoration: none;
+      color: inherit;
+      transition: transform var(--transition), box-shadow var(--transition);
+      min-height: 220px;
+    }
+    .page-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .page-card.pending {
+      background: var(--color-surface-2);
+      cursor: default;
+    }
+    .page-card.pending:hover { transform: none; box-shadow: var(--shadow-sm); }
+
+    .pc-number {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--color-text-faint);
+    }
+    .page-card h3 {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.1;
+    }
+    .page-card p {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      flex: 1;
+      line-height: 1.6;
+      max-width: 100%;
+    }
+    .pc-chapters {
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+      margin-top: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .pc-ch-tag {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(122,92,58,0.08);
+      color: var(--color-primary-dark);
+      font-weight: 500;
+    }
+    [data-theme="dark"] .pc-ch-tag { background: rgba(196,154,106,0.12); color: #c49a6a; }
+
+    /* Enter button on front page */
+    .enter-study-row {
+      display: flex;
+      justify-content: center;
+      padding: var(--space-10) clamp(1rem, 4vw, 3rem) clamp(3rem, 7vw, 5rem);
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 1000px) {
+      .study-hero { grid-template-columns: 1fr; }
+      .study-hero-visual { display: none; }
+      .study-metrics { grid-template-columns: 1fr 1fr; }
+      .pages-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .study-metrics,
+      .pages-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip link -->
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <!-- Brand -->
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring"/>
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave"/>
+        <path d="M18 22h12" class="mark-line"/>
+      </svg>
+      <span>PSSMC</span>
+    </a>
+
+    <!-- Nav -->
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="../index.html">Home</a>
+
+      <!-- Pages popup -->
+      <div class="pages-btn-wrap">
+        <button class="pages-btn" id="pagesBtn" aria-expanded="false" aria-haspopup="true">
+          Pages
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="pages-dropdown" id="pagesDropdown" role="menu">
+          <div class="pages-dropdown-header">PSSMC Mathematics — Kasprowiak</div>
+          <a href="Kasprowiak.html" aria-current="page" role="menuitem">
+            <span class="pd-num">★</span>
+            <span class="pd-label">Front Page</span>
+            <span class="pd-badge">Here</span>
+          </a>
+          <a href="page-1.html" role="menuitem">
+            <span class="pd-num">1</span>
+            <span class="pd-label">Two-DOF Model</span>
+          </a>
+          <a href="page-2.html" role="menuitem">
+            <span class="pd-num">2</span>
+            <span class="pd-label">Objective &amp; Sliding Surface</span>
+          </a>
+          <a href="page-3.html" role="menuitem">
+            <span class="pd-num">3</span>
+            <span class="pd-label">Full Control Law</span>
+          </a>
+          <a href="page-4.html" role="menuitem">
+            <span class="pd-num">4</span>
+            <span class="pd-label">Lyapunov &amp; Parameters</span>
+          </a>
+          <a href="page-5.html" role="menuitem">
+            <span class="pd-num">5</span>
+            <span class="pd-label">Results &amp; Discussion</span>
+            <span class="pd-badge">Soon</span>
+          </a>
+        </div>
+      </div>
+
+      <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+  <!-- ── MAIN ───────────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="study-hero" aria-label="Study introduction">
+      <div class="study-hero-copy">
+        <p class="eyebrow">PSSMC Mathematics — Kasprowiak Study</p>
+        <h1>Vibration&nbsp;Suppression in&nbsp;CNC&nbsp;Turning</h1>
+        <p class="lead">
+          A complete mathematical derivation of the Predictive Smoothed Sliding Mode Controller —
+          from the two-DOF cutting model through control law synthesis to Lyapunov-certified stability.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="page-1.html">Begin</a>
+          <button class="btn btn-secondary" type="button" data-overlay="ol-about">About this study</button>
+        </div>
+      </div>
+
+      <div class="study-hero-visual" aria-hidden="true">
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <div class="wave-ring"></div>
+        <div class="study-hero-card">
+          <p class="shc-label">Study material</p>
+          <p class="shc-value">AISI&nbsp;1045</p>
+          <p class="shc-sub">Medium-carbon steel — CNC turning</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- METRICS BAND -->
+    <div class="study-metrics" aria-label="Key study numbers">
+      <article class="metric">
+        <span class="metric-value" data-count="9">9</span>
+        <span class="metric-label">Chapters derived</span>
+      </article>
+      <article class="metric">
+        <span class="metric-value" data-count="7">7</span>
+        <span class="metric-label">System states</span>
+      </article>
+      <article class="metric">
+        <span class="metric-value">0.0227&thinsp;s</span>
+        <span class="metric-label">Cutting time constant τ<sub>c</sub></span>
+      </article>
+      <article class="metric">
+        <span class="metric-value">0.17&thinsp;s</span>
+        <span class="metric-label">Servo time constant τ<sub>s</sub></span>
+      </article>
+    </div>
+
+    <!-- CITATION BAND -->
+    <div class="citation-band">
+      <div class="citation-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      <div class="citation-body">
+        <p class="citation-title">Vibration Suppression with Use of Input Shaping Control in Machining</p>
+        <p class="citation-meta">Kasprowiak, M.; Parus, A.; Hoffmann, M. &nbsp;·&nbsp; <em>Sensors</em> 2022, 22, 2186 &nbsp;·&nbsp; West Pomeranian University of Technology, Szczecin</p>
+      </div>
+      <a class="citation-link" href="https://doi.org/10.3390/s22062186" target="_blank" rel="noopener noreferrer">
+        DOI: 10.3390/s22062186 ↗
+      </a>
+    </div>
+
+    <!-- ABSTRACT -->
+    <section class="abstract-section" aria-labelledby="abstract-heading">
+      <p class="eyebrow">Study overview</p>
+      <h2 id="abstract-heading" class="section-title">What this study derives</h2>
+      <p>
+        The foundation is the two-degree-of-freedom tool–workpiece model introduced by Kasprowiak, Parus,
+        and Hoffmann. The model treats the cutting system as two coupled masses connected to a rigid frame
+        by spring-damper pairs and linked through the cutting force — capturing the regenerative mechanism
+        at the heart of chatter.
+      </p>
+      <p>
+        From this plant, a Predictive Smoothed Sliding Mode Controller (PSSMC) is designed step by step:
+        the tracking error and sliding surface are defined, the equivalent and switching control components
+        are derived, a first-order Taylor prediction compensates for actuator delay, and three adaptive
+        parameters — λ, T, and φ — self-tune in real time based on the instantaneous surface value.
+      </p>
+      <p>
+        The complete seven-dimensional closed-loop system is then shown to be practically stable via a
+        composite Lyapunov argument, guaranteeing convergence to an arbitrarily small neighbourhood of
+        the sliding surface for any bounded disturbance.
+      </p>
+      <div class="chip-row">
+        <button class="chip" type="button" data-overlay="ol-chatter">What is chatter?</button>
+        <button class="chip" type="button" data-overlay="ol-smc">Sliding mode control</button>
+        <button class="chip" type="button" data-overlay="ol-adaptive">Adaptive parameters</button>
+        <button class="chip" type="button" data-overlay="ol-lyapunov">Lyapunov stability</button>
+      </div>
+    </section>
+
+    <!-- PAGES GRID -->
+    <section class="pages-section" aria-labelledby="pages-heading">
+      <div style="max-width:1080px; margin-inline:auto;">
+        <p class="eyebrow">Study structure</p>
+        <h2 id="pages-heading" class="section-title">Five pages · Nine chapters</h2>
+
+        <div class="pages-grid">
+
+          <!-- Page 1 -->
+          <a class="page-card fade-in" href="page-1.html">
+            <span class="pc-number">Page 1</span>
+            <h3>The Two-DOF Model</h3>
+            <p>Physical system description, equations of motion, cutting force model, and state-space representation of the uncontrolled plant.</p>
+            <div class="pc-chapters">
+              <span class="pc-ch-tag">Ch. 1</span>
+            </div>
+          </a>
+
+          <!-- Page 2 -->
+          <a class="page-card fade-in" href="page-2.html">
+            <span class="pc-number">Page 2</span>
+            <h3>Objective &amp; Sliding Surface</h3>
+            <p>Control objective, tracking error definition, sliding surface design, and the exponential convergence guarantee it encodes.</p>
+            <div class="pc-chapters">
+              <span class="pc-ch-tag">Ch. 2</span>
+              <span class="pc-ch-tag">Ch. 3</span>
+            </div>
+          </a>
+
+          <!-- Page 3 -->
+          <a class="page-card fade-in" href="page-3.html">
+            <span class="pc-number">Page 3</span>
+            <h3>Full Control Law</h3>
+            <p>Equivalent control derivation, smooth tanh switching law, first-order Taylor prediction, and the three adaptive parameter laws — assembled into the complete PSSMC.</p>
+            <div class="pc-chapters">
+              <span class="pc-ch-tag">Ch. 4</span>
+              <span class="pc-ch-tag">Ch. 5</span>
+              <span class="pc-ch-tag">Ch. 6</span>
+              <span class="pc-ch-tag">Ch. 7</span>
+            </div>
+          </a>
+
+          <!-- Page 4 -->
+          <a class="page-card fade-in" href="page-4.html">
+            <span class="pc-number">Page 4</span>
+            <h3>Lyapunov &amp; Parameters</h3>
+            <p>Composite Lyapunov candidate function, time-derivative bound, practical stability proof, and the full identified system parameter table.</p>
+            <div class="pc-chapters">
+              <span class="pc-ch-tag">Ch. 8</span>
+              <span class="pc-ch-tag">Ch. 9</span>
+            </div>
+          </a>
+
+          <!-- Page 5 -->
+          <a class="page-card fade-in" href="page-5.html">
+            <span class="pc-number">Page 5</span>
+            <h3>Results &amp; Discussion</h3>
+            <p>MATLAB/Simulink closed-loop simulations comparing PSSMC, conventional SMC, and PID — with interactive Plotly charts and performance analysis.</p>
+            <div class="pc-chapters">
+              <span class="pc-ch-tag">Ch. 10</span>
+              <span style="font-size:var(--text-xs);color:var(--color-text-faint);margin-left:0.3rem;">— coming soon</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ENTER STUDY ROW -->
+    <div class="enter-study-row">
+      <a class="btn btn-primary" href="page-1.html" style="padding:1rem 2.2rem;font-size:var(--text-base);">
+        Enter Study — Page 1
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:0.3rem;">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">
+      Kasprowiak Study — part of the PSSMC Mathematics series.
+      University of Dar es Salaam, Department of Mechanical and Industrial Engineering.
+    </p>
+  </footer>
+
+  <!-- ── OVERLAYS ───────────────────────────────────────────────── -->
+
+  <!-- About -->
+  <div class="overlay" id="ol-about" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-about-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-about-title">About this study</h2>
+      <p>
+        This archive documents the complete mathematical derivation of the <strong>Predictive Smoothed
+        Sliding Mode Controller (PSSMC)</strong> for chatter suppression in CNC turning of AISI 1045 steel.
+      </p>
+      <p>
+        The work is carried out by <strong>Shuma Fadhil</strong> (Reg&nbsp;2024&#8209;06&#8209;02219) at the
+        University of Dar es Salaam, Department of Mechanical and Industrial Engineering. It builds
+        directly on the two-DOF cutting model published by Kasprowiak, Parus, and Hoffmann (2022).
+      </p>
+    </div>
+  </div>
+
+  <!-- Chatter -->
+  <div class="overlay" id="ol-chatter" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-chatter-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-chatter-title">Chatter vibration</h2>
+      <p>
+        Chatter is a self-excited machining vibration driven by a regenerative mechanism — the tool cuts
+        a surface that already carries waviness from the previous pass. Each cut can amplify the waviness
+        left by the last one, leading to destructive oscillations that degrade surface quality and accelerate
+        tool wear.
+      </p>
+      <p>
+        Suppressing it means actively adjusting a process parameter — in this study, depth of cut — to
+        steer the system away from the unstable regime.
+      </p>
+    </div>
+  </div>
+
+  <!-- SMC -->
+  <div class="overlay" id="ol-smc" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-smc-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-smc-title">Sliding mode control</h2>
+      <p>
+        Sliding mode control drives the system state onto a designer-chosen surface in state space and keeps
+        it there. Once on the surface, closed-loop behaviour is governed entirely by the surface geometry —
+        independent of plant parameter variations and bounded disturbances.
+      </p>
+      <p>
+        The <em>predictive smoothed</em> variant adds a Taylor-expansion preview horizon that anticipates
+        vibration growth before it becomes severe, and replaces discontinuous switching with a smooth
+        hyperbolic tangent to eliminate actuator chattering.
+      </p>
+    </div>
+  </div>
+
+  <!-- Adaptive -->
+  <div class="overlay" id="ol-adaptive" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-adaptive-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-adaptive-title">Adaptive parameters</h2>
+      <p>
+        Standard SMC uses fixed gains — a fixed gain large enough for worst-case chatter is unnecessarily
+        aggressive during calm cutting. The PSSMC resolves this by making three parameters continuously
+        adaptive: the sliding gain λ, the prediction horizon T, and the boundary layer thickness φ.
+      </p>
+      <p>
+        All three are driven by the instantaneous sliding surface value s(t). When chatter is severe,
+        they adapt rapidly. When the system has converged, they freeze — the controller learns the
+        appropriate gains for the current operating condition automatically.
+      </p>
+    </div>
+  </div>
+
+  <!-- Lyapunov -->
+  <div class="overlay" id="ol-lyapunov" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-lyapunov-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-lyapunov-title">Lyapunov stability</h2>
+      <p>
+        A Lyapunov proof provides a mathematical guarantee: for any initial condition and any bounded
+        disturbance, the system converges to a neighbourhood of the sliding surface and remains there.
+        This transforms an empirically good controller into a theoretically certified one.
+      </p>
+      <p>
+        The composite Lyapunov candidate accounts for both the sliding surface error and the parameter
+        adaptation errors — ensuring all adaptive parameters remain bounded and the tracking error
+        converges to zero on the sliding surface.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── SCRIPTS ─────────────────────────────────────────────────── -->
+  <script>
+    // ── THEME TOGGLE
+    (function(){
+      const root = document.documentElement;
+      const btn  = document.querySelector('[data-theme-toggle]');
+      const moonSVG = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+      const sunSVG  = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+      let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      function apply(t){ root.setAttribute('data-theme', t); if(btn) btn.innerHTML = t==='dark' ? sunSVG : moonSVG; }
+      apply(theme);
+      if(btn) btn.addEventListener('click', ()=>{ theme = theme==='dark'?'light':'dark'; apply(theme); });
+    })();
+
+    // ── PAGES POPUP
+    (function(){
+      const btn = document.getElementById('pagesBtn');
+      const dd  = document.getElementById('pagesDropdown');
+      if(!btn || !dd) return;
+      function open(){ dd.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+      function close(){ dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+      btn.addEventListener('click', e=>{ e.stopPropagation(); dd.classList.contains('open') ? close() : open(); });
+      document.addEventListener('click', ()=> close());
+      document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+    })();
+
+    // ── OVERLAYS
+    (function(){
+      function openOverlay(id){ const p=document.getElementById(id); if(!p) return; p.hidden=false; document.body.style.overflow='hidden'; const f=p.querySelector('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'); if(f) f.focus(); }
+      function closeAll(){ document.querySelectorAll('.overlay').forEach(el=>{el.hidden=true;}); document.body.style.overflow=''; }
+      document.querySelectorAll('[data-overlay]').forEach(t=> t.addEventListener('click',()=> openOverlay(t.getAttribute('data-overlay'))));
+      document.querySelectorAll('[data-close-overlay]').forEach(el=> el.addEventListener('click', closeAll));
+      document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
+    })();
+
+    // ── COUNT-UP
+    (function(){
+      const els = document.querySelectorAll('[data-count]');
+      if(!els.length) return;
+      const obs = new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(!entry.isIntersecting) return;
+          const el = entry.target;
+          const target = parseFloat(el.dataset.count);
+          const isFloat = el.dataset.count.includes('.');
+          const dec = isFloat ? el.dataset.count.split('.')[1].length : 0;
+          const duration = 900;
+          let startTime = null;
+          function tick(ts){ if(!startTime) startTime=ts; const p=Math.min((ts-startTime)/duration,1); el.textContent=(target*(1-Math.pow(1-p,3))).toFixed(dec); if(p<1) requestAnimationFrame(tick); }
+          requestAnimationFrame(tick);
+          obs.unobserve(el);
+        });
+      }, {threshold:0.5});
+      els.forEach(el=> obs.observe(el));
+    })();
+  </script>
+
+</body>
+</html>

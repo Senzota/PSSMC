@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>m₁ &amp; m₂ — Live Animation · PSSMC Mathematics</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════════
+       OUR DESIGN TOKENS (warm parchment / brown)
+    ══════════════════════════════════════════════ */
+    :root, [data-theme="light"] {
+      --color-bg:             #faf8f3;
+      --color-surface:        #fffdf9;
+      --color-surface-2:      #f3ede2;
+      --color-surface-offset: #ede8df;
+      --color-divider:        #ddd8ce;
+      --color-border:         rgba(58,43,26,0.13);
+      --color-text:           #221a13;
+      --color-text-muted:     #68594e;
+      --color-text-faint:     #b0a090;
+      --color-primary:        #7a5c3a;
+      --color-primary-hover:  #5e4328;
+      --color-primary-dark:   #52371c;
+      --color-primary-hl:     rgba(122,92,58,0.10);
+      --color-gold:           #c28a00;
+      /* glows — kept exactly as original */
+      --color-chatter:        #c0392b;
+      --color-chatter-glow:   rgba(192,57,43,0.35);
+      --color-controlled:     #01696f;
+      --color-controlled-glow:rgba(1,105,111,0.35);
+      --shadow-sm: 0 6px 18px rgba(54,38,20,0.06);
+      --shadow-md: 0 12px 32px rgba(54,38,20,0.09);
+      --shadow-lg: 0 20px 56px rgba(54,38,20,0.13);
+      --radius-sm: 0.375rem; --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;  --radius-xl: 1rem;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'Inter', 'Helvetica Neue', sans-serif;
+      --text-xs:   clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm:   clamp(0.875rem,0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem,    0.95rem+ 0.25vw, 1.125rem);
+      --text-lg:   clamp(1.125rem,1rem   + 0.75vw, 1.5rem);
+      --text-xl:   clamp(1.5rem,  1.2rem + 1.25vw, 2.25rem);
+      --text-2xl:  clamp(2rem,    1.2rem + 2.5vw,  3.5rem);
+      --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem;
+      --space-10: 2.5rem; --space-12: 3rem;
+      --transition: 200ms cubic-bezier(0.16,1,0.3,1);
+    }
+
+    [data-theme="dark"] {
+      --color-bg:             #141210;
+      --color-surface:        #1b1814;
+      --color-surface-2:      #231f1a;
+      --color-surface-offset: #1d1c1a;
+      --color-divider:        #262523;
+      --color-border:         rgba(245,230,210,0.10);
+      --color-text:           #f0e8dc;
+      --color-text-muted:     #c0a888;
+      --color-text-faint:     #7a6a58;
+      --color-primary:        #c49a6a;
+      --color-primary-hover:  #d4aa7a;
+      --color-primary-dark:   #e8c9a0;
+      --color-primary-hl:     rgba(196,154,106,0.12);
+      --color-gold:           #e8af34;
+      --color-chatter:        #e05252;
+      --color-chatter-glow:   rgba(224,82,82,0.4);
+      --color-controlled:     #4f98a3;
+      --color-controlled-glow:rgba(79,152,163,0.4);
+      --shadow-sm: 0 6px 18px rgba(0,0,0,0.22);
+      --shadow-md: 0 12px 32px rgba(0,0,0,0.32);
+      --shadow-lg: 0 20px 56px rgba(0,0,0,0.44);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --color-bg:#141210; --color-surface:#1b1814; --color-surface-2:#231f1a;
+        --color-border:rgba(245,230,210,0.10); --color-text:#f0e8dc;
+        --color-text-muted:#c0a888; --color-text-faint:#7a6a58;
+        --color-primary:#c49a6a; --color-primary-dark:#e8c9a0;
+        --color-primary-hl:rgba(196,154,106,0.12);
+        --color-chatter:#e05252; --color-chatter-glow:rgba(224,82,82,0.4);
+        --color-controlled:#4f98a3; --color-controlled-glow:rgba(79,152,163,0.4);
+      }
+    }
+
+    /* ══ BASE RESET ══ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--color-text);
+      background: var(--color-bg);
+      min-height: 100dvh;
+      line-height: 1.6;
+      animation: pageFadeIn 0.4s ease both;
+      width: 90%; overflow-x: hidden;
+      margin: 0 auto;
+      position: relative;
+
+    }
+    @keyframes pageFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-leaving {
+      opacity: 0; transform: translateY(-6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+    img, svg { display: block; max-width: 100%; }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ══ OUR SITE HEADER ══ */
+    .site-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.9rem clamp(1rem,4vw,3rem);
+      position: sticky; top: 0; z-index: 20;
+      background: color-mix(in oklch, var(--color-bg) 80%, transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .brand-mark {
+      display: flex; align-items: center; gap: 0.7rem;
+      font-weight: 700; font-size: var(--text-sm);
+      letter-spacing: 0.08em; text-decoration: none; color: inherit;
+    }
+    .brand-mark svg { width: 36px; height: 36px; }
+    .mark-ring, .mark-wave, .mark-line {
+      fill: none; stroke: var(--color-primary);
+      stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .header-nav { display: flex; align-items: center; gap: 0.5rem; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-size: var(--text-sm); padding: 0.62rem 0.9rem;
+      border-radius: 999px; border: 1px solid var(--color-border);
+      background: var(--color-surface); color: var(--color-text-muted);
+      cursor: pointer; white-space: nowrap;
+      transition: color var(--transition), background var(--transition),
+                  transform var(--transition);
+    }
+    .back-btn:hover { color: var(--color-text); background: var(--color-surface-2); }
+    .theme-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      display: grid; place-items: center; flex-shrink: 0;
+      transition: background var(--transition);
+    }
+    .theme-btn:hover { background: var(--color-surface-2); }
+
+    /* ══ HERO ══ */
+    .hero {
+      text-align: center;
+      padding: clamp(3rem,8vw,5rem) clamp(1rem,4vw,2rem) clamp(2rem,5vw,3rem);
+      max-width: 860px; margin-inline: auto;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--color-primary);
+      background: var(--color-primary-hl); border-radius: 999px;
+      padding: 0.35rem 0.9rem; margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl); font-weight: 700;
+      line-height: 1.1; margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: var(--text-base); color: var(--color-text-muted);
+      max-width: 60ch; margin-inline: auto; line-height: 1.75;
+    }
+
+    /* ══ MODE TABS ══ */
+    .mode-selector {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem; flex-wrap: wrap;
+      padding: 0 clamp(1rem,4vw,2rem) 2rem;
+    }
+    .mode-tab {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.4rem; border-radius: 999px;
+      border: 1.5px solid var(--color-border);
+      font-size: var(--text-sm); font-weight: 500;
+      background: var(--color-surface); color: var(--color-text-muted);
+      transition: all 200ms cubic-bezier(0.16,1,0.3,1);
+    }
+    .mode-tab:hover { color: var(--color-text); border-color: var(--color-text-faint); }
+    .mode-tab.active-chatter {
+      background: color-mix(in oklch, #c0392b 12%, var(--color-surface));
+      border-color: var(--color-chatter); color: var(--color-chatter);
+      box-shadow: 0 0 18px var(--color-chatter-glow);
+    }
+    .mode-tab.active-controlled {
+      background: color-mix(in oklch, var(--color-controlled) 12%, var(--color-surface));
+      border-color: var(--color-controlled); color: var(--color-controlled);
+      box-shadow: 0 0 18px var(--color-controlled-glow);
+    }
+    .mode-tab.active-compare {
+      background: color-mix(in oklch, var(--color-gold) 12%, var(--color-surface));
+      border-color: var(--color-gold); color: var(--color-gold);
+      box-shadow: 0 0 18px rgba(194,138,0,0.3);
+    }
+    .mode-dot { width: 8px; height: 8px; border-radius: 50%; transition: background 200ms; }
+    .dot-chatter    { background: var(--color-chatter); }
+    .dot-controlled { background: var(--color-controlled); }
+    .dot-compare    { background: var(--color-gold); }
+
+    /* ══ STAGE ══ */
+    .stage-wrap {
+      max-width: 1100px; margin-inline: auto;
+      padding: 0 clamp(1rem,4vw,2rem);
+    }
+    .diagrams-row { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    .diagrams-row.compare-mode { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 700px) { .diagrams-row.compare-mode { grid-template-columns: 1fr; } }
+
+    /* ══ DIAGRAM CARD ══ */
+    .diagram-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: clamp(1.25rem,3vw,2rem);
+      box-shadow: var(--shadow-md);
+      transition: box-shadow 400ms;
+      overflow: hidden;
+    }
+    .diagram-card.chatter-card {
+      border-color: color-mix(in oklch, var(--color-chatter) 40%, transparent);
+      box-shadow: var(--shadow-md), 0 0 30px var(--color-chatter-glow);
+    }
+    .diagram-card.controlled-card {
+      border-color: color-mix(in oklch, var(--color-controlled) 40%, transparent);
+      box-shadow: var(--shadow-md), 0 0 30px var(--color-controlled-glow);
+    }
+    .card-label {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .card-label.chatter-label  { color: var(--color-chatter); }
+    .card-label.controlled-label { color: var(--color-controlled); }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      animation: pulse-dot-anim 1.2s ease-in-out infinite;
+    }
+    .chatter-dot    { background: var(--color-chatter); animation-duration: 0.4s; }
+    .controlled-dot { background: var(--color-controlled); }
+    @keyframes pulse-dot-anim {
+      0%,100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.6; }
+    }
+    .diagram-svg { width: 100%; }
+    .diagram-caption {
+      font-size: var(--text-xs); color: var(--color-text-muted);
+      margin-top: 0.75rem; line-height: 1.6;
+    }
+
+    /* ══ ANIMATION KEYFRAMES ══ */
+    @keyframes chatter-m1 {
+      0%{transform:translateX(0)} 10%{transform:translateX(14px)} 20%{transform:translateX(-16px)}
+      30%{transform:translateX(18px)} 40%{transform:translateX(-20px)} 50%{transform:translateX(22px)}
+      60%{transform:translateX(-24px)} 70%{transform:translateX(22px)} 80%{transform:translateX(-18px)}
+      90%{transform:translateX(14px)} 100%{transform:translateX(0)}
+    }
+    @keyframes chatter-m2 {
+      0%{transform:translateX(0)} 10%{transform:translateX(-12px)} 20%{transform:translateX(15px)}
+      30%{transform:translateX(-18px)} 40%{transform:translateX(20px)} 50%{transform:translateX(-22px)}
+      60%{transform:translateX(20px)} 70%{transform:translateX(-17px)} 80%{transform:translateX(14px)}
+      90%{transform:translateX(-11px)} 100%{transform:translateX(0)}
+    }
+    @keyframes chatter-spring1 {
+      0%,100%{transform:scaleX(1)} 25%{transform:scaleX(1.18)} 50%{transform:scaleX(0.78)} 75%{transform:scaleX(1.22)}
+    }
+    @keyframes chatter-spring2 {
+      0%,100%{transform:scaleX(1)} 25%{transform:scaleX(0.80)} 50%{transform:scaleX(1.20)} 75%{transform:scaleX(0.76)}
+    }
+    @keyframes chatter-force {
+      0%,100%{opacity:1;transform:scaleX(1)} 30%{transform:scaleX(1.4);opacity:1}
+      60%{transform:scaleX(0.5);opacity:0.6} 80%{transform:scaleX(1.6);opacity:1}
+    }
+    @keyframes chatter-arrow-y1 { 0%,100%{transform:translateX(0)} 50%{transform:translateX(18px)} }
+    @keyframes chatter-arrow-y2 { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-18px)} }
+    @keyframes card-shake {
+      0%,100%{transform:translateX(0) rotate(0)} 15%{transform:translateX(-2px) rotate(-0.3deg)}
+      30%{transform:translateX(3px) rotate(0.3deg)} 45%{transform:translateX(-3px) rotate(-0.2deg)}
+      60%{transform:translateX(2px) rotate(0.2deg)} 75%{transform:translateX(-2px) rotate(-0.1deg)}
+    }
+    @keyframes ctrl-m1 { 0%,100%{transform:translateX(0)} 25%{transform:translateX(3px)} 75%{transform:translateX(-3px)} }
+    @keyframes ctrl-m2 { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+    @keyframes ctrl-spring1 { 0%,100%{transform:scaleX(1)} 25%{transform:scaleX(1.03)} 75%{transform:scaleX(0.97)} }
+    @keyframes ctrl-spring2 { 0%,100%{transform:scaleX(1)} 25%{transform:scaleX(0.97)} 75%{transform:scaleX(1.03)} }
+    @keyframes ctrl-force  { 0%,100%{opacity:0.7;transform:scaleX(1)} 50%{opacity:1;transform:scaleX(1.06)} }
+    @keyframes ctrl-arrow-y1 { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
+    @keyframes ctrl-arrow-y2 { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-4px)} }
+
+    /* class-driven activation */
+    .chatter-anim .mass-m1-group { animation: chatter-m1 0.45s cubic-bezier(0.36,0.07,0.19,0.97) infinite; }
+    .chatter-anim .mass-m2-group { animation: chatter-m2 0.45s cubic-bezier(0.36,0.07,0.19,0.97) infinite; animation-delay:0.08s; }
+    .chatter-anim .spring1-group { animation: chatter-spring1 0.45s ease-in-out infinite; }
+    .chatter-anim .spring2-group { animation: chatter-spring2 0.45s ease-in-out infinite; animation-delay:0.08s; }
+    .chatter-anim .force-group   { animation: chatter-force   0.45s ease-in-out infinite; }
+    .chatter-anim .arrow-y1      { animation: chatter-arrow-y1 0.45s ease-in-out infinite; }
+    .chatter-anim .arrow-y2      { animation: chatter-arrow-y2 0.45s ease-in-out infinite; animation-delay:0.08s; }
+    .chatter-anim                { animation: card-shake 0.45s ease-in-out infinite; }
+    .controlled-anim .mass-m1-group { animation: ctrl-m1 1.8s ease-in-out infinite; }
+    .controlled-anim .mass-m2-group { animation: ctrl-m2 1.8s ease-in-out infinite; animation-delay:0.2s; }
+    .controlled-anim .spring1-group { animation: ctrl-spring1 1.8s ease-in-out infinite; }
+    .controlled-anim .spring2-group { animation: ctrl-spring2 1.8s ease-in-out infinite; animation-delay:0.2s; }
+    .controlled-anim .force-group   { animation: ctrl-force   1.8s ease-in-out infinite; }
+    .controlled-anim .arrow-y1      { animation: ctrl-arrow-y1 1.8s ease-in-out infinite; }
+    .controlled-anim .arrow-y2      { animation: ctrl-arrow-y2 1.8s ease-in-out infinite; animation-delay:0.2s; }
+
+    /* ══ CONTROLS ══ */
+    .controls-row {
+      max-width: 1100px; margin-inline: auto;
+      padding: 1.5rem clamp(1rem,4vw,2rem) 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .control-group { display: flex; align-items: center; gap: 0.75rem; }
+    .control-label {
+      font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--color-text-muted); white-space: nowrap;
+    }
+    .speed-btns { display: flex; gap: 0.4rem; }
+    .speed-btn {
+      padding: 0.3rem 0.75rem; border-radius: 999px;
+      border: 1px solid var(--color-border);
+      font-size: var(--text-xs); font-weight: 600;
+      background: var(--color-surface-2); color: var(--color-text-muted);
+      transition: all var(--transition);
+    }
+    .speed-btn.active, .speed-btn:hover {
+      background: var(--color-primary-hl); color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+    .pause-btn {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 1rem; border-radius: 999px;
+      border: 1px solid var(--color-border);
+      font-size: var(--text-xs); font-weight: 600;
+      background: var(--color-surface-2); color: var(--color-text-muted);
+      transition: all var(--transition);
+    }
+    .pause-btn:hover { color: var(--color-text); border-color: var(--color-text-faint); }
+    .pause-btn.paused {
+      background: var(--color-primary-hl); color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    /* ══ INFO GRID ══ */
+    .info-grid {
+      max-width: 1100px; margin-inline: auto;
+      padding: 2rem clamp(1rem,4vw,2rem);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(260px,100%), 1fr));
+      gap: 1rem;
+    }
+    .info-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .info-card h3 {
+      font-size: var(--text-sm); font-weight: 700; margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .info-card p { font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.65; }
+    .tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      padding: 0.15rem 0.55rem; border-radius: 999px;
+      letter-spacing: 0.07em; text-transform: uppercase;
+    }
+    .tag-red      { background: color-mix(in oklch,var(--color-chatter) 18%,var(--color-surface)); color: var(--color-chatter); }
+    .tag-teal     { background: color-mix(in oklch,var(--color-controlled) 14%,var(--color-surface)); color: var(--color-controlled); }
+    .tag-gold     { background: color-mix(in oklch,var(--color-gold) 18%,var(--color-surface)); color: var(--color-gold); }
+
+    /* ══ WAVEFORM ══ */
+    .wave-section {
+      max-width: 1100px; margin-inline: auto;
+      padding: 0 clamp(1rem,4vw,2rem) 2rem;
+    }
+    .wave-section h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-lg); font-weight: 600;
+      margin-bottom: 1rem; color: var(--color-text-muted);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .wave-canvas-wrap {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    canvas { display: block; width: 100%; height: 120px; }
+
+    /* ══ METERS ══ */
+    .meter-row {
+      max-width: 1100px; margin-inline: auto;
+      padding: 0 clamp(1rem,4vw,2rem) 2rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem;
+    }
+    .meter-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+    }
+    .meter-label {
+      font-size: var(--text-xs); font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-text-muted); margin-bottom: 0.5rem;
+    }
+    .meter-bar-bg { height: 10px; background: var(--color-surface-offset); border-radius: 999px; overflow: hidden; }
+    .meter-bar-fill { height: 100%; border-radius: 999px; transition: width 100ms linear; }
+    .meter-value { font-size: var(--text-sm); font-weight: 700; margin-top: 0.35rem; }
+
+    /* ══ FOOTER ══ */
+    .site-footer {
+      border-top: 1px solid var(--color-divider);
+      padding: 1.5rem clamp(1rem,4vw,2rem);
+      text-align: center;
+      font-size: var(--text-xs); color: var(--color-text-faint);
+    }
+    .footer-brand {
+      font-family: var(--font-display); font-size: var(--text-base);
+      font-weight: 600; color: var(--color-text-muted); display: block;
+      margin-bottom: 0.3rem;
+    }
+
+</style>
+
+</head>
+ <body>
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring"/>
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave"/>
+        <path d="M18 22h12" class="mark-line"/>
+      </svg>
+      <span>PSSMC</span>
+    </a>
+    <div class="header-nav">
+      <button class="back-btn" onclick="window.history.back();" aria-label="Go back to previous page">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Back
+      </button>
+      <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+    </div>
+    </header>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-badge">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+        <circle cx="5" cy="5" r="4" fill="var(--color-primary)" opacity="0.7"/>
+        <circle cx="5" cy="5" r="2" fill="var(--color-primary)"/>
+      </svg>
+      Chapter 1 · Two-DOF Model
+    </div>
+    <h1>m₁ &amp; m₂ — Live System Animation</h1>
+    <p>Watch the two-DOF tool–workpiece system behave under three regimes:
+       uncontrolled chatter, PSSMC-controlled damping, and a side-by-side comparison.</p>
+  </section>
+
+  <!-- ══ MODE TABS ══ -->
+  <div class="mode-selector">
+    <button class="mode-tab active-chatter" data-mode="chatter" aria-pressed="true">
+      <span class="mode-dot dot-chatter"></span>Chatter Mode
+    </button>
+    <button class="mode-tab" data-mode="controlled">
+      <span class="mode-dot dot-controlled"></span>PSSMC Controlled
+    </button>
+    <button class="mode-tab" data-mode="compare">
+      <span class="mode-dot dot-compare"></span>Compare Both
+    </button>
+  </div>
+
+  <!-- ══ CONTROLS ══ -->
+  <div class="controls-row">
+    <div class="control-group">
+      <span class="control-label">Speed</span>
+      <div class="speed-btns">
+        <button class="speed-btn" data-speed="0.5">0.5×</button>
+        <button class="speed-btn active" data-speed="1">1×</button>
+        <button class="speed-btn" data-speed="2">2×</button>
+        <button class="speed-btn" data-speed="3">3×</button>
+      </div>
+    </div>
+    <button class="pause-btn" id="pauseBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" id="pauseIcon">
+        <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+      </svg>
+      Pause
+    </button>
+  </div>
+
+  <!-- ══ DIAGRAMS ══ -->
+  <div class="stage-wrap" style="margin-top:1.5rem;">
+    <div class="diagrams-row" id="diagramsRow">
+
+      <!-- A: Chatter -->
+      <div class="diagram-card chatter-card chatter-anim" id="diagramA">
+        <div class="card-label chatter-label">
+          <span class="pulse-dot chatter-dot"></span>
+          Chatter — Uncontrolled
+        </div>
+        <div class="svg-container"></div>
+        <p class="diagram-caption">
+          Regenerative chatter: growing oscillations as the cutting force feedback loop goes unstable.
+          Amplitude increases each revolution.
+        </p>
+      </div>
+
+      <!-- B: Controlled -->
+      <div class="diagram-card controlled-card controlled-anim" id="diagramB" style="display:none;">
+        <div class="card-label controlled-label">
+          <span class="pulse-dot controlled-dot"></span>
+          PSSMC — Controlled
+        </div>
+        <div class="svg-container"></div>
+        <p class="diagram-caption">
+          PSSMC active: the controller injects an opposing force that suppresses vibration.
+          Amplitude remains small and bounded.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ WAVEFORM ══ -->
+  <div class="wave-section" style="margin-top:2rem;">
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <polyline points="2,12 5,6 8,18 11,4 14,20 17,10 20,14 22,12"/>
+      </svg>
+      Displacement Waveform — y₁(t)
+    </h2>
+    <div class="wave-canvas-wrap">
+      <canvas id="waveCanvas" width="1100" height="120" aria-label="Displacement waveform"></canvas>
+    </div>
+  </div>
+
+  <!-- ══ METERS ══ -->
+  <div class="meter-row">
+    <div class="meter-card">
+      <div class="meter-label">Tool Vibration · y₁</div>
+      <div class="meter-bar-bg">
+        <div class="meter-bar-fill" id="meter1" style="width:0%;background:var(--color-chatter);"></div>
+      </div>
+      <div class="meter-value" id="meter1val" style="color:var(--color-chatter)">— µm</div>
+    </div>
+    <div class="meter-card">
+      <div class="meter-label">Workpiece Vibration · y₂</div>
+      <div class="meter-bar-bg">
+        <div class="meter-bar-fill" id="meter2" style="width:0%;background:var(--color-controlled);"></div>
+      </div>
+      <div class="meter-value" id="meter2val" style="color:var(--color-controlled)">— µm</div>
+    </div>
+    <div class="meter-card">
+      <div class="meter-label">Cutting Force · F_cut</div>
+      <div class="meter-bar-bg">
+        <div class="meter-bar-fill" id="meter3" style="width:0%;background:var(--color-gold);"></div>
+      </div>
+      <div class="meter-value" id="meter3val" style="color:var(--color-gold)">— N</div>
+    </div>
+  </div>
+
+  <!-- ══ INFO CARDS ══ -->
+  <div class="info-grid">
+    <div class="info-card">
+      <h3><span class="tag tag-red">Chatter</span></h3>
+      <p>Uncontrolled regenerative chatter: each tool pass leaves a wavy surface that disturbs the next
+      cut. The feedback loop grows unstable — vibration amplitude increases with every revolution.
+      In practice this destroys surface finish and accelerates tool wear.</p>
+    </div>
+    <div class="info-card">
+      <h3><span class="tag tag-teal">PSSMC</span></h3>
+      <p>The Predictive Sliding-Surface Model-based Controller measures the state vector
+      x = [y₁, ẏ₁, y₂, ẏ₂]ᵀ and applies an actuator force that exactly cancels the
+      regenerative term, keeping the effective chip thickness at the nominal feed f_z.</p>
+    </div>
+    <div class="info-card">
+      <h3><span class="tag tag-gold">Parameters</span></h3>
+      <p>Tool mass m₁ = 0.2 kg · k₁ = 2.2 × 10⁹ N/m · c₁ = 70 kg/s.
+      Workpiece m₂ = 3.0 kg · k₂ = 1.7 × 10⁸ N/m · c₂ = 290 kg/s.
+      Specific cutting resistance Kc = 1500 N/mm². Axial depth aₚ = 0.5 mm.</p>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    PSSMC Mathematics · Chapter 1 · m₁ &amp; m₂ Animation ·
+    University of Dar es Salaam, Department of Mechanical and Industrial Engineering.
+  </footer>
+
+  <!-- ══ JAVASCRIPT ══ -->
+  <script>
+  (function () {
+    'use strict';
+
+    /* THEME TOGGLE */
+    const html = document.documentElement;
+    const themeBtn = document.querySelector('[data-theme-toggle]');
+    const moonSVG = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    const sunSVG  = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+    let currentTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    function applyTheme(t){ html.setAttribute('data-theme',t); if(themeBtn) themeBtn.innerHTML = t==='dark'?sunSVG:moonSVG; }
+    applyTheme(currentTheme);
+    if(themeBtn) themeBtn.addEventListener('click',()=>{ currentTheme=currentTheme==='dark'?'light':'dark'; applyTheme(currentTheme); });
+
+    /* BACK BUTTON — fade transition */
+    const backBtn = document.getElementById('backBtn');
+    if(backBtn) backBtn.addEventListener('click', ()=>{
+      document.body.classList.add('page-leaving');
+      setTimeout(()=>{ window.open('page-1.html','_blank'); document.body.classList.remove('page-leaving'); }, 300);
+    });
+
+    /* SVG TEMPLATE */
+    function makeSVG() {
+      return `
+      <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" class="diagram-svg"
+           aria-label="Two-DOF tool-workpiece schematic">
+        <rect x="20" y="60" width="14" height="160" fill="currentColor" opacity="0.18" rx="2"/>
+        <line x1="34" y1="65"  x2="20" y2="75"  stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="85"  x2="20" y2="95"  stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="105" x2="20" y2="115" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="125" x2="20" y2="135" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="145" x2="20" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="165" x2="20" y2="175" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="185" x2="20" y2="195" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="205" x2="20" y2="215" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <g class="anim-group spring1-group" style="transform-origin:91px 100px;">
+          <line x1="34" y1="100" x2="60" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+          <polyline points="60,100 68,85 76,115 84,85 92,115 100,85 108,115 116,100"
+                    fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7"/>
+          <line x1="116" y1="100" x2="148" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        </g>
+        <text x="88" y="78" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65" font-family="Georgia,serif" font-style="italic">k₁</text>
+        <g class="anim-group spring1-group" style="transform-origin:91px 155px;">
+          <line x1="34" y1="155" x2="80" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+          <rect x="80" y="143" width="36" height="24" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7" rx="2"/>
+          <line x1="98" y1="143" x2="98" y2="128" stroke="currentColor" stroke-width="2.5" opacity="0.7"/>
+          <line x1="98" y1="167" x2="98" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+          <line x1="116" y1="155" x2="148" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        </g>
+        <text x="98" y="136" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65" font-family="Georgia,serif" font-style="italic">c₁</text>
+        <line x1="148" y1="100" x2="148" y2="128" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <line x1="148" y1="155" x2="148" y2="130" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <g class="anim-group mass-m1-group">
+          <rect x="148" y="105" width="110" height="70" rx="10" fill="var(--color-surface-2)" stroke="var(--color-primary)" stroke-width="2"/>
+          <text x="203" y="136" text-anchor="middle" font-size="15" font-weight="700" fill="var(--color-primary-dark)" font-family="Georgia,serif" font-style="italic">m₁</text>
+          <text x="203" y="155" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6" font-family="sans-serif">Tool</text>
+        </g>
+        <line x1="258" y1="140" x2="500" y2="140" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.25"/>
+        <g class="anim-group force-group" style="transform-origin:379px 140px;">
+          <line x1="295" y1="115" x2="460" y2="115" stroke="var(--color-primary)" stroke-width="2.2"/>
+          <polygon points="460,115 450,109 450,121" fill="var(--color-primary)"/>
+          <line x1="298" y1="165" x2="463" y2="165" stroke="var(--color-primary)" stroke-width="2.2"/>
+          <polygon points="298,165 308,159 308,171" fill="var(--color-primary)"/>
+          <rect x="314" y="128" width="130" height="26" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1"/>
+          <text x="379" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="var(--color-primary-dark)" font-family="Georgia,serif" font-style="italic">F_cut(t)</text>
+        </g>
+        <g class="anim-group mass-m2-group">
+          <rect x="500" y="105" width="110" height="70" rx="10" fill="var(--color-surface-2)" stroke="var(--color-primary)" stroke-width="2"/>
+          <text x="555" y="136" text-anchor="middle" font-size="15" font-weight="700" fill="var(--color-primary-dark)" font-family="Georgia,serif" font-style="italic">m₂</text>
+          <text x="555" y="155" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6" font-family="sans-serif">Workpiece</text>
+        </g>
+        <line x1="610" y1="100" x2="610" y2="128" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <line x1="610" y1="155" x2="610" y2="130" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <g class="anim-group spring2-group" style="transform-origin:668px 100px;">
+          <line x1="610" y1="100" x2="636" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+          <polyline points="636,100 644,85 652,115 660,85 668,115 676,85 684,115 692,100"
+                    fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7"/>
+          <line x1="692" y1="100" x2="726" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        </g>
+        <text x="664" y="78" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65" font-family="Georgia,serif" font-style="italic">k₂</text>
+        <g class="anim-group spring2-group" style="transform-origin:668px 155px;">
+          <line x1="610" y1="155" x2="644" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+          <rect x="644" y="143" width="36" height="24" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7" rx="2"/>
+          <line x1="662" y1="143" x2="662" y2="128" stroke="currentColor" stroke-width="2.5" opacity="0.7"/>
+          <line x1="662" y1="167" x2="662" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+          <line x1="680" y1="155" x2="726" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        </g>
+        <text x="662" y="136" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65" font-family="Georgia,serif" font-style="italic">c₂</text>
+        <rect x="726" y="60" width="14" height="160" fill="currentColor" opacity="0.18" rx="2"/>
+        <line x1="726" y1="65"  x2="740" y2="75"  stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="85"  x2="740" y2="95"  stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="105" x2="740" y2="115" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="125" x2="740" y2="135" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="145" x2="740" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="165" x2="740" y2="175" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="185" x2="740" y2="195" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="205" x2="740" y2="215" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <g class="anim-group arrow-y1">
+          <line x1="203" y1="195" x2="228" y2="195" stroke="var(--color-primary)" stroke-width="1.8"/>
+          <polygon points="228,195 220,190 220,200" fill="var(--color-primary)"/>
+          <text x="203" y="215" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.7" font-family="Georgia,serif" font-style="italic">y₁(t)</text>
+        </g>
+        <g class="anim-group arrow-y2">
+          <line x1="555" y1="195" x2="530" y2="195" stroke="var(--color-primary)" stroke-width="1.8"/>
+          <polygon points="530,195 538,190 538,200" fill="var(--color-primary)"/>
+          <text x="555" y="215" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.7" font-family="Georgia,serif" font-style="italic">y₂(t)</text>
+        </g>
+      </svg>`;
+    }
+
+    /* INJECT SVGs */
+    document.querySelectorAll('.svg-container').forEach(c => { c.innerHTML = makeSVG(); });
+
+    /* MODE SWITCHING */
+    let currentMode = 'chatter';
+    const dA = document.getElementById('diagramA');
+    const dB = document.getElementById('diagramB');
+    const row = document.getElementById('diagramsRow');
+    document.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab').forEach(b => {
+          b.classList.remove('active-chatter','active-controlled','active-compare');
+          b.setAttribute('aria-pressed','false');
+        });
+        const mode = btn.dataset.mode;
+        currentMode = mode;
+        btn.setAttribute('aria-pressed','true');
+        if(mode==='chatter')    btn.classList.add('active-chatter');
+        if(mode==='controlled') btn.classList.add('active-controlled');
+        if(mode==='compare')    btn.classList.add('active-compare');
+        if(mode==='chatter')    { dA.style.display=''; dB.style.display='none'; row.classList.remove('compare-mode'); }
+        else if(mode==='controlled') { dA.style.display='none'; dB.style.display=''; row.classList.remove('compare-mode'); }
+        else { dA.style.display=''; dB.style.display=''; row.classList.add('compare-mode'); }
+        updateMeters();
+      });
+    });
+
+    /* SPEED */
+    let speedFactor = 1;
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        speedFactor = parseFloat(btn.dataset.speed);
+        applySpeed();
+      });
+    });
+    function applySpeed() {
+      const dur = 1 / speedFactor;
+      document.querySelectorAll('.chatter-anim .anim-group, .chatter-anim').forEach(el => {
+        el.style.animationDuration = (0.45 * dur) + 's';
+      });
+      document.querySelectorAll('.controlled-anim .anim-group').forEach(el => {
+        el.style.animationDuration = (1.8 * dur) + 's';
+      });
+    }
+
+    /* PAUSE */
+    let paused = false;
+    const pauseBtn = document.getElementById('pauseBtn');
+    const playIconSVG  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>`;
+    const pauseIconSVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
+    pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      const state = paused ? 'paused' : 'running';
+      document.querySelectorAll('.anim-group, .chatter-anim, .controlled-anim').forEach(el => {
+        el.style.animationPlayState = state;
+      });
+      document.querySelectorAll('.pulse-dot').forEach(el => { el.style.animationPlayState = state; });
+      pauseBtn.classList.toggle('paused', paused);
+      pauseBtn.innerHTML = (paused ? playIconSVG : pauseIconSVG) + (paused ? ' Resume' : ' Pause');
+      if(paused) waveRunning = false; else { waveRunning = true; requestAnimationFrame(drawWave); }
+    });
+
+    /* WAVEFORM */
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    let waveRunning = true, waveT = 0;
+    const waveHistory = [];
+    function drawWave() {
+      if(!waveRunning) return;
+      waveT += 0.04 * speedFactor;
+      let y1;
+      if(currentMode==='chatter') {
+        y1 = Math.min(1, 0.08 + 0.004 * waveT) * Math.sin(waveT * 2.5);
+      } else if(currentMode==='controlled') {
+        y1 = 0.08 * Math.sin(waveT * 2.5) * Math.exp(-0.008 * waveT % (2 * Math.PI));
+      } else {
+        y1 = Math.min(1, 0.05 + 0.003 * waveT) * Math.sin(waveT * 2.5);
+      }
+      waveHistory.push(y1);
+      if(waveHistory.length > W) waveHistory.shift();
+      const theme = html.getAttribute('data-theme');
+      ctx.fillStyle = theme==='dark' ? '#1b1814' : '#fffdf9';
+      ctx.fillRect(0,0,W,H);
+      ctx.beginPath();
+      ctx.strokeStyle = theme==='dark' ? 'rgba(240,232,220,0.07)' : 'rgba(34,26,19,0.07)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+      ctx.beginPath();
+      const waveColor = currentMode==='controlled' ? '#4f98a3' : '#e05252';
+      ctx.strokeStyle = waveColor;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = waveColor; ctx.shadowBlur = 6;
+      waveHistory.forEach((v,i) => {
+        const x = i, y = H/2 - v*(H/2-12);
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      });
+      ctx.stroke(); ctx.shadowBlur = 0;
+      requestAnimationFrame(drawWave);
+    }
+    requestAnimationFrame(drawWave);
+
+    /* METERS */
+    const m1bar=document.getElementById('meter1'), m2bar=document.getElementById('meter2'), m3bar=document.getElementById('meter3');
+    const m1val=document.getElementById('meter1val'), m2val=document.getElementById('meter2val'), m3val=document.getElementById('meter3val');
+    function updateMeters() {
+      if(paused) return;
+      const t = performance.now()/1000*speedFactor;
+      let a1, a2, f;
+      if(currentMode==='chatter') {
+        const grow = Math.min(1, 0.1 + 0.02*(t%30));
+        a1 = Math.abs(Math.sin(t*14))*grow*100;
+        a2 = Math.abs(Math.sin(t*14+0.5))*grow*95;
+        f  = Math.abs(Math.sin(t*14+0.3))*grow*100;
+      } else if(currentMode==='controlled') {
+        a1 = Math.abs(Math.sin(t*3.5))*0.12*100;
+        a2 = Math.abs(Math.sin(t*3.5+0.2))*0.12*100;
+        f  = Math.abs(Math.sin(t*3.5+0.1))*0.12*100;
+      } else {
+        const grow = Math.min(1, 0.1+0.02*(t%30));
+        a1 = Math.abs(Math.sin(t*14))*grow*100;
+        a2 = Math.abs(Math.sin(t*14+0.5))*grow*95;
+        f  = Math.abs(Math.sin(t*14+0.3))*grow*100;
+      }
+      const clamp = v => Math.min(100,Math.max(0,v));
+      m1bar.style.width=clamp(a1)+'%'; m2bar.style.width=clamp(a2)+'%'; m3bar.style.width=clamp(f)+'%';
+      const scaleY = currentMode==='chatter'?250:12, scaleF = currentMode==='chatter'?3200:145;
+      m1val.textContent=(a1/100*scaleY).toFixed(1)+' µm';
+      m2val.textContent=(a2/100*scaleY*0.9).toFixed(1)+' µm';
+      m3val.textContent=(f/100*scaleF).toFixed(0)+' N';
+      const mColor = currentMode==='controlled'?'var(--color-controlled)':'var(--color-chatter)';
+      m1bar.style.background=mColor; m1val.style.color=mColor;
+      requestAnimationFrame(updateMeters);
+    }
+    updateMeters();
+
+  })();
+  </script>
+</body>
+</html>

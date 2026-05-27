@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 4 — Lyapunov Stability &amp; Parameters · PSSMC Mathematics</title>
+  <meta name="description" content="Chapter 8–9: Lyapunov candidate function, stability proof, and complete system parameters for the PSSMC controller.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']],tags:'ams'},options:{skipHtmlTags:['script','noscript','style','textarea','pre']}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script defer src="../assets/js/main.js"></script>
+
+  <style>
+    /* ── PAGES POPUP ── */
+    .pages-btn-wrap{position:relative;}
+    .pages-btn{display:inline-flex;align-items:center;gap:0.45rem;font-size:var(--text-sm);
+      padding:0.62rem 0.9rem;border-radius:999px;border:1px solid var(--color-border);
+      background:var(--color-surface);color:var(--color-text-muted);cursor:pointer;
+      white-space:nowrap;transition:color var(--transition),background var(--transition);}
+    .pages-btn:hover{color:var(--color-text);background:var(--color-surface-2);}
+    .pages-btn svg{transition:transform 240ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+    .pages-dropdown{position:absolute;top:calc(100% + 0.5rem);right:0;min-width:288px;
+      background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:100;overflow:hidden;
+      opacity:0;transform:translateY(-6px) scale(0.98);pointer-events:none;
+      transition:opacity 200ms cubic-bezier(0.16,1,0.3,1),transform 200ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+    .pages-dropdown-header{padding:0.75rem 1rem 0.5rem;font-size:var(--text-xs);
+      text-transform:uppercase;letter-spacing:0.14em;color:var(--color-text-faint);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;
+      font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;
+      transition:background var(--transition),color var(--transition);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a:last-child{border-bottom:none;}
+    .pages-dropdown a:hover{background:var(--color-surface-2);color:var(--color-text);}
+    .pages-dropdown a[aria-current="page"]{background:rgba(122,92,58,0.07);color:var(--color-primary-dark);font-weight:600;}
+    .pd-num{width:24px;height:24px;border-radius:50%;background:var(--color-surface-2);
+      border:1px solid var(--color-border);display:grid;place-items:center;
+      font-size:0.7rem;font-weight:600;color:var(--color-text-faint);flex-shrink:0;}
+    a[aria-current="page"] .pd-num{background:var(--color-primary);border-color:var(--color-primary);color:#fff;}
+    .pd-label{flex:1;line-height:1.3;}
+    .pd-badge{font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:999px;
+      background:rgba(122,92,58,0.11);color:var(--color-primary-dark);font-weight:500;}
+    [data-theme="dark"] .pd-badge{background:rgba(196,154,106,0.15);color:#c49a6a;}
+
+    /* ── PAGE HERO ── */
+    .page-hero{padding:clamp(2.5rem,6vw,4.5rem) clamp(1rem,4vw,3rem) var(--space-8);
+      border-bottom:1px solid var(--color-border);max-width:1080px;margin-inline:auto;}
+    .page-hero .eyebrow{margin-bottom:var(--space-3);}
+    .page-hero h1{font-family:var(--font-display);font-size:var(--text-3xl);
+      font-weight:600;line-height:1.0;margin-bottom:var(--space-5);}
+    .page-hero .lead{font-size:var(--text-lg);color:var(--color-text-muted);
+      max-width:58ch;line-height:1.7;margin-bottom:var(--space-6);}
+    .hero-chips{display:flex;flex-wrap:wrap;gap:0.5rem;}
+
+    /* ── BODY CONTENT ── */
+    .page-body{max-width:1080px;margin-inline:auto;
+      padding:clamp(2rem,5vw,4rem) clamp(1rem,4vw,3rem);}
+    .sec-heading{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:600;
+      margin-bottom:var(--space-5);margin-top:var(--space-12);padding-top:var(--space-8);
+      border-top:1px solid var(--color-border);}
+    .sec-heading:first-of-type{border-top:none;margin-top:0;padding-top:0;}
+    .sec-sub{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;
+      margin-bottom:var(--space-4);margin-top:var(--space-8);color:var(--color-primary-dark);}
+    .prose{font-size:var(--text-base);color:var(--color-text-muted);line-height:1.8;
+      margin-bottom:var(--space-5);max-width:72ch;}
+    .prose strong{color:var(--color-text);}
+
+    /* ── EQUATION BLOCK ── */
+    .eq-block{background:var(--color-surface-2);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:1.4rem 1.8rem;margin:var(--space-5) 0;
+      overflow-x:auto;text-align:center;}
+    .eq-label{display:block;font-size:var(--text-xs);text-transform:uppercase;
+      letter-spacing:0.14em;color:var(--color-text-faint);margin-bottom:0.6rem;}
+
+    /* ── HIGHLIGHT NOTE ── */
+    .highlight-note{background:rgba(122,92,58,0.06);border:1px solid var(--color-border);
+      border-left:3px solid var(--color-primary);border-radius:var(--radius-md);
+      padding:1rem 1.3rem;margin:var(--space-5) 0;font-size:var(--text-sm);
+      color:var(--color-text-muted);line-height:1.75;}
+    .highlight-note strong{color:var(--color-text);}
+
+    /* ── ANALOGY CARD ── */
+    .analogy-card{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);padding:1.4rem 1.6rem;margin:var(--space-5) 0;
+      box-shadow:var(--shadow-sm);display:flex;gap:1rem;align-items:flex-start;}
+    .analogy-icon{font-size:2rem;flex-shrink:0;line-height:1;}
+    .analogy-body h3{font-family:var(--font-display);font-size:var(--text-lg);
+      font-weight:600;color:var(--color-primary-dark);margin-bottom:var(--space-2);}
+    .analogy-body p{font-size:var(--text-sm);color:var(--color-text-muted);
+      line-height:1.75;margin:0;}
+
+    /* ── DERIVATION STEPS ── */
+    .deriv-steps{display:flex;flex-direction:column;gap:var(--space-5);margin:var(--space-5) 0;}
+    .deriv-step{display:grid;grid-template-columns:auto 1fr;gap:var(--space-4);align-items:start;}
+    .deriv-num{width:32px;height:32px;border-radius:50%;background:var(--color-primary);
+      color:#fff;font-size:var(--text-sm);font-weight:700;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .deriv-body strong{display:block;font-size:var(--text-sm);font-weight:600;
+      color:var(--color-text);margin-bottom:var(--space-2);}
+    .deriv-body .why{font-size:var(--text-xs);color:var(--color-text-faint);
+      font-style:italic;margin-top:var(--space-2);display:block;line-height:1.6;}
+    .deriv-body .eq-block{margin:var(--space-2) 0;}
+    .deriv-body p{font-size:var(--text-sm);color:var(--color-text-muted);
+      line-height:1.75;margin-bottom:var(--space-2);max-width:100%;}
+
+    /* ── V-ANATOMY ── */
+    .v-anatomy{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:1rem;margin:var(--space-5) 0;}
+    .v-term{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:1.1rem 1.3rem;position:relative;overflow:hidden;}
+    .v-term::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;}
+    .v-term-s::before{background:var(--color-primary);}
+    .v-term-lam::before{background:#5591c7;}
+    .v-term-T::before{background:#437a22;}
+    .v-term-phi::before{background:#a12c2c;}
+    .v-term h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;
+      color:var(--color-primary-dark);margin-bottom:var(--space-2);}
+    .v-term p{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.65;margin:0;}
+
+    /* ── PROOF TRACK ── */
+    .proof-track{display:flex;flex-direction:column;gap:0;margin:var(--space-6) 0;}
+    .proof-row{display:grid;grid-template-columns:28px 1fr;gap:var(--space-4);
+      align-items:stretch;}
+    .proof-line{display:flex;flex-direction:column;align-items:center;}
+    .proof-dot{width:14px;height:14px;border-radius:50%;background:var(--color-primary);
+      flex-shrink:0;margin-top:4px;}
+    .proof-connector{flex:1;width:2px;background:var(--color-border);margin:2px 0;}
+    .proof-content{padding-bottom:var(--space-5);}
+    .proof-content strong{display:block;font-size:var(--text-sm);font-weight:600;
+      color:var(--color-text);margin-bottom:var(--space-1);}
+    .proof-content p{font-size:var(--text-sm);color:var(--color-text-muted);
+      line-height:1.7;margin:0 0 var(--space-2);max-width:100%;}
+    .proof-content .eq-block{margin:var(--space-2) 0;}
+
+    /* ── STABILITY TABLE ── */
+    .stab-table-wrap{overflow-x:auto;border-radius:var(--radius-md);
+      border:1px solid var(--color-border);margin:var(--space-5) 0;}
+    .stab-table{width:100%;border-collapse:collapse;font-size:var(--text-sm);
+      background:var(--color-surface);}
+    .stab-table thead tr{background:var(--color-surface-2);border-bottom:1px solid var(--color-border);}
+    .stab-table th{padding:0.75rem 1rem;text-align:left;font-weight:600;
+      font-size:var(--text-xs);letter-spacing:0.06em;text-transform:uppercase;
+      color:var(--color-text-muted);}
+    .stab-table td{padding:0.65rem 1rem;border-bottom:1px solid var(--color-border);
+      color:var(--color-text-muted);vertical-align:top;}
+    .stab-table tr:last-child td{border-bottom:none;}
+    .stab-table tr:hover td{background:var(--color-surface-2);}
+    .stab-table .check{color:#437a22;font-weight:700;}
+    [data-theme="dark"] .stab-table .check{color:#6daa45;}
+    .stab-table .cond{font-family:var(--font-display);font-size:var(--text-sm);
+      color:var(--color-primary-dark);font-weight:600;}
+
+    /* ── PARAM TABLE ── */
+    .param-table-wrap{overflow-x:auto;border-radius:var(--radius-md);
+      border:1px solid var(--color-border);margin:var(--space-5) 0;}
+    .param-table{width:100%;border-collapse:collapse;font-size:var(--text-sm);
+      background:var(--color-surface);}
+    .param-table thead tr{background:var(--color-surface-2);border-bottom:1px solid var(--color-border);}
+    .param-table th{padding:0.7rem 1rem;text-align:left;font-weight:600;
+      font-size:var(--text-xs);letter-spacing:0.06em;text-transform:uppercase;
+      color:var(--color-text-muted);}
+    .param-table td{padding:0.65rem 1rem;border-bottom:1px solid var(--color-border);
+      color:var(--color-text-muted);}
+    .param-table tr:last-child td{border-bottom:none;}
+    .param-table tr:hover td{background:var(--color-surface-2);}
+    .param-table .sym{font-family:var(--font-display);font-weight:600;color:var(--color-primary-dark);}
+    .param-table .section-row td{background:var(--color-surface-2);font-weight:600;
+      font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.1em;
+      color:var(--color-text-faint);padding:0.5rem 1rem;}
+
+    /* ── ENERGY CANVAS ── */
+    .canvas-wrap{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);overflow:hidden;margin:var(--space-4) 0;}
+    canvas{display:block;width:100%;}
+    .canvas-legend{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;
+      font-size:var(--text-xs);color:var(--color-text-faint);
+      padding:0.5rem 0 0.8rem;text-align:center;}
+    .canvas-legend span{display:flex;align-items:center;gap:0.4rem;}
+
+    /* ── INTERACTIVE SLIDERS ── */
+    .slider-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:1rem;margin-bottom:var(--space-6);}
+    .derived-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+      gap:0.8rem;margin-bottom:var(--space-5);}
+    .derived-card{background:var(--color-surface-2);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:0.9rem 1rem;text-align:center;}
+    .derived-symbol{font-family:var(--font-display);font-size:var(--text-lg);
+      color:var(--color-primary-dark);font-weight:600;}
+    .derived-val{font-size:var(--text-base);font-weight:700;color:var(--color-text);margin:0.1rem 0;}
+    .derived-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.4;}
+
+    /* ── FINAL RESULT BOX ── */
+    .result-box{background:var(--color-surface);border:2px solid var(--color-primary);
+      border-radius:var(--radius-lg);padding:1.8rem 2rem;margin:var(--space-8) 0;
+      box-shadow:var(--shadow-md);}
+    .result-box .result-title{font-family:var(--font-display);font-size:var(--text-xl);
+      font-weight:700;color:var(--color-primary-dark);margin-bottom:var(--space-5);}
+
+    /* ── PAGE NAV ── */
+    .page-nav{border-top:1px solid var(--color-border);
+      padding:var(--space-8) clamp(1rem,4vw,3rem);
+      display:flex;justify-content:space-between;align-items:center;
+      flex-wrap:wrap;gap:1rem;max-width:1080px;margin-inline:auto;}
+    .page-nav-btn{display:inline-flex;align-items:center;gap:0.6rem;
+      padding:0.85rem 1.4rem;border-radius:999px;border:1px solid var(--color-border);
+      background:var(--color-surface);color:var(--color-text-muted);font-size:var(--text-sm);
+      font-weight:500;text-decoration:none;
+      transition:color var(--transition),background var(--transition),box-shadow var(--transition),transform var(--transition);}
+    .page-nav-btn:hover{color:var(--color-text);background:var(--color-surface-2);
+      transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+    .page-nav-btn.primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+    .page-nav-btn.primary:hover{background:var(--color-primary-dark);}
+    .page-nav-indicator{font-size:var(--text-xs);color:var(--color-text-faint);
+      text-align:center;letter-spacing:0.06em;}
+
+
+    /* ── GRAPH EXPLANATION OVERLAY ── */
+    .overlay-panel-wide{max-width:720px;max-height:88vh;overflow-y:auto;}
+    .ol-intro{font-size:var(--text-sm);color:var(--color-text-muted);line-height:1.8;
+      margin-bottom:var(--space-6);border-left:3px solid var(--color-primary);
+      padding-left:var(--space-4);}
+    .ol-section{margin-bottom:var(--space-6);padding-bottom:var(--space-5);
+      border-bottom:1px solid var(--color-border);}
+    .ol-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+    .ol-sh{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;
+      margin-bottom:var(--space-3);color:var(--color-primary-dark);}
+    .ol-section p{font-size:var(--text-sm);color:var(--color-text-muted);
+      line-height:1.8;margin-bottom:var(--space-3);max-width:100%;}
+    .ol-section p:last-child{margin-bottom:0;}
+    .ol-section-teal .ol-sh{color:var(--color-primary);}
+    .ol-section-red .ol-sh{color:#a12c2c;}
+    [data-theme="dark"] .ol-section-red .ol-sh{color:#e05252;}
+    .ol-section-green .ol-sh{color:#437a22;}
+    [data-theme="dark"] .ol-section-green .ol-sh{color:#6daa45;}
+    .ol-section-try{background:var(--color-surface);border-radius:var(--radius-md);
+      padding:1rem 1.2rem;}
+    .ol-section-try .ol-sh{color:var(--color-text);}
+    .ol-list{margin:var(--space-3) 0 0 var(--space-5);color:var(--color-text-muted);
+      font-size:var(--text-sm);line-height:2;}
+    .ol-section-summary{background:rgba(122,92,58,0.06);border-radius:var(--radius-md);
+      padding:1rem 1.2rem;border:1px solid var(--color-border);}
+    .ol-section-summary p{margin:0;}
+    /* button to open graph explanation */
+    .graph-explain-btn{display:inline-flex;align-items:center;gap:0.5rem;
+      margin-top:var(--space-4);margin-bottom:var(--space-2);}
+
+    @media(max-width:640px){
+      .v-anatomy{grid-template-columns:1fr;}
+      .page-nav{justify-content:center;}
+      .page-nav-indicator{display:none;}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring"/>
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave"/>
+        <path d="M18 22h12" class="mark-line"/>
+      </svg>
+      <span>PSSMC</span>
+    </a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="../index.html">Home</a>
+      <a href="Kasprowiak.html">Study Front</a>
+      <div class="pages-btn-wrap">
+        <button class="pages-btn" id="pagesBtn" aria-expanded="false" aria-haspopup="true">
+          Pages
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="pages-dropdown" id="pagesDropdown" role="menu">
+          <div class="pages-dropdown-header">PSSMC Mathematics — Kasprowiak</div>
+          <a href="Kasprowiak.html" role="menuitem"><span class="pd-num"></span><span class="pd-label">Front Page</span></a>
+          <a href="page-1.html" role="menuitem"><span class="pd-num">1</span><span class="pd-label">Two-DOF Model</span></a>
+          <a href="page-2.html" role="menuitem"><span class="pd-num">2</span><span class="pd-label">Objective &amp; Sliding Surface</span></a>
+          <a href="page-3.html" role="menuitem"><span class="pd-num">3</span><span class="pd-label">Full Control Law</span></a>
+          <a href="page-4.html" aria-current="page" role="menuitem"><span class="pd-num">4</span><span class="pd-label">Lyapunov &amp; Parameters</span><span class="pd-badge">Here</span></a>
+          <a href="page-5.html" role="menuitem"><span class="pd-num">5</span><span class="pd-label">Results &amp; Discussion</span><span class="pd-badge">Soon</span></a>
+        </div>
+      </div>
+      <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- HERO -->
+    <div class="page-hero">
+      <p class="eyebrow">Chapters 8 – 9 &nbsp;&middot;&nbsp; PSSMC Mathematics</p>
+      <h1>Lyapunov Stability<br>&amp; System Parameters</h1>
+      <p class="lead">
+        A simulation shows a controller <em>works</em>. A Lyapunov proof shows it
+        <em>must always work</em> — for any initial condition, any bounded disturbance,
+        forever. This chapter builds that guarantee from scratch, step by step,
+        with plain-language explanation alongside every equation.
+      </p>
+      <div class="hero-chips">
+        <button class="chip" type="button" data-overlay="ol-why-lyap">Why Lyapunov?</button>
+        <button class="chip" type="button" data-overlay="ol-energy-analogy">The energy analogy</button>
+        <button class="chip" type="button" data-overlay="ol-practical">Practical vs asymptotic</button>
+        <button class="chip" type="button" data-overlay="ol-tanh-ineq">The tanh inequality</button>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="page-body">
+
+      <!-- ═══ 8.1 PURPOSE ═══ -->
+      <h2 class="sec-heading">8.1 &nbsp;Why a Lyapunov Proof?</h2>
+
+      <p class="prose">
+        A simulation demonstrates controller performance at <em>specific</em> initial conditions
+        and a <em>specific</em> disturbance profile. It cannot guarantee stability universally —
+        a different starting point, a different chatter force, or a numerical accident could
+        in principle produce a diverging trajectory.
+      </p>
+      <p class="prose">
+        A Lyapunov proof provides a <strong>mathematical guarantee</strong>: for
+        <em>any</em> initial condition and <em>any</em> bounded disturbance, the system
+        converges to a neighbourhood of the sliding surface and stays there.
+        This transforms an empirically good controller into a <strong>theoretically certified one</strong>.
+      </p>
+
+      <div class="analogy-card">
+        <div class="analogy-icon">⛰️</div>
+        <div class="analogy-body">
+          <h3>The Mountain Valley Analogy</h3>
+          <p>Imagine a ball on a landscape. If you can show there is a "valley" — a bowl-shaped
+          energy function \(V\) with the equilibrium at the bottom — and that the ball always
+          rolls <em>downhill</em> (\(\dot{V} \leq 0\)), then no matter where you release the
+          ball, it must eventually reach the valley floor. That is exactly what the Lyapunov
+          proof does for the PSSMC. We define \(V(t)\), show it is a bowl, and show the
+          system always rolls toward \(s = 0\).</p>
+        </div>
+      </div>
+
+      <!-- ═══ 8.2 LYAPUNOV CANDIDATE ═══ -->
+      <h2 class="sec-heading">8.2 &nbsp;The Lyapunov Candidate Function — Eq. (33–34)</h2>
+
+      <p class="prose">
+        The key challenge in Lyapunov analysis is choosing the right \(V(t)\).
+        For a standard SMC, \(V = \tfrac{1}{2}s^2\) suffices. But the PSSMC has
+        <em>three</em> additional adaptive parameters — \(\lambda\), \(T_p\), \(\phi\) —
+        each of which deviates from its ideal value. The candidate function must account for
+        all of these simultaneously:
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Lyapunov candidate — Equation (33)</span>
+        \[
+          V(t) = \frac{1}{2}s^2(t)
+               + \frac{1}{2\gamma_1}\tilde{\lambda}^2(t)
+               + \frac{1}{2\gamma_2}\tilde{T}_p^2(t)
+               + \frac{1}{2\gamma_3}\tilde{\phi}^2(t)
+        \]
+      </div>
+
+      <div class="eq-block">
+        <span class="eq-label">Parameter errors — Equation (34)</span>
+        \[
+          \tilde{\lambda} = \lambda - \lambda^*, \qquad
+          \tilde{T}_p = T_p - T_p^*, \qquad
+          \tilde{\phi} = \phi - \phi^*
+        \]
+      </div>
+
+      <p class="prose">
+        where \(\lambda^*\), \(T_p^*\), \(\phi^*\) are the <strong>ideal parameter values</strong>
+        for the current operating condition — the values a perfectly-informed designer would choose.
+        The \(\gamma_i > 0\) are scalar weights that control how much each parameter error
+        contributes to the total "energy" of the system.
+      </p>
+
+      <!-- V anatomy -->
+      <h3 class="sec-sub">Anatomy of \(V(t)\) — Four Terms, Four Roles</h3>
+
+      <div class="v-anatomy">
+        <div class="v-term v-term-s">
+          <h3>\(\tfrac{1}{2}s^2\)</h3>
+          <p><strong>Surface energy.</strong> The core term — measures how far the system
+          is from the sliding surface. When \(s = 0\), this term is zero. The larger
+          the chatter (bigger \(|s|\)), the larger this term.</p>
+        </div>
+        <div class="v-term v-term-lam">
+          <h3>\(\tfrac{1}{2\gamma_1}\tilde{\lambda}^2\)</h3>
+          <p><strong>Sliding gain error.</strong> Measures how far \(\lambda\) has drifted
+          from its ideal value \(\lambda^*\). Prevents \(\lambda\) from adapting
+          to an arbitrarily wrong value. Always non-negative.</p>
+        </div>
+        <div class="v-term v-term-T">
+          <h3>\(\tfrac{1}{2\gamma_2}\tilde{T}_p^2\)</h3>
+          <p><strong>Horizon error.</strong> Measures the prediction horizon error.
+          Ensures \(T_p\) is pulled toward the ideal prediction time rather than
+          collapsing to zero or growing without bound.</p>
+        </div>
+        <div class="v-term v-term-phi">
+          <h3>\(\tfrac{1}{2\gamma_3}\tilde{\phi}^2\)</h3>
+          <p><strong>Boundary layer error.</strong> Measures how far \(\phi\) is from
+          its ideal value. Prevents the boundary layer from either shrinking to zero
+          (causing chattering) or inflating indefinitely (losing precision).</p>
+        </div>
+      </div>
+
+      <div class="highlight-note">
+        <strong>Two Lyapunov conditions satisfied immediately:</strong><br>
+        <strong>(1) \(V(t) \geq 0\) always</strong> — \(V\) is a sum of squares scaled by positive constants.
+        A sum of squares is never negative. ✓<br>
+        <strong>(2) \(V(t) = 0\) if and only if</strong> \(s = 0\) and
+        \(\tilde{\lambda} = \tilde{T}_p = \tilde{\phi} = 0\) — i.e., the system is
+        perfectly on the surface with all parameters at their ideal values. ✓<br>
+        The hard part is proving the third condition: \(\dot{V}(t) \leq 0\) outside
+        a bounded region. That is what Sections 8.3 and 8.4 establish.
+      </div>
+
+      <!-- ═══ 8.3 VDOT ═══ -->
+      <h2 class="sec-heading">8.3 &nbsp;Time Derivative of \(V(t)\) — Eq. (35–37)</h2>
+
+      <p class="prose">
+        To prove stability, we differentiate \(V(t)\) and show it is negative — meaning
+        the total "energy" of the system is always decreasing. Think of it as showing
+        the ball is always rolling downhill.
+      </p>
+
+      <div class="deriv-steps">
+        <div class="deriv-step">
+          <div class="deriv-num">1</div>
+          <div class="deriv-body">
+            <strong>Differentiate Eq. (33) directly</strong>
+            <p>Each squared term differentiates to a product: \(\frac{d}{dt}\frac{1}{2}s^2 = s\dot{s}\), and similarly for the parameter errors.</p>
+            <div class="eq-block">
+              <span class="eq-label">Eq. (35)</span>
+              \[
+                \dot{V}(t) = s\dot{s} + \frac{1}{\gamma_1}\tilde{\lambda}\dot{\tilde{\lambda}}
+                            + \frac{1}{\gamma_2}\tilde{T}_p\dot{\tilde{T}}_p
+                            + \frac{1}{\gamma_3}\tilde{\phi}\dot{\tilde{\phi}}
+              \]
+            </div>
+            <span class="why">Note: \(\dot{\tilde{\lambda}} = \dot{\lambda}\) since \(\lambda^*\) is a constant ideal value. Same for \(T_p^*\) and \(\phi^*\).</span>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">2</div>
+          <div class="deriv-body">
+            <strong>Substitute the adaptive laws (28–30) from Page 3</strong>
+            <p>Replace \(\dot{\lambda} = -\alpha_1 s^2\), \(\dot{T}_p = -\alpha_2 s^2\), \(\dot{\phi} = -\alpha_3|s|\):</p>
+            <div class="eq-block">
+              <span class="eq-label">Eq. (36)</span>
+              \[
+                \dot{V}(t) = s\dot{s}
+                  + \frac{1}{\gamma_1}\tilde{\lambda}(-\alpha_1 s^2)
+                  + \frac{1}{\gamma_2}\tilde{T}_p(-\alpha_2 s^2)
+                  + \frac{1}{\gamma_3}\tilde{\phi}(-\alpha_3|s|)
+              \]
+            </div>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">3</div>
+          <div class="deriv-body">
+            <strong>Set \(\gamma_i = \alpha_i\) — the gains cancel cleanly</strong>
+            <p>This is the standard choice in adaptive SMC literature. It causes the weight denominators to cancel with the adaptation gains, leaving a clean expression:</p>
+            <div class="eq-block">
+              <span class="eq-label">Eq. (37)</span>
+              \[
+                \dot{V}(t) = s\dot{s}
+                  - \tilde{\lambda}\,s^2
+                  - \tilde{T}_p\,s^2
+                  - \tilde{\phi}\,|s|
+              \]
+            </div>
+            <span class="why">The last three terms are <em>always</em> dissipative when the parameter errors have the same sign as the surface — this is what the lower bounds on \(\lambda\), \(T_p\), \(\phi\) guarantee.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 8.4 BOUNDING VDOT ═══ -->
+      <h2 class="sec-heading">8.4 &nbsp;Bounding \(\dot{V}(t)\) — Eq. (38–40)</h2>
+
+      <p class="prose">
+        The \(s\dot{s}\) term is what connects the Lyapunov function to the actual closed-loop
+        dynamics. We need to substitute the closed-loop expression for \(\dot{s}\) and then
+        use a key inequality to show the result is negative.
+      </p>
+
+      <div class="deriv-steps">
+        <div class="deriv-step">
+          <div class="deriv-num">4</div>
+          <div class="deriv-body">
+            <strong>Closed-loop surface dynamics — what does \(\dot{s}\) look like under PSSMC?</strong>
+            <p>Let \(d(t)\) represent all bounded disturbances and modelling errors, satisfying
+            \(|d(t)| \leq \Delta\) for some known bound \(\Delta\). Under the PSSMC control law,
+            the surface dynamics become:</p>
+            <div class="eq-block">
+              <span class="eq-label">Eq. (38)</span>
+              \[
+                \dot{s}(t) = d(t) - K\,\tanh\!\left(\frac{s(t)}{\phi}\right)
+              \]
+            </div>
+            <span class="why">Intuitively: the disturbance \(d(t)\) tries to push \(s\) away from zero;
+            the switching term \(K\,\tanh(s/\phi)\) opposes that push. Whether \(s\) grows or
+            shrinks depends on which term wins.</span>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">5</div>
+          <div class="deriv-body">
+            <strong>The key tanh inequality</strong>
+            <p>For any real \(s\) and any \(\phi > 0\), the following always holds:</p>
+            <div class="eq-block">
+              <span class="eq-label">Eq. (39)</span>
+              \[ s\,\tanh\!\left(\frac{s}{\phi}\right) \geq 0, \quad \text{with equality only at } s = 0 \]
+            </div>
+            <span class="why">Why? Because \(s\) and \(\tanh(s/\phi)\) always have the same sign:
+            both positive when \(s > 0\), both negative when \(s < 0\), both zero at \(s = 0\).
+            Their product is therefore always non-negative. This simple inequality is the
+            <strong>keystone of the entire stability proof</strong>.</span>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">6</div>
+          <div class="deriv-body">
+            <strong>Substitute Eq. (38) into \(s\dot{s}\) and apply Eq. (39)</strong>
+            <p>Multiply both sides of Eq. (38) by \(s\):</p>
+            <div class="eq-block">\[ s\dot{s} = s\,d(t) - K\,s\,\tanh\!\left(\frac{s}{\phi}\right) \]</div>
+            <p>Since \(|s\,d(t)| \leq |s|\Delta\) (disturbance bound) and \(K s\tanh(s/\phi) \geq 0\) (Eq. 39):</p>
+            <div class="eq-block">
+              <span class="eq-label">Eq. (40)</span>
+              \[
+                \dot{V}(t) \leq |s|\Delta - K\,s\,\tanh\!\left(\frac{s}{\phi}\right)
+                  - \tilde{\lambda}\,s^2 - \tilde{T}_p\,s^2 - \tilde{\phi}\,|s|
+              \]
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive V-dot explorer -->
+      <h3 class="sec-sub">Interactive \(\dot{V}\) Explorer</h3>
+      <p class="prose">
+        Set \(|s|\), disturbance bound \(\Delta\), and switching gain \(K\) to see
+        when \(\dot{V} < 0\) is guaranteed. The stability condition \(K > \Delta\)
+        should become visible immediately.
+      </p>
+
+      <div class="slider-grid">
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">Surface \(|s|\)</span>
+            <span class="slider-value" id="val-s">0.50</span>
+          </div>
+          <input type="range" id="sl-s" min="0.01" max="3" step="0.01" value="0.5" aria-label="Surface magnitude s">
+          <div class="slider-range"><span>0</span><span>3</span></div>
+        </div>
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">Disturbance \(\Delta\)</span>
+            <span class="slider-value" id="val-delta">100</span>
+          </div>
+          <input type="range" id="sl-delta" min="10" max="490" step="10" value="100" aria-label="Disturbance bound Delta">
+          <div class="slider-range"><span>10</span><span>490</span></div>
+        </div>
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">Switching gain \(K\)</span>
+            <span class="slider-value" id="val-K">500</span>
+          </div>
+          <input type="range" id="sl-K" min="50" max="900" step="10" value="500" aria-label="Switching gain K">
+          <div class="slider-range"><span>50</span><span>900</span></div>
+        </div>
+      </div>
+
+      <div class="derived-bar">
+        <div class="derived-card">
+          <div class="derived-symbol">\(|s|\Delta\)</div>
+          <div class="derived-val" id="dv-sdelta">—</div>
+          <div class="derived-desc">Disturbance term (destabilising)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(K s\tanh\)</div>
+          <div class="derived-val" id="dv-ktanh">—</div>
+          <div class="derived-desc">Switching term (stabilising)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(K - \Delta\)</div>
+          <div class="derived-val" id="dv-margin">—</div>
+          <div class="derived-desc">Stability margin</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(\dot{V}\) sign</div>
+          <div class="derived-val" id="dv-vdot-sign">—</div>
+          <div class="derived-desc">Negative = stable ✓</div>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary btn-sm graph-explain-btn" type="button" data-overlay="ol-graph-explained">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        How to read this graph
+      </button>
+      <div class="canvas-wrap">
+        <canvas id="vdotCanvas" width="900" height="280" aria-label="Plot of V-dot versus s"></canvas>
+      </div>
+      <div class="canvas-legend">
+        <span><span style="color:var(--color-primary);font-weight:700;">━</span>&nbsp; \(K s\tanh(s/\phi)\) — stabilising</span>
+        <span><span style="color:#a12c2c;font-weight:700;">━ ─</span>&nbsp; \(|s|\Delta\) — destabilising</span>
+        <span><span style="color:#437a22;font-weight:700;">━</span>&nbsp; Net \(\dot{V}\) upper bound</span>
+      </div>
+
+      <!-- ═══ 8.5 STABILITY CONDITION ═══ -->
+      <h2 class="sec-heading">8.5 &nbsp;The Stability Condition — Eq. (41)</h2>
+
+      <p class="prose">
+        Looking at Eq.&nbsp;(40): the first term \(|s|\Delta\) is destabilising (it wants to
+        increase \(V\)), while the second term \(K s\tanh(s/\phi)\) is stabilising (it
+        decreases \(V\)). The other three terms also decrease \(V\). The controller wins
+        whenever the stabilising term outweighs the disturbance:
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Stability condition — Equation (41)</span>
+        \[ K > \Delta \]
+      </div>
+
+      <p class="prose">
+        This single inequality is the <strong>only design requirement</strong> for stability.
+        Set the switching gain \(K\) larger than the worst-case disturbance bound \(\Delta\),
+        and the PSSMC is guaranteed stable — regardless of initial conditions, parameter drifts,
+        or the specific realisation of the disturbance, as long as it stays bounded.
+      </p>
+
+      <div class="analogy-card">
+        <div class="analogy-icon">🏋️</div>
+        <div class="analogy-body">
+          <h3>A Physical Intuition for \(K > \Delta\)</h3>
+          <p>Imagine two people in a tug-of-war. \(\Delta\) is the disturbance pulling the
+          system <em>away</em> from \(s = 0\); \(K\) is the controller pulling it <em>back</em>.
+          As long as the controller is stronger (\(K > \Delta\)), it always wins the tug-of-war.
+          The PSSMC uses \(K = 500\) — chosen to exceed the largest expected chatter force
+          in the Kasprowiak operating envelope.</p>
+        </div>
+      </div>
+
+      <!-- ═══ PROOF TRACK ═══ -->
+      <h3 class="sec-sub">The Full Proof at a Glance</h3>
+      <div class="proof-track">
+        <div class="proof-row">
+          <div class="proof-line"><div class="proof-dot"></div><div class="proof-connector"></div></div>
+          <div class="proof-content">
+            <strong>Step A — Define \(V(t)\) [Eq. 33]</strong>
+            <p>Sum of squared surface value and squared parameter errors. A sum of squares is always \(\geq 0\). Zero only at the equilibrium.</p>
+          </div>
+        </div>
+        <div class="proof-row">
+          <div class="proof-line"><div class="proof-dot"></div><div class="proof-connector"></div></div>
+          <div class="proof-content">
+            <strong>Step B — Differentiate \(V\) [Eq. 35]</strong>
+            <p>Straightforward chain rule. Each squared term yields a product of the variable and its rate of change.</p>
+          </div>
+        </div>
+        <div class="proof-row">
+          <div class="proof-line"><div class="proof-dot"></div><div class="proof-connector"></div></div>
+          <div class="proof-content">
+            <strong>Step C — Substitute adaptive laws [Eq. 36–37]</strong>
+            <p>The \(-\alpha_i s^2\) and \(-\alpha_3|s|\) terms from Page 3 enter. With \(\gamma_i = \alpha_i\), the weights cancel and three dissipative terms remain.</p>
+          </div>
+        </div>
+        <div class="proof-row">
+          <div class="proof-line"><div class="proof-dot"></div><div class="proof-connector"></div></div>
+          <div class="proof-content">
+            <strong>Step D — Substitute closed-loop \(\dot{s}\) [Eq. 38]</strong>
+            <p>The PSSMC control law enters through \(\dot{s} = d(t) - K\tanh(s/\phi)\). The disturbance \(d(t)\) is bounded by \(\Delta\).</p>
+          </div>
+        </div>
+        <div class="proof-row">
+          <div class="proof-line"><div class="proof-dot"></div><div class="proof-connector"></div></div>
+          <div class="proof-content">
+            <strong>Step E — Apply tanh inequality [Eq. 39]</strong>
+            <p>\(s\tanh(s/\phi) \geq 0\) always. This lets us replace \(-Ks\tanh(s/\phi)\) with \(-K|s|\) in the bound, giving a clean expression.</p>
+          </div>
+        </div>
+        <div class="proof-row">
+          <div class="proof-line"><div class="proof-dot"></div><div class="proof-connector"></div></div>
+          <div class="proof-content">
+            <strong>Step F — Invoke stability condition \(K > \Delta\) [Eq. 41]</strong>
+            <p>When \(K > \Delta\), the stabilising term \(K|s|\) dominates the disturbance term \(|s|\Delta\) for \(|s|\) sufficiently large. \(\dot{V} < 0\) outside the boundary layer. QED. ∎</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 8.6 STABILITY SUMMARY ═══ -->
+      <h2 class="sec-heading">8.6 &nbsp;Stability Summary</h2>
+
+      <div class="result-box">
+        <div class="result-title">What Has Been Proven</div>
+        <div class="stab-table-wrap">
+          <table class="stab-table">
+            <thead><tr><th>Condition</th><th>Mathematical requirement</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>\(V \geq 0\)</td>
+                <td>\(s^2 + \tilde{\lambda}^2 + \tilde{T}_p^2 + \tilde{\phi}^2 \geq 0\)</td>
+                <td class="check">✓ Sum of squares — always satisfied</td>
+              </tr>
+              <tr>
+                <td>\(V = 0\) iff equilibrium</td>
+                <td>\(s = 0\) and \(\tilde{\lambda} = \tilde{T}_p = \tilde{\phi} = 0\)</td>
+                <td class="check">✓ Satisfied by construction</td>
+              </tr>
+              <tr>
+                <td>\(\dot{V} < 0\) outside boundary</td>
+                <td class="cond">Requires \(K > \Delta\)</td>
+                <td class="check">✓ Enforced by gain selection \(K = 500\)</td>
+              </tr>
+              <tr>
+                <td>Error convergence</td>
+                <td>\(e(t) \to 0\) as \(t \to \infty\)</td>
+                <td class="check">✓ Guaranteed on sliding surface \(s = 0\)</td>
+              </tr>
+              <tr>
+                <td>Chattering elimination</td>
+                <td>\(\tanh\) replaces \(\text{sgn}\)</td>
+                <td class="check">✓ By functional substitution — infinitely differentiable</td>
+              </tr>
+              <tr>
+                <td>Parameter boundedness</td>
+                <td>\(\lambda, T_p, \phi\) remain bounded</td>
+                <td class="check">✓ tanh outputs bounded; lower bounds enforced</td>
+              </tr>
+              <tr>
+                <td>Practical stability</td>
+                <td>\(s\) enters neighbourhood of 0</td>
+                <td class="check">✓ Proven by Lyapunov argument — ultimate boundedness</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight-note">
+        <strong>Practical vs asymptotic stability:</strong> the proof establishes
+        <strong>practical stability</strong> (also called <em>ultimate boundedness</em>).
+        Inside the boundary layer \(|s| \leq \phi\), \(\dot{V}\) may momentarily be
+        non-negative — but the state cannot escape. The system converges to an arbitrarily
+        small neighbourhood of \(s = 0\) and stays there. Perfect asymptotic convergence
+        would require \(\phi \to 0\), which reintroduces chattering. The adaptive \(\phi\)
+        automatically finds the smallest boundary layer that avoids chattering at each operating point.
+      </div>
+
+      <!-- ═══ CH. 9 — SYSTEM PARAMETERS ═══ -->
+      <h2 class="sec-heading">9. &nbsp;Complete System Parameters</h2>
+
+      <p class="prose">
+        All numerical values used across Pages 1–4 are collected here for reference.
+        Physical parameters come directly from Kasprowiak et al. [1].
+        Controller parameters were established through simulation tuning against the
+        15-run experimental dataset.
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Symbol</th><th>Description</th><th>Value</th><th>Unit</th><th>Source</th></tr>
+          </thead>
+          <tbody>
+            <tr class="section-row"><td colspan="5">Plant — Physical System (Kasprowiak et al. [1])</td></tr>
+            <tr><td class="sym">\(m_1\)</td><td>Tool mass</td><td>0.2</td><td>kg</td><td>Kasprowiak [1]</td></tr>
+            <tr><td class="sym">\(k_1\)</td><td>Tool stiffness</td><td>2.2 × 10⁹</td><td>N/m</td><td>Kasprowiak [1]</td></tr>
+            <tr><td class="sym">\(c_1\)</td><td>Tool damping</td><td>70</td><td>kg/s</td><td>Kasprowiak [1]</td></tr>
+            <tr><td class="sym">\(m_2\)</td><td>Workpiece mass</td><td>3.0</td><td>kg</td><td>Kasprowiak [1]</td></tr>
+            <tr><td class="sym">\(k_2\)</td><td>Workpiece stiffness</td><td>1.7 × 10⁸</td><td>N/m</td><td>Kasprowiak [1]</td></tr>
+            <tr><td class="sym">\(c_2\)</td><td>Workpiece damping</td><td>290</td><td>kg/s</td><td>Kasprowiak [1]</td></tr>
+            <tr class="section-row"><td colspan="5">Cutting Process</td></tr>
+            <tr><td class="sym">\(f_z\)</td><td>Feed per tooth</td><td>0.2</td><td>mm</td><td>Simulation setting</td></tr>
+            <tr><td class="sym">\(a_p\)</td><td>Axial depth of cut</td><td>0.5</td><td>mm</td><td>Simulation setting</td></tr>
+            <tr><td class="sym">\(K_c\)</td><td>Specific cutting force</td><td>1500</td><td>N/mm²</td><td>Simulation setting</td></tr>
+            <tr><td class="sym">\(\tau_s\)</td><td>Servo delay</td><td>0.17</td><td>s</td><td>Literature</td></tr>
+            <tr><td class="sym">\(\bar{\tau}_c\)</td><td>Mean cutting time constant</td><td>0.0227</td><td>s</td><td>Experimental mean</td></tr>
+            <tr class="section-row"><td colspan="5">PSSMC Controller — Initial &amp; Fixed Values</td></tr>
+            <tr><td class="sym">\(K\)</td><td>Switching gain</td><td>500</td><td>—</td><td>Simulation tuning</td></tr>
+            <tr><td class="sym">\(\lambda_0\)</td><td>Initial sliding gain</td><td>44.1</td><td>s⁻¹</td><td>\(1/\bar{\tau}_c\)</td></tr>
+            <tr><td class="sym">\(T_{p,0}\)</td><td>Initial prediction horizon</td><td>5 × 10⁻⁴</td><td>s</td><td>Simulation tuning</td></tr>
+            <tr><td class="sym">\(\phi_0\)</td><td>Initial boundary layer</td><td>0.01</td><td>—</td><td>Simulation tuning</td></tr>
+            <tr class="section-row"><td colspan="5">Adaptation Gains</td></tr>
+            <tr><td class="sym">\(\alpha_1\)</td><td>Gain for \(\dot{\lambda}\)</td><td>5 × 10⁻⁴</td><td>—</td><td>Simulation tuning</td></tr>
+            <tr><td class="sym">\(\alpha_2\)</td><td>Gain for \(\dot{T}_p\)</td><td>50.0</td><td>—</td><td>Simulation tuning</td></tr>
+            <tr><td class="sym">\(\alpha_3\)</td><td>Gain for \(\dot{\phi}\)</td><td>5 × 10⁻⁴</td><td>—</td><td>Simulation tuning</td></tr>
+            <tr class="section-row"><td colspan="5">Lower Bounds (Stability Enforcement)</td></tr>
+            <tr><td class="sym">\(\lambda_{\min}\)</td><td>Minimum sliding gain</td><td>1.0</td><td>s⁻¹</td><td>Singularity prevention</td></tr>
+            <tr><td class="sym">\(T_{p,\min}\)</td><td>Minimum prediction horizon</td><td>10</td><td>μs</td><td>Zero-horizon prevention</td></tr>
+            <tr><td class="sym">\(\phi_{\min}\)</td><td>Minimum boundary layer</td><td>10⁻⁴</td><td>—</td><td>Numerical stability</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight-note">
+        <strong>This completes the mathematical foundation of the PSSMC.</strong>
+        Page 5 will present simulation results: chatter suppression time, residual vibration amplitude,
+        and comparison against uncontrolled and standard SMC baselines — the numerical validation
+        of everything derived on Pages 1–4.
+      </div>
+
+    </div><!-- end page-body -->
+
+    <!-- PAGE NAV -->
+    <nav class="page-nav" aria-label="Page navigation">
+      <a class="page-nav-btn" href="page-3.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Page 3 — Full Control Law
+      </a>
+      <span class="page-nav-indicator">Page 4 of 5 &nbsp;&middot;&nbsp; Chapters 8 – 9</span>
+      <a class="page-nav-btn primary" href="page-5.html">
+        Page 5 — Results
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </nav>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">Page 4 · Chapters 8–9 · Kasprowiak Study · PSSMC Mathematics · University of Dar es Salaam, Department of Mechanical and Industrial Engineering.</p>
+  </footer>
+
+  <!-- ═══ OVERLAYS ═══ -->
+  <div class="overlay" id="ol-why-lyap" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-wl-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-wl-t">Why do we need Lyapunov?</h2>
+      <p>Simulation can only test a finite number of scenarios. No matter how many runs you do, there could always be an untested initial condition or disturbance profile that causes the controller to fail.</p>
+      <p>Lyapunov's method, developed by Aleksandr Lyapunov in 1892, provides a way to prove stability for <em>all</em> possible scenarios simultaneously — without simulating each one. The idea: find a function \(V(t) \geq 0\) (like total energy) that is always decreasing. If such a function exists, the system must converge — there is simply no mathematical way for it to diverge.</p>
+      <p>For the PSSMC, this certificate means the controller is safe to deploy in a real CNC machine — not just likely to work, but <em>provably guaranteed</em> to work within the stated conditions.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-energy-analogy" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-en-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-en-t">The energy analogy — why it works</h2>
+      <p>Physical intuition: if you can show the total energy of a system is always decreasing, the system must eventually come to rest. A pendulum with friction always stops — because every swing dissipates energy.</p>
+      <p>\(V(t)\) in Lyapunov analysis plays the role of "energy". It is not necessarily real physical energy — it is a mathematical construct chosen to make the proof work. The choice of \(V\) is the art; proving \(\dot{V} \leq 0\) is the craft.</p>
+      <p>For the PSSMC, \(V = \tfrac{1}{2}s^2 + \text{parameter errors}\) captures both the chatter energy (via \(s^2\)) and the parameter adaptation quality. When \(\dot{V} \leq 0\), both are simultaneously decreasing — chatter is suppressed and gains are converging.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-practical" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-pr-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-pr-t">Practical vs asymptotic stability</h2>
+      <p><strong>Asymptotic stability</strong> means \(s(t) \to 0\) exactly as \(t \to \infty\). It requires \(\dot{V} < 0\) everywhere except the origin. This would need \(\phi \to 0\), which reintroduces chattering.</p>
+      <p><strong>Practical stability</strong> (also called <em>ultimate boundedness</em>) means \(s(t)\) enters and stays within a small neighbourhood \(|s| \leq \epsilon\) for some \(\epsilon > 0\). Inside this neighbourhood, \(\dot{V}\) may occasionally be slightly positive, but the state cannot escape.</p>
+      <p>For engineering purposes, practical stability is sufficient — we do not need the vibration to reach exactly zero, only to stay below the threshold at which chatter causes surface damage. The adaptive \(\phi\) law automatically finds the smallest \(\phi\) (tightest neighbourhood) that avoids chattering at each operating point.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-tanh-ineq" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-ti-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ti-t">The tanh inequality — Eq. (39)</h2>
+      <p>\[ s\,\tanh(s/\phi) \geq 0 \]</p>
+      <p>This looks simple but it is the keystone of the proof. Here is why it is true:</p>
+      <p>Case \(s > 0\): \(\tanh(s/\phi) > 0\) (tanh of a positive number is positive). Product is positive.</p>
+      <p>Case \(s < 0\): \(\tanh(s/\phi) < 0\) (tanh of a negative number is negative). Negative × negative = positive.</p>
+      <p>Case \(s = 0\): both sides are zero. Product is zero.</p>
+      <p>In all cases, \(s\) and \(\tanh(s/\phi)\) have the same sign, so their product \(\geq 0\). This allows us to replace \(-K s\tanh(s/\phi)\) with \(-K|s|\) in the bound, which is what makes the algebra tractable.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══ GRAPH EXPLANATION OVERLAY ═══ -->
+  <div class="overlay" id="ol-graph-explained" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel overlay-panel-wide" role="dialog" aria-modal="true" aria-labelledby="ol-ge-title">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+
+      <h2 id="ol-ge-title">Understanding the \(\dot{V}\) Graph — Plain Language</h2>
+
+      <p class="ol-intro">
+        The graph has three coloured lines. Each line tells one part of the stability story.
+        Together, they show — visually — why the PSSMC is mathematically guaranteed to suppress chatter.
+        Here is every line explained, from left to right.
+      </p>
+
+      <!-- THE HORIZONTAL AXIS -->
+      <div class="ol-section">
+        <h3 class="ol-sh">The horizontal axis — \(s(t)\)</h3>
+        <p>
+          The x-axis represents the value of the <strong>sliding surface</strong> \(s(t)\).
+          When \(s = 0\), the machine is perfectly on the surface — chatter is suppressed,
+          force error is decaying exponentially, and the controller has done its job.
+          Moving right along the axis means the machine is drifting further and further
+          away from the desired behaviour: chatter is getting worse, the force error is growing.
+          So the entire story of stability is the story of what pulls \(s\) back toward zero.
+        </p>
+      </div>
+
+      <!-- TEAL LINE -->
+      <div class="ol-section ol-section-teal">
+        <h3 class="ol-sh">The teal line — \(K s \tanh(s / \phi)\) — the controller pushing back</h3>
+        <p>
+          This is the <strong>stabilising force</strong> — the part of the controller that
+          actively fights to bring \(s\) back to zero.
+        </p>
+        <p>
+          Notice its shape: it starts at zero when \(s = 0\), rises steeply, and then
+          <em>flattens out</em> as \(s\) grows large. This flattening is the \(\tanh\) function
+          at work — it saturates. The physical meaning: when the machine is very far from the surface,
+          the controller applies its maximum possible restoring force \(K\). It does not
+          keep growing — it caps out. This is what prevents the aggressive, high-frequency switching
+          (chattering) of classical SMC.
+        </p>
+        <p>
+          The steepness of the teal curve is controlled by \(K\). A larger \(K\) means
+          a steeper rise and a higher plateau. When you drag the \(K\) slider to the right,
+          you are making this curve taller — giving the controller a stronger arm in the tug-of-war.
+        </p>
+      </div>
+
+      <!-- RED DASHED LINE -->
+      <div class="ol-section ol-section-red">
+        <h3 class="ol-sh">The red dashed line — \(|s| \Delta\) — the disturbance pushing away</h3>
+        <p>
+          This is the <strong>destabilising force</strong> — chatter, vibration, modelling errors,
+          anything that tries to push the machine away from \(s = 0\).
+        </p>
+        <p>
+          It is a straight line through the origin with slope \(\Delta\). This is because
+          we do not know the exact shape of the disturbance — we only know it is bounded by
+          \(|d(t)| \leq \Delta\). The worst case is when every bit of disturbance is pushing
+          in exactly the wrong direction, which gives the linear \(|s|\Delta\) term.
+        </p>
+        <p>
+          When you drag the \(\Delta\) slider to the right, you are increasing the slope of
+          this line — simulating a more severe cutting environment with stronger chatter forces.
+          A steeper red line means the disturbance is a tougher opponent.
+        </p>
+      </div>
+
+      <!-- GREEN LINE -->
+      <div class="ol-section ol-section-green">
+        <h3 class="ol-sh">The green line — net \(\dot{V}\) upper bound — the final verdict</h3>
+        <p>
+          This is the green line is the most important one. It shows the <strong>net result</strong>:
+          disturbance minus controller, i.e. \(|s|\Delta - K s \tanh(s/\phi)\).
+        </p>
+        <p>
+          <strong>If the green line is below zero</strong> — the controller is winning.
+          \(\dot{V} &lt; 0\) means the total "energy" \(V(t)\) is decreasing.
+          The system is rolling downhill toward \(s = 0\). Stability is guaranteed.
+        </p>
+        <p>
+          <strong>If the green line is above zero</strong> — the disturbance is winning.
+          \(V(t)\) is growing, \(s\) is moving away from zero. The controller is not
+          strong enough. You need to increase \(K\) or the stability condition \(K &gt; \Delta\)
+          is violated.
+        </p>
+        <p>
+          Notice what happens near \(s = 0\): the green line may briefly be slightly positive,
+          because \(\tanh\) is gentle near zero (it has not yet saturated). This is the
+          <strong>boundary layer</strong> — a small neighbourhood around \(s = 0\) where
+          we accept that \(\dot{V}\) is not strictly negative. Outside this neighbourhood,
+          the green line drops below zero and stays there. This is <em>practical stability</em>:
+          the system is guaranteed to enter the boundary layer and stay inside it forever.
+        </p>
+      </div>
+
+      <!-- THE CROSSOVER POINT -->
+      <div class="ol-section">
+        <h3 class="ol-sh">The crossover point — where control takes over</h3>
+        <p>
+          There is a specific value of \(|s|\) at which the teal curve overtakes the red dashed line.
+          To the right of this crossover, the teal line is higher than the red — the controller is
+          stronger than the disturbance, and the green line is below zero. The system is being
+          pulled back toward \(s = 0\).
+        </p>
+        <p>
+          This crossover point moves depending on \(K\) and \(\Delta\):
+          increasing \(K\) moves it closer to zero (faster recovery);
+          increasing \(\Delta\) moves it further from zero (slower recovery).
+          When \(K &lt; \Delta\), the crossover never happens — the red line is always above the teal,
+          the green line stays positive, and the system diverges. This is why \(K &gt; \Delta\)
+          is the only design requirement.
+        </p>
+      </div>
+
+      <!-- TRY IT -->
+      <div class="ol-section ol-section-try">
+        <h3 class="ol-sh">Try it on the sliders</h3>
+        <ul class="ol-list">
+          <li>Set \(K = 200\) and \(\Delta = 400\): the red line dominates — the green line stays positive — unstable. ✗</li>
+          <li>Set \(K = 500\) and \(\Delta = 100\): the teal line rises sharply above the red — the green line drops well below zero — strongly stable. ✓</li>
+          <li>Set \(K = 110\) and \(\Delta = 100\): barely stable — the green line dips below zero only for large \(s\). The boundary layer is wide.</li>
+          <li>Increase \(|s|\) on the first slider to see which term currently dominates at that particular operating point.</li>
+        </ul>
+      </div>
+
+      <!-- ONE SENTENCE SUMMARY -->
+      <div class="ol-section ol-section-summary">
+        <p>
+          <strong>In one sentence:</strong> the graph shows that as long as \(K &gt; \Delta\),
+          the teal curve always rises above the red dashed line for large \(|s|\), making
+          the green line negative outside the boundary layer — and that is the complete, visual
+          proof that the PSSMC must always suppress chatter.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PAGE-SPECIFIC SCRIPT -->
+  <script>
+  (function(){
+    'use strict';
+
+    /* ── PAGES POPUP ── */
+    const pBtn=document.getElementById('pagesBtn'), pDd=document.getElementById('pagesDropdown');
+    if(pBtn&&pDd){
+      const openP=()=>{pDd.classList.add('open');pBtn.setAttribute('aria-expanded','true');};
+      const closeP=()=>{pDd.classList.remove('open');pBtn.setAttribute('aria-expanded','false');};
+      pBtn.addEventListener('click',e=>{e.stopPropagation();pDd.classList.contains('open')?closeP():openP();});
+      document.addEventListener('click',closeP);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape')closeP();});
+    }
+
+    /* ── V-DOT EXPLORER ── */
+    const slS=document.getElementById('sl-s');
+    const slD=document.getElementById('sl-delta');
+    const slK=document.getElementById('sl-K');
+    const phi0=0.01;
+
+    function updateVdot(){
+      if(!slS||!slD||!slK) return;
+      const s=parseFloat(slS.value);
+      const D=parseFloat(slD.value);
+      const K=parseFloat(slK.value);
+      document.getElementById('val-s').textContent=s.toFixed(2);
+      document.getElementById('val-delta').textContent=D.toFixed(0);
+      document.getElementById('val-K').textContent=K.toFixed(0);
+
+      const sDelta=s*D;
+      const kTanh=K*s*Math.tanh(s/phi0);
+      const margin=K-D;
+      const netVdot=sDelta-kTanh;
+
+      document.getElementById('dv-sdelta').textContent=sDelta.toFixed(2);
+      document.getElementById('dv-ktanh').textContent=kTanh.toFixed(2);
+      const mEl=document.getElementById('dv-margin');
+      mEl.textContent=(margin>0?'+':'')+margin.toFixed(0);
+      mEl.style.color=margin>0?'var(--color-primary-dark)':'#a12c2c';
+      const vEl=document.getElementById('dv-vdot-sign');
+      vEl.textContent=netVdot<0?'Negative ✓':'Positive ✗';
+      vEl.style.color=netVdot<0?'var(--color-primary-dark)':'#a12c2c';
+      drawVdot(D,K);
+    }
+
+    const vCanvas=document.getElementById('vdotCanvas');
+
+    function drawVdot(D,K){
+      if(!vCanvas) return;
+      const ctx=vCanvas.getContext('2d');
+      const W=vCanvas.width,H=vCanvas.height;
+      const dk=document.documentElement.getAttribute('data-theme')==='dark';
+      const bg=dk?'#1b1814':'#fffdf9';
+      const gc=dk?'rgba(245,230,210,0.06)':'rgba(58,43,26,0.07)';
+      const axC=dk?'rgba(245,230,210,0.20)':'rgba(58,43,26,0.22)';
+      const tCol=dk?'#c49a6a':'#7a5c3a';
+      const sCol=dk?'#e05252':'#a12c2c';
+      const gCol=dk?'#6daa45':'#437a22';
+      const labC=dk?'#c0a888':'#68594e';
+
+      ctx.clearRect(0,0,W,H); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle=gc; ctx.lineWidth=1;
+      for(let x=0;x<=W;x+=W/10){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+      for(let y=0;y<=H;y+=H/4){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+      const cx=0, cy=H*0.65, sx=W/3; /* s from 0 to 3 */
+      ctx.strokeStyle=axC; ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+      ctx.fillStyle=labC; ctx.font='13px Inter,sans-serif';
+      ctx.fillText('s(t)',W-36,cy-10);
+
+      const scaleY=H*0.25;
+      function toY(v){return cy-v*scaleY/Math.max(K,D,200);}
+
+      /* |s|Δ */
+      ctx.beginPath(); ctx.setLineDash([8,5]); ctx.strokeStyle=sCol; ctx.lineWidth=2;
+      for(let px=0;px<=W;px++){
+        const s=px/sx;
+        ctx.px===0?ctx.moveTo(px,toY(s*D)):void 0;
+        px===0?ctx.moveTo(px,toY(s*D)):ctx.lineTo(px,toY(s*D));
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+
+      /* K s tanh(s/phi) */
+      ctx.beginPath(); ctx.strokeStyle=tCol; ctx.lineWidth=2.5;
+      for(let px=0;px<=W;px++){
+        const s=px/sx;
+        const y=toY(K*s*Math.tanh(s/phi0));
+        px===0?ctx.moveTo(px,y):ctx.lineTo(px,y);
+      }
+      ctx.stroke();
+
+      /* Net = |s|Δ - K s tanh */
+      ctx.beginPath(); ctx.strokeStyle=gCol; ctx.lineWidth=2;
+      for(let px=0;px<=W;px++){
+        const s=px/sx;
+        const net=s*D - K*s*Math.tanh(s/phi0);
+        const y=toY(net);
+        px===0?ctx.moveTo(px,y):ctx.lineTo(px,y);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle=labC; ctx.font='12px Inter,sans-serif';
+      ctx.fillText('K='+K.toFixed(0)+', Δ='+D.toFixed(0)+
+        (K>D?' → K>Δ ✓':' → K<Δ ✗'),12,18);
+    }
+
+    if(slS) slS.addEventListener('input',updateVdot);
+    if(slD) slD.addEventListener('input',updateVdot);
+    if(slK) slK.addEventListener('input',updateVdot);
+    window.addEventListener('load',updateVdot);
+    new MutationObserver(()=>updateVdot()).observe(
+      document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+  })();
+  </script>
+</body>
+</html>

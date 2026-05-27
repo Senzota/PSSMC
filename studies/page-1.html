@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 1 — Two-DOF Model · PSSMC Mathematics</title>
+  <meta name="description" content="The Kasprowiak two-degree-of-freedom tool–workpiece model: physical system, equations of motion, cutting force, and state-space representation.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']], tags: 'ams' },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <!-- Scripts -->
+  <script defer src="../assets/js/main.js"></script>
+
+  <style>
+    /* ── PAGES POPUP ─────────────────────────────── */
+    .pages-btn-wrap { position: relative; }
+    .pages-btn {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-size: var(--text-sm); padding: 0.62rem 0.9rem;
+      border-radius: 999px; border: 1px solid var(--color-border);
+      background: var(--color-surface); color: var(--color-text-muted);
+      cursor: pointer; white-space: nowrap;
+      transition: color var(--transition), background var(--transition);
+    }
+    .pages-btn:hover { color: var(--color-text); background: var(--color-surface-2); }
+    .pages-btn svg { transition: transform 240ms cubic-bezier(0.16,1,0.3,1); }
+    .pages-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+    .pages-dropdown {
+      position: absolute; top: calc(100% + 0.5rem); right: 0;
+      min-width: 288px; background: var(--color-surface);
+      border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg); z-index: 100; overflow: hidden;
+      opacity: 0; transform: translateY(-6px) scale(0.98);
+      pointer-events: none;
+      transition: opacity 200ms cubic-bezier(0.16,1,0.3,1), transform 200ms cubic-bezier(0.16,1,0.3,1);
+    }
+    .pages-dropdown.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+    .pages-dropdown-header {
+      padding: 0.75rem 1rem 0.5rem;
+      font-size: var(--text-xs); text-transform: uppercase;
+      letter-spacing: 0.14em; color: var(--color-text-faint);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .pages-dropdown a {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.7rem 1rem; font-size: var(--text-sm);
+      color: var(--color-text-muted); text-decoration: none;
+      transition: background var(--transition), color var(--transition);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .pages-dropdown a:last-child { border-bottom: none; }
+    .pages-dropdown a:hover { background: var(--color-surface-2); color: var(--color-text); }
+    .pages-dropdown a[aria-current="page"] {
+      background: rgba(122,92,58,0.07); color: var(--color-primary-dark); font-weight: 600;
+    }
+    .pd-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--color-surface-2); border: 1px solid var(--color-border);
+      display: grid; place-items: center;
+      font-size: 0.7rem; font-weight: 600; color: var(--color-text-faint); flex-shrink: 0;
+    }
+    a[aria-current="page"] .pd-num { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+    .pd-label { flex: 1; line-height: 1.3; }
+    .pd-badge {
+      font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 999px;
+      background: rgba(122,92,58,0.11); color: var(--color-primary-dark); font-weight: 500;
+    }
+    [data-theme="dark"] .pd-badge { background: rgba(196,154,106,0.15); color: #c49a6a; }
+
+    /* ── PAGE HERO ───────────────────────────────── */
+    .page-hero {
+      padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1rem, 4vw, 3rem) var(--space-8);
+      border-bottom: 1px solid var(--color-border);
+      max-width: 1080px; margin-inline: auto;
+    }
+    .page-hero .eyebrow { margin-bottom: var(--space-3); }
+    .page-hero h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl); font-weight: 600;
+      line-height: 1.0; margin-bottom: var(--space-5);
+    }
+    .page-hero .lead {
+      font-size: var(--text-lg); color: var(--color-text-muted);
+      max-width: 58ch; line-height: 1.7; margin-bottom: var(--space-6);
+    }
+    .hero-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    /* ── BODY CONTENT ────────────────────────────── */
+    .page-body {
+      max-width: 1080px; margin-inline: auto;
+      padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem);
+    }
+
+    /* Section heading */
+    .sec-heading {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl); font-weight: 600;
+      margin-bottom: var(--space-5); margin-top: var(--space-12);
+      padding-top: var(--space-8);
+      border-top: 1px solid var(--color-border);
+    }
+    .sec-heading:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    .sec-sub {
+      font-family: var(--font-display);
+      font-size: var(--text-xl); font-weight: 600;
+      margin-bottom: var(--space-4); margin-top: var(--space-8);
+      color: var(--color-primary-dark);
+    }
+
+    .prose {
+      font-size: var(--text-base); color: var(--color-text-muted);
+      line-height: 1.8; margin-bottom: var(--space-5); max-width: 72ch;
+    }
+    .prose strong { color: var(--color-text); }
+
+    /* Equation block */
+    .eq-block {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.4rem 1.8rem;
+      margin: var(--space-5) 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .eq-label {
+      display: block;
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--color-text-faint);
+      margin-bottom: 0.6rem;
+    }
+
+    /* SVG diagram card */
+    .diagram-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      margin: var(--space-8) 0;
+      overflow-x: auto;
+    }
+    .diagram-card figcaption {
+      font-size: var(--text-sm); color: var(--color-text-muted);
+      margin-top: 1rem; text-align: center; line-height: 1.6;
+      max-width: 100%;
+    }
+
+    /* State vector display */
+    .state-vector {
+      display: flex; align-items: center; gap: 1rem;
+      flex-wrap: wrap;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem 1.5rem;
+      margin: var(--space-5) 0;
+      overflow-x: auto;
+    }
+
+    /* Matrix grid */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem; margin: var(--space-5) 0;
+    }
+    .matrix-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .matrix-card .matrix-name {
+      font-family: var(--font-display);
+      font-size: var(--text-lg); font-weight: 600;
+      color: var(--color-primary-dark);
+      margin-bottom: var(--space-3);
+    }
+
+    /* Highlight note */
+    .highlight-note {
+      background: rgba(122,92,58,0.06);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.3rem;
+      margin: var(--space-5) 0;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.75;
+    }
+    .highlight-note strong { color: var(--color-text); }
+
+    /* ── PAGE NAV (Prev / Next) ───────────────────── */
+    .page-nav {
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-8) clamp(1rem, 4vw, 3rem);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      max-width: 1080px; margin-inline: auto;
+    }
+    .page-nav-btn {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.85rem 1.4rem; border-radius: 999px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface); color: var(--color-text-muted);
+      font-size: var(--text-sm); font-weight: 500; text-decoration: none;
+      transition: color var(--transition), background var(--transition),
+                  box-shadow var(--transition), transform var(--transition);
+    }
+    .page-nav-btn:hover {
+      color: var(--color-text); background: var(--color-surface-2);
+      transform: translateY(-1px); box-shadow: var(--shadow-sm);
+    }
+    .page-nav-btn.primary {
+      background: var(--color-primary); color: #fff;
+      border-color: var(--color-primary);
+    }
+    .page-nav-btn.primary:hover { background: var(--color-primary-dark); }
+    .page-nav-indicator {
+      font-size: var(--text-xs); color: var(--color-text-faint);
+      text-align: center; letter-spacing: 0.06em;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 640px) {
+      .matrix-grid { grid-template-columns: 1fr; }
+      .page-nav { justify-content: center; }
+      .page-nav-indicator { display: none; }
+    }
+
+  /* Animations */
+/* ── SIMULATION LAUNCH BUTTON ── */
+.sim-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: var(--space-5);
+  padding: 0.8rem 1.5rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition),
+              transform var(--transition),
+              box-shadow var(--transition);
+}
+.sim-launch-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.sim-launch-btn:active { transform: translateY(0); }
+
+/* ── PAGE FADE TRANSITION ── */
+.page-wrapper { animation: pageFadeIn 0.4s ease both; }
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-leaving {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+
+
+</style>
+
+</head>
+
+
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ── HEADER ─────────────────────────────────────────────── -->
+<header class="site-header">
+  <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <circle cx="32" cy="32" r="26" class="mark-ring"/>
+      <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave"/>
+      <path d="M18 22h12" class="mark-line"/>
+    </svg>
+    <span>PSSMC</span>
+  </a>
+
+  <nav class="top-nav" aria-label="Primary navigation">
+    <a href="../index.html">Home</a>
+    <a href="Kasprowiak.html">Study Front</a>
+
+    <div class="pages-btn-wrap">
+      <button class="pages-btn" id="pagesBtn" aria-expanded="false" aria-haspopup="true">
+        Pages
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="pages-dropdown" id="pagesDropdown" role="menu">
+        <div class="pages-dropdown-header">PSSMC Mathematics — Kasprowiak</div>
+        <a href="Kasprowiak.html" role="menuitem">
+          <span class="pd-num">★</span><span class="pd-label">Front Page</span>
+        </a>
+        <a href="page-1.html" aria-current="page" role="menuitem">
+          <span class="pd-num">1</span><span class="pd-label">Two-DOF Model</span>
+          <span class="pd-badge">Here</span>
+        </a>
+        <a href="page-2.html" role="menuitem">
+          <span class="pd-num">2</span><span class="pd-label">Objective &amp; Sliding Surface</span>
+        </a>
+        <a href="page-3.html" role="menuitem">
+          <span class="pd-num">3</span><span class="pd-label">Full Control Law</span>
+        </a>
+        <a href="page-4.html" role="menuitem">
+          <span class="pd-num">4</span><span class="pd-label">Lyapunov &amp; Parameters</span>
+        </a>
+        <a href="page-5.html" role="menuitem">
+          <span class="pd-num">5</span><span class="pd-label">Results &amp; Discussion</span>
+          <span class="pd-badge">Soon</span>
+        </a>
+      </div>
+    </div>
+
+    <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+  </nav>
+</header>
+
+<!-- ── MAIN ───────────────────────────────────────────────── -->
+<main id="main">
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <p class="eyebrow">Chapter 1 &nbsp;·&nbsp; PSSMC Mathematics</p>
+    <h1>The Kasprowiak<br>Two-DOF Model</h1>
+    <p class="lead">
+      The physical foundation of all that follows — a two-degree-of-freedom
+      tool–workpiece system that captures the regenerative mechanism driving chatter
+      in CNC turning operations.
+    </p>
+    <div class="hero-chips">
+      <button class="chip" type="button" data-overlay="ol-dof">What is a DOF?</button>
+      <button class="chip" type="button" data-overlay="ol-regen">Regenerative chatter</button>
+      <button class="chip" type="button" data-overlay="ol-statespace">Why state-space?</button>
+      <button class="chip" type="button" data-overlay="ol-cutforce">Cutting force model</button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="page-body">
+
+    <!-- §1.1 Physical System -->
+    <h2 class="sec-heading">1.1 &nbsp; Physical System Description</h2>
+
+    <p class="prose">
+      The model introduced by Kasprowiak, Parus, and Hoffmann treats the cutting system as
+      <strong>two coupled masses</strong> — the cutting tool (mass \(m_1\)) and the workpiece
+      (mass \(m_2\)) — each connected to a rigid machine frame by a spring-damper pair, and
+      linked to each other through the cutting force \(F_{\text{cut}}(t)\).
+    </p>
+    <p class="prose">
+      The spring-damper pair for each mass models the elastic and dissipative behaviour of the
+      real structure: the tool holder stiffness and damping for \(m_1\), and the workpiece
+      clamping stiffness and damping for \(m_2\). The cutting force acts in equal and opposite
+      directions on the two masses — pushing the tool in one direction and the workpiece in the
+      other, thereby <strong>coupling their dynamics</strong>.
+    </p>
+
+    <!-- SVG Diagram -->
+    <figure class="diagram-card" aria-label="Two-DOF system schematic">
+      <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg"
+           style="width:100%;max-width:760px;margin-inline:auto;display:block;"
+           aria-label="Schematic of the two-DOF tool–workpiece model">
+
+        <!-- ── WALL LEFT ── -->
+        <rect x="20" y="60" width="14" height="160" fill="currentColor" opacity="0.18" rx="2"/>
+        <line x1="34" y1="65" x2="20" y2="75" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="85" x2="20" y2="95" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="105" x2="20" y2="115" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="125" x2="20" y2="135" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="145" x2="20" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="165" x2="20" y2="175" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="185" x2="20" y2="195" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="34" y1="205" x2="20" y2="215" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+
+        <!-- ── SPRING k1 (top) ── -->
+        <line x1="34" y1="100" x2="60" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <polyline points="60,100 68,85 76,115 84,85 92,115 100,85 108,115 116,100"
+                  fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7"/>
+        <line x1="116" y1="100" x2="148" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <text x="88" y="78" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65"
+              font-family="Georgia,serif" font-style="italic">k₁</text>
+
+        <!-- ── DAMPER c1 (bottom) ── -->
+        <line x1="34" y1="155" x2="80" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <rect x="80" y="143" width="36" height="24" fill="none" stroke="currentColor"
+              stroke-width="1.8" opacity="0.7" rx="2"/>
+        <line x1="98" y1="143" x2="98" y2="128" stroke="currentColor" stroke-width="2.5" opacity="0.7"/>
+        <line x1="98" y1="167" x2="98" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <line x1="116" y1="155" x2="148" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <text x="98" y="136" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65"
+              font-family="Georgia,serif" font-style="italic">c₁</text>
+
+        <!-- Connector lines to tool mass -->
+        <line x1="148" y1="100" x2="148" y2="128" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <line x1="148" y1="155" x2="148" y2="130" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+
+        <!-- ── TOOL MASS m1 ── -->
+        <rect x="148" y="105" width="110" height="70" rx="10"
+              fill="var(--color-surface-2)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="203" y="136" text-anchor="middle" font-size="15" font-weight="700"
+              fill="var(--color-primary-dark)" font-family="Georgia,serif" font-style="italic">m₁</text>
+        <text x="203" y="155" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6"
+              font-family="sans-serif">Tool</text>
+
+        <!-- ── CUTTING FORCE (middle arrow) ── -->
+        <line x1="258" y1="140" x2="500" y2="140" stroke="currentColor" stroke-width="1.5"
+              stroke-dasharray="5,4" opacity="0.35"/>
+        <!-- Arrow right (force on workpiece) -->
+        <line x1="380" y1="115" x2="500" y2="115" stroke="var(--color-primary)" stroke-width="2.2"/>
+        <polygon points="500,115 490,109 490,121" fill="var(--color-primary)"/>
+        <!-- Arrow left (reaction on tool) -->
+        <line x1="258" y1="165" x2="380" y2="165" stroke="var(--color-primary)" stroke-width="2.2"/>
+        <polygon points="258,165 268,159 268,171" fill="var(--color-primary)"/>
+        <!-- Label -->
+        <rect x="298" y="128" width="120" height="26" rx="6"
+              fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1"/>
+        <text x="358" y="145" text-anchor="middle" font-size="12" font-weight="600"
+              fill="var(--color-primary-dark)" font-family="Georgia,serif" font-style="italic">F_cut(t)</text>
+
+        <!-- ── WORKPIECE MASS m2 ── -->
+        <rect x="500" y="105" width="110" height="70" rx="10"
+              fill="var(--color-surface-2)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="555" y="136" text-anchor="middle" font-size="15" font-weight="700"
+              fill="var(--color-primary-dark)" font-family="Georgia,serif" font-style="italic">m₂</text>
+        <text x="555" y="155" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6"
+              font-family="sans-serif">Workpiece</text>
+
+        <!-- ── SPRING k2 (top) ── -->
+        <line x1="610" y1="100" x2="636" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <polyline points="636,100 644,85 652,115 660,85 668,115 676,85 684,115 692,100"
+                  fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7"/>
+        <line x1="692" y1="100" x2="726" y2="100" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <text x="664" y="78" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65"
+              font-family="Georgia,serif" font-style="italic">k₂</text>
+
+        <!-- ── DAMPER c2 (bottom) ── -->
+        <line x1="610" y1="155" x2="644" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <rect x="644" y="143" width="36" height="24" fill="none" stroke="currentColor"
+              stroke-width="1.8" opacity="0.7" rx="2"/>
+        <line x1="662" y1="143" x2="662" y2="128" stroke="currentColor" stroke-width="2.5" opacity="0.7"/>
+        <line x1="662" y1="167" x2="662" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <line x1="680" y1="155" x2="726" y2="155" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <text x="662" y="136" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.65"
+              font-family="Georgia,serif" font-style="italic">c₂</text>
+
+        <!-- Connector lines from workpiece to right wall -->
+        <line x1="610" y1="100" x2="610" y2="128" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+        <line x1="610" y1="155" x2="610" y2="130" stroke="currentColor" stroke-width="1.8" opacity="0.5"/>
+
+        <!-- ── WALL RIGHT ── -->
+        <rect x="726" y="60" width="14" height="160" fill="currentColor" opacity="0.18" rx="2"/>
+        <line x1="726" y1="65" x2="740" y2="75" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="85" x2="740" y2="95" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="105" x2="740" y2="115" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="125" x2="740" y2="135" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="145" x2="740" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="165" x2="740" y2="175" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="185" x2="740" y2="195" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+        <line x1="726" y1="205" x2="740" y2="215" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+
+        <!-- Displacement arrows below masses -->
+        <line x1="203" y1="195" x2="230" y2="195" stroke="var(--color-primary)" stroke-width="1.8"/>
+        <polygon points="230,195 222,190 222,200" fill="var(--color-primary)"/>
+        <text x="203" y="218" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.7"
+              font-family="Georgia,serif" font-style="italic">y₁(t)</text>
+
+        <line x1="555" y1="195" x2="582" y2="195" stroke="var(--color-primary)" stroke-width="1.8"/>
+        <polygon points="582,195 574,190 574,200" fill="var(--color-primary)"/>
+        <text x="555" y="218" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.7"
+              font-family="Georgia,serif" font-style="italic">y₂(t)</text>
+      </svg>
+      <figcaption>
+        <strong>Figure 1.1</strong> — Two-DOF tool–workpiece model (Kasprowiak et al., 2022).
+        The cutting force \(F_{\text{cut}}(t)\) acts equal and opposite on both masses,
+        coupling their dynamics through the regenerative chip thickness mechanism.
+      </figcaption>
+    </figure>
+
+    Call the simulation to life and interact with the model in real time, adjust parameters,
+    apply disturbances, and see how the tool and workpiece respond. This is the dynamic system
+    at the heart of everything that follows, and the playground where all our theoretical results
+    will come to life. 
+
+
+<!-- Button ya Simulation -->
+<div style="text-align:center; margin-top:var(--space-5);">
+<a href="m1&amp;m2.html" class="sim-launch-btn">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <polygon points="5 3 19 12 5 21 5 3"/>
+  </svg>
+  Launch Simulation
+</a>
+</div>
+
+
+
+
+    <!-- Parameters table -->
+    <h3 class="sec-sub">Model Parameters</h3>
+    <p class="prose">
+      The physical parameters are taken directly from Kasprowiak et al. [1] and define the
+      numerical values used throughout all subsequent derivations.
+    </p>
+
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Description</th>
+            <th>Value</th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>m</em><sub>1</sub></td>
+            <td>Tool mass</td>
+            <td>0.2</td>
+            <td>kg</td>
+          </tr>
+          <tr>
+            <td><em>k</em><sub>1</sub></td>
+            <td>Tool stiffness</td>
+            <td>2.2 × 10<sup>9</sup></td>
+            <td>N/m</td>
+          </tr>
+          <tr>
+            <td><em>c</em><sub>1</sub></td>
+            <td>Tool damping</td>
+            <td>70</td>
+            <td>kg/s</td>
+          </tr>
+          <tr>
+            <td><em>m</em><sub>2</sub></td>
+            <td>Workpiece mass</td>
+            <td>3.0</td>
+            <td>kg</td>
+          </tr>
+          <tr>
+            <td><em>k</em><sub>2</sub></td>
+            <td>Workpiece stiffness</td>
+            <td>1.7 × 10<sup>8</sup></td>
+            <td>N/m</td>
+          </tr>
+          <tr>
+            <td><em>c</em><sub>2</sub></td>
+            <td>Workpiece damping</td>
+            <td>290</td>
+            <td>kg/s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- §1.2 Equations of Motion -->
+    <h2 class="sec-heading">1.2 &nbsp; Equations of Motion</h2>
+
+    <p class="prose">
+      Applying Newton's second law to each mass separately gives two coupled
+      second-order ordinary differential equations. The cutting force acts
+      in equal and opposite directions — it drives the tool and the workpiece
+      apart, coupling their dynamics through the regenerative chip thickness.
+    </p>
+
+    <div class="eq-block">
+      <span class="eq-label">Tool dynamics — Equation (1)</span>
+      \[
+        m_1 \ddot{y}_1(t) + c_1 \dot{y}_1(t) + k_1 y_1(t) = F_{\text{cut}}(t)
+        \tag{1}
+      \]
+    </div>
+
+    <div class="eq-block">
+      <span class="eq-label">Workpiece dynamics — Equation (2)</span>
+      \[
+        m_2 \ddot{y}_2(t) + c_2 \dot{y}_2(t) + k_2 y_2(t) = -F_{\text{cut}}(t)
+        \tag{2}
+      \]
+    </div>
+
+    <div class="highlight-note">
+      <strong>Note on sign convention:</strong> The cutting force \(F_{\text{cut}}\) appears
+      with a positive sign in the tool equation (1) and a negative sign in the workpiece
+      equation (2). This reflects the action–reaction pair: the force that pushes the tool
+      in one direction simultaneously pushes the workpiece in the opposite direction.
+    </div>
+
+    <!-- §1.3 Cutting Force Model -->
+    <h2 class="sec-heading">1.3 &nbsp; Cutting Force Model</h2>
+
+    <p class="prose">
+      The cutting force is modelled as a function of the static feed and the dynamic
+      displacements of both masses. This is the <strong>regenerative term</strong> —
+      the effective chip thickness depends not only on the programmed feed, but on the
+      current relative displacement between tool and workpiece.
+    </p>
+
+    <div class="eq-block">
+      <span class="eq-label">Cutting force — Equation (3)</span>
+      \[
+        F_{\text{cut}}(t) = \bigl(f_z - y_1(t) + y_2(t)\bigr)\, a_p\, K_c
+        \tag{3}
+      \]
+    </div>
+
+    <p class="prose">
+      where:
+    </p>
+
+    <div class="data-table-wrap" style="margin-bottom:var(--space-6);">
+      <table class="data-table">
+        <thead>
+          <tr><th>Symbol</th><th>Description</th><th>Value</th><th>Unit</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><em>f</em><sub>z</sub></td><td>Nominal feed per tooth (static chip thickness)</td><td>0.2</td><td>mm</td></tr>
+          <tr><td><em>a</em><sub>p</sub></td><td>Axial depth of cut</td><td>0.5</td><td>mm</td></tr>
+          <tr><td><em>K</em><sub>c</sub></td><td>Specific cutting resistance coefficient</td><td>1500</td><td>N/mm²</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="highlight-note">
+      <strong>The regenerative mechanism:</strong> The term \((f_z - y_1 + y_2)\) captures
+      the effective chip thickness. When vibrations cause \(y_1\) and \(y_2\) to fluctuate,
+      the cutting force fluctuates accordingly — driving further vibration. This
+      <strong>self-reinforcing feedback loop</strong> is the physical origin of chatter
+      and is precisely what the PSSMC is designed to suppress.
+    </div>
+
+    <!-- §1.4 State-Space Representation -->
+    <h2 class="sec-heading">1.4 &nbsp; State-Space Representation</h2>
+
+    <p class="prose">
+      To facilitate controller design, the two coupled second-order ODEs are rewritten
+      as four coupled first-order equations using the <strong>state vector</strong>:
+    </p>
+
+    <div class="eq-block">
+      <span class="eq-label">State vector — Equation (4)</span>
+      \[
+        \mathbf{x}(t) =
+        \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}
+        =
+        \begin{bmatrix} y_1(t) \\ \dot{y}_1(t) \\ y_2(t) \\ \dot{y}_2(t) \end{bmatrix}
+        \tag{4}
+      \]
+    </div>
+
+    <p class="prose">
+      The four state equations of the <strong>uncontrolled plant</strong> are then:
+    </p>
+
+    <div class="eq-block">
+      <span class="eq-label">State equations — Equations (5)–(8)</span>
+      \[
+        \dot{x}_1 = x_2 \tag{5}
+      \]
+      \[
+        \dot{x}_2 = -\frac{k_1}{m_1}x_1 - \frac{c_1}{m_1}x_2 + \frac{F_{\text{cut}}}{m_1} \tag{6}
+      \]
+      \[
+        \dot{x}_3 = x_4 \tag{7}
+      \]
+      \[
+        \dot{x}_4 = -\frac{k_2}{m_2}x_3 - \frac{c_2}{m_2}x_4 - \frac{F_{\text{cut}}}{m_2} \tag{8}
+      \]
+    </div>
+
+    <p class="prose">
+      In compact matrix form \(\dot{\mathbf{x}} = A\mathbf{x} + B u\), the system matrices are:
+    </p>
+
+      <div class="matrix-card">
+        <div class="matrix-name">System matrix <em>A</em></div>
+        \[
+          A = \begin{bmatrix}
+            0 & 1 & 0 & 0 \\
+            -\tfrac{k_1}{m_1} & -\tfrac{c_1}{m_1} & 0 & 0 \\
+            0 & 0 & 0 & 1 \\
+            0 & 0 & -\tfrac{k_2}{m_2} & -\tfrac{c_2}{m_2}
+          \end{bmatrix}
+        \]
+        </div>
+
+     <div class="matrix-grid">
+      <div class="matrix-card">
+        <div class="matrix-name">Input matrix <em>B</em></div>
+        \[
+          B = \begin{bmatrix}
+            0 \\ \tfrac{1}{m_1} \\ 0 \\ -\tfrac{1}{m_2}
+          \end{bmatrix}
+        \]
+      </div>
+      <div class="matrix-card">
+        <div class="matrix-name">Output matrix <em>C</em></div>
+        \[
+          C = \begin{bmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
+            0 & 0 & 0 & 1
+          \end{bmatrix}
+        \]
+      </div>
+      <div class="matrix-card">
+        <div class="matrix-name">Feedthrough matrix <em>D</em></div>
+        \[
+          D = \mathbf{0}
+        \]
+        <p style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:0.8rem;line-height:1.6;">
+          No direct feedthrough — the input does not instantaneously appear in the output.
+        </p>
+      </div>
+    </div>
+
+    <div class="highlight-note">
+      <strong>This is the uncontrolled plant.</strong> Without a controller, any initial
+      displacement produces sustained oscillations — the regenerative chatter that degrades
+      surface quality and accelerates tool wear. The state vector
+      \(\mathbf{x} = [y_1,\,\dot{y}_1,\,y_2,\,\dot{y}_2]^\top\)
+      carries all the information needed to design the PSSMC in the chapters that follow.
+    </div>
+
+  </div><!-- /page-body -->
+
+  <!-- PAGE NAVIGATION -->
+  <nav class="page-nav" aria-label="Page navigation">
+    <a class="page-nav-btn" href="Kasprowiak.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Front Page
+    </a>
+    <span class="page-nav-indicator">Page 1 of 5 &nbsp;·&nbsp; Chapter 1</span>
+    <a class="page-nav-btn primary" href="page-2.html">
+      Page 2 — Objective &amp; Sliding Surface
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </nav>
+
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <span class="footer-brand">FShuma</span>
+  <p class="footer-sub">
+    Page 1 · Chapter 1 — Kasprowiak Study · PSSMC Mathematics ·
+    University of Dar es Salaam, Department of Mechanical and Industrial Engineering.
+  </p>
+</footer>
+
+<!-- ── OVERLAYS ───────────────────────────────────────────── -->
+
+<!-- DOF -->
+<div class="overlay" id="ol-dof" hidden>
+  <div class="overlay-backdrop" data-close-overlay></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-dof-title">
+    <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+    <h2 id="ol-dof-title">What is a degree of freedom?</h2>
+    <p>
+      A <strong>degree of freedom (DOF)</strong> is an independent coordinate needed to fully
+      describe the position of a system. A single mass on a spring moving in one direction
+      has one DOF — you only need one number (its position) to know where it is.
+    </p>
+    <p>
+      This model has <strong>two DOF</strong>: the tool displacement \(y_1(t)\) and the
+      workpiece displacement \(y_2(t)\). Both can move independently, so you need both
+      coordinates to fully describe the system state. The two masses are coupled through
+      the cutting force — movement of one directly affects the other.
+    </p>
+  </div>
+</div>
+
+<!-- Regenerative chatter -->
+<div class="overlay" id="ol-regen" hidden>
+  <div class="overlay-backdrop" data-close-overlay></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-regen-title">
+    <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+    <h2 id="ol-regen-title">Regenerative chatter</h2>
+    <p>
+      Chatter is a <strong>self-excited vibration</strong> unique to machining. The key word
+      is <em>regenerative</em>: the tool cuts a surface that already carries waviness from
+      the previous revolution of the workpiece.
+    </p>
+    <p>
+      If the phase and amplitude conditions align, each pass amplifies the waviness left by
+      the last — the oscillation grows until the tool loses contact or the material responds
+      nonlinearly. In practice this produces a loud, harsh tone and a regular ripple pattern
+      on the finished surface.
+    </p>
+    <p>
+      In the cutting force model (Equation 3), the term \(-y_1(t) + y_2(t)\) is the
+      regenerative term — it makes the force depend on the <em>relative</em> displacement,
+      creating the feedback loop that drives chatter.
+    </p>
+  </div>
+</div>
+
+<!-- State-space -->
+<div class="overlay" id="ol-statespace" hidden>
+  <div class="overlay-backdrop" data-close-overlay></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-ss-title">
+    <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+    <h2 id="ol-ss-title">Why state-space?</h2>
+    <p>
+      The two second-order ODEs could be solved directly, but controller design is
+      much easier in <strong>state-space form</strong> — where all dynamics are expressed
+      as a set of first-order equations \(\dot{\mathbf{x}} = A\mathbf{x} + Bu\).
+    </p>
+    <p>
+      State-space gives us: a compact, systematic notation that scales to any number of DOF;
+      direct access to all internal variables (positions <em>and</em> velocities) needed for
+      sliding mode control; and a framework where stability proofs (Lyapunov analysis) are
+      well-established.
+    </p>
+    <p>
+      The state vector \(\mathbf{x} = [y_1,\,\dot{y}_1,\,y_2,\,\dot{y}_2]^\top\) carries
+      exactly the information the PSSMC needs to compute its control action at every instant.
+    </p>
+  </div>
+</div>
+
+<!-- Cutting force -->
+<div class="overlay" id="ol-cutforce" hidden>
+  <div class="overlay-backdrop" data-close-overlay></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-cf-title">
+    <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+    <h2 id="ol-cf-title">Cutting force model</h2>
+    <p>
+      The cutting force \(F_{\text{cut}} = (f_z - y_1 + y_2)\,a_p\,K_c\) is a
+      <strong>simplified linear model</strong>. It assumes the force is proportional to the
+      effective chip thickness, the depth of cut, and the specific cutting resistance.
+    </p>
+    <p>
+      One deliberate simplification: the <strong>bending force</strong> is neglected, so the
+      model assumes forces act along one axis only. This is acceptable for a turning process
+      where the dominant vibration is in the feed direction, and it keeps the mathematics
+      tractable while preserving the regenerative mechanism.
+    </p>
+    <p>
+      \(K_c = 1500\,\text{N/mm}^2\) is the specific cutting resistance — it is determined
+      experimentally and depends on the workpiece material (here AISI 1045 steel), tool
+      geometry, and machining conditions.
+    </p>
+  </div>
+</div>
+
+</div>
+<!-- ── SCRIPTS ─────────────────────────────────────────────── -->
+<script>
+
+
+
+  // THEME TOGGLE
+  (function(){
+    const root = document.documentElement;
+    const btn  = document.querySelector('[data-theme-toggle]');
+    const moonSVG = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    const sunSVG  = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+    let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    function apply(t){ root.setAttribute('data-theme', t); if(btn) btn.innerHTML = t==='dark' ? sunSVG : moonSVG; }
+    apply(theme);
+    if(btn) btn.addEventListener('click', ()=>{ theme = theme==='dark'?'light':'dark'; apply(theme); });
+  })();
+
+  // PAGES POPUP
+  (function(){
+    const btn = document.getElementById('pagesBtn');
+    const dd  = document.getElementById('pagesDropdown');
+    if(!btn || !dd) return;
+    function open(){ dd.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+    function close(){ dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    btn.addEventListener('click', e=>{ e.stopPropagation(); dd.classList.contains('open') ? close() : open(); });
+    document.addEventListener('click', ()=> close());
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+  })();
+
+  // OVERLAYS
+  (function(){
+    function openOverlay(id){ const p=document.getElementById(id); if(!p) return; p.hidden=false; document.body.style.overflow='hidden'; const f=p.querySelector('button,[href],input,[tabindex]:not([tabindex="-1"])'); if(f) f.focus(); }
+    function closeAll(){ document.querySelectorAll('.overlay').forEach(el=>{el.hidden=true;}); document.body.style.overflow=''; }
+    document.querySelectorAll('[data-overlay]').forEach(t=> t.addEventListener('click',()=> openOverlay(t.getAttribute('data-overlay'))));
+    document.querySelectorAll('[data-close-overlay]').forEach(el=> el.addEventListener('click', closeAll));
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
+  })();
+
+
+/*The Animamations*/
+
+/* SIMULATION LAUNCH
+(function(){
+  const btn = document.getElementById('launchSimBtn');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){
+      window.open('studies\m1&m2.html', '_blank');
+      // revert fade kwa sababu tunabaki kwenye page hii
+      setTimeout(function(){
+        document.body.classList.remove('page-leaving');
+      }, 400);
+    }, 300);
+  });
+})();
+
+*/
+
+</script>
+
+</body>
+</html>

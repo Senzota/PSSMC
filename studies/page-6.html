@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 6 — Future Works · PSSMC Mathematics</title>
+  <meta name="description" content="Chapter 11: Five directions for extending the PSSMC controller — hardware implementation, higher-fidelity disturbance models, ML-based gain tuning, multi-axis extension, and head-to-head benchmarks.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']],tags:'ams'},options:{skipHtmlTags:['script','noscript','style','textarea','pre']}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script defer src="../assets/js/main.js"></script>
+
+  <style>
+    /* ── PAGES POPUP (same pattern) ── */
+    .pages-btn-wrap{position:relative;}
+    .pages-btn{display:inline-flex;align-items:center;gap:0.45rem;font-size:var(--text-sm);
+      padding:0.62rem 0.9rem;border-radius:999px;border:1px solid var(--color-border);
+      background:var(--color-surface);color:var(--color-text-muted);cursor:pointer;
+      white-space:nowrap;transition:color var(--transition),background var(--transition);}
+    .pages-btn:hover{color:var(--color-text);background:var(--color-surface-2);}
+    .pages-btn svg{transition:transform 240ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+    .pages-dropdown{position:absolute;top:calc(100% + 0.5rem);right:0;min-width:288px;
+      background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:100;overflow:hidden;
+      opacity:0;transform:translateY(-6px) scale(0.98);pointer-events:none;
+      transition:opacity 200ms cubic-bezier(0.16,1,0.3,1),transform 200ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+    .pages-dropdown-header{padding:0.75rem 1rem 0.5rem;font-size:var(--text-xs);
+      text-transform:uppercase;letter-spacing:0.14em;color:var(--color-text-faint);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;
+      font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;
+      transition:background var(--transition),color var(--transition);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a:last-child{border-bottom:none;}
+    .pages-dropdown a:hover{background:var(--color-surface-2);color:var(--color-text);}
+    .pages-dropdown a[aria-current="page"]{background:rgba(122,92,58,0.07);color:var(--color-primary-dark);font-weight:600;}
+    .pd-num{width:24px;height:24px;border-radius:50%;background:var(--color-surface-2);
+      border:1px solid var(--color-border);display:grid;place-items:center;
+      font-size:0.7rem;font-weight:600;color:var(--color-text-faint);flex-shrink:0;}
+    a[aria-current="page"] .pd-num{background:var(--color-primary);border-color:var(--color-primary);color:#fff;}
+    .pd-label{flex:1;line-height:1.3;}
+    .pd-badge{font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:999px;
+      background:rgba(122,92,58,0.11);color:var(--color-primary-dark);font-weight:500;}
+    [data-theme="dark"] .pd-badge{background:rgba(196,154,106,0.15);color:#c49a6a;}
+
+    /* ── PAGE HERO ── */
+    .page-hero{padding:clamp(2.5rem,6vw,4.5rem) clamp(1rem,4vw,3rem) var(--space-8);
+      max-width:920px;margin-inline:auto;text-align:center;}
+    .page-hero .eyebrow{margin-bottom:var(--space-3);}
+    .page-hero h1{font-family:var(--font-display);font-size:var(--text-3xl);
+      font-weight:600;line-height:1.15;margin-bottom:var(--space-4);letter-spacing:-0.01em;}
+    .page-hero .lead{font-size:var(--text-lg);color:var(--color-text-muted);
+      line-height:1.65;max-width:760px;margin-inline:auto;}
+
+    /* ── PAGE BODY ── */
+    .page-body{max-width:1080px;margin-inline:auto;
+      padding:0 clamp(1rem,4vw,3rem) var(--space-12);}
+    .sec-heading{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:600;
+      letter-spacing:-0.005em;margin:var(--space-10) 0 var(--space-4);}
+    .prose{font-size:var(--text-base);line-height:1.75;color:var(--color-text);margin-bottom:var(--space-4);}
+    .prose em{color:var(--color-text-muted);}
+
+    /* ── FUTURE-WORK CARD GRID ── */
+    .fw-grid{display:grid;grid-template-columns:1fr;gap:var(--space-5);margin:var(--space-6) 0;}
+    .fw-card{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);padding:clamp(1.25rem,3vw,2rem);
+      display:grid;grid-template-columns:64px 1fr;gap:var(--space-4);align-items:flex-start;
+      transition:border-color var(--transition),transform var(--transition);}
+    .fw-card:hover{border-color:var(--color-primary);transform:translateY(-2px);}
+    .fw-icon{width:54px;height:54px;border-radius:14px;
+      background:linear-gradient(135deg,rgba(122,92,58,0.15),rgba(122,92,58,0.05));
+      border:1px solid var(--color-border);display:grid;place-items:center;
+      font-size:1.6rem;flex-shrink:0;}
+    .fw-body h3{font-family:var(--font-display);font-size:1.55rem;font-weight:600;
+      margin-bottom:var(--space-2);line-height:1.2;color:var(--color-text);}
+    .fw-body .fw-eyebrow{font-size:var(--text-xs);text-transform:uppercase;
+      letter-spacing:0.14em;color:var(--color-primary-dark);font-weight:600;margin-bottom:var(--space-2);}
+    .fw-body p{font-size:var(--text-base);line-height:1.7;color:var(--color-text-muted);margin-bottom:var(--space-3);}
+    .fw-body p:last-of-type{margin-bottom:0;}
+    .fw-list{margin:var(--space-3) 0 0;padding-left:1.3rem;font-size:var(--text-sm);
+      line-height:1.7;color:var(--color-text-muted);}
+    .fw-list li{margin-bottom:0.35rem;}
+    .fw-list li strong{color:var(--color-text);}
+
+    /* ── CLOSING NOTE ── */
+    .closing-note{margin:var(--space-8) 0 var(--space-2);padding:var(--space-6);
+      background:linear-gradient(135deg,rgba(122,92,58,0.06),rgba(122,92,58,0.02));
+      border:1px solid var(--color-border);border-radius:var(--radius-lg);text-align:center;}
+    .closing-note h3{font-family:var(--font-display);font-size:1.6rem;font-weight:600;margin-bottom:var(--space-3);}
+    .closing-note p{font-size:var(--text-base);line-height:1.7;color:var(--color-text-muted);max-width:680px;margin:0 auto;}
+
+    /* ── PAGE NAV ── */
+    .page-nav{border-top:1px solid var(--color-border);
+      padding:var(--space-6) clamp(1rem,4vw,3rem);max-width:1080px;
+      margin:var(--space-10) auto 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
+    .page-nav-btn{display:inline-flex;align-items:center;gap:0.6rem;
+      padding:0.75rem 1.2rem;border-radius:var(--radius-md);
+      border:1px solid var(--color-border);color:var(--color-text-muted);
+      background:var(--color-surface);text-decoration:none;font-weight:500;
+      font-size:var(--text-sm);transition:all var(--transition);}
+    .page-nav-btn:hover{color:var(--color-text);background:var(--color-surface-2);
+      border-color:var(--color-primary);}
+    .page-nav-btn.primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+    .page-nav-btn.primary:hover{background:var(--color-primary-dark);}
+    .page-nav-indicator{font-size:var(--text-xs);color:var(--color-text-faint);}
+
+    @media (max-width:680px){
+      .fw-card{grid-template-columns:1fr;}
+      .fw-icon{margin-bottom:var(--space-1);}
+      .page-nav{justify-content:center;}
+      .page-nav-indicator{display:none;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="PSSMC Home">
+      <svg width="36" height="36" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5" class="mark-ring"/>
+        <path d="M14 30 Q24 14 34 30" stroke="currentColor" stroke-width="2" fill="none" class="mark-curve"/>
+        <path d="M18 22h12" class="mark-line"/>
+      </svg>
+      <span>PSSMC</span>
+    </a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="../index.html">Home</a>
+      <a href="Kasprowiak.html">Study Front</a>
+      <div class="pages-btn-wrap">
+        <button class="pages-btn" id="pagesBtn" aria-expanded="false" aria-haspopup="true">
+          Pages
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="pages-dropdown" id="pagesDropdown" role="menu">
+          <div class="pages-dropdown-header">PSSMC Mathematics — Kasprowiak</div>
+          <a href="Kasprowiak.html" role="menuitem"><span class="pd-num"></span><span class="pd-label">Front Page</span></a>
+          <a href="page-1.html" role="menuitem"><span class="pd-num">1</span><span class="pd-label">Two-DOF Model</span></a>
+          <a href="page-2.html" role="menuitem"><span class="pd-num">2</span><span class="pd-label">Objective &amp; Sliding Surface</span></a>
+          <a href="page-3.html" role="menuitem"><span class="pd-num">3</span><span class="pd-label">Full Control Law</span></a>
+          <a href="page-4.html" role="menuitem"><span class="pd-num">4</span><span class="pd-label">Lyapunov &amp; Parameters</span></a>
+          <a href="page-5.html" role="menuitem"><span class="pd-num">5</span><span class="pd-label">Results &amp; Discussion</span></a>
+          <a href="page-6.html" aria-current="page" role="menuitem"><span class="pd-num">6</span><span class="pd-label">Future Works</span><span class="pd-badge">Here</span></a>
+        </div>
+      </div>
+      <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- HERO -->
+    <div class="page-hero">
+      <p class="eyebrow">Chapter 11 &nbsp;&middot;&nbsp; PSSMC Mathematics</p>
+      <h1>Future Works</h1>
+      <p class="lead">
+        A simulation that wins by 50% on the worst case is a strong start —
+        not a destination. Five directions for the PSSMC are open, each
+        reachable from the foundations built in Chapters 1–10. The longest
+        chapter is the one not yet written.
+      </p>
+    </div>
+
+    <!-- BODY -->
+    <div class="page-body">
+
+      <div class="fw-grid">
+
+        <!-- ─── CARD 1 ─── -->
+        <article class="fw-card">
+          <div class="fw-icon" aria-hidden="true">🔧</div>
+          <div class="fw-body">
+            <div class="fw-eyebrow">Direction 01 · Hardware</div>
+            <h3>Hardware implementation on a real CNC test rig</h3>
+            <p>
+              The next step is to leave SciPy and run the PSSMC on a physical
+              two-DOF chatter rig — ideally a Kasprowiak-style aluminium block
+              instrumented with accelerometers and a piezo-actuator in the
+              feedback loop. The controller would execute on a real-time target
+              (Speedgoat, dSPACE, or a Raspberry-Pi CM5 with PREEMPT-RT).
+            </p>
+            <ul class="fw-list">
+              <li><strong>Sampling.</strong> Confirm the 10 kHz inner loop is sufficient given measurement noise.</li>
+              <li><strong>Quantisation.</strong> Study sensitivity to 12-bit vs 16-bit ADC resolution on \(s(t)\).</li>
+              <li><strong>Actuator dynamics.</strong> Add a first-order lag to the model; verify the Lyapunov certificate still holds.</li>
+              <li><strong>Calibration.</strong> Tune \(\gamma_1, \gamma_2, \gamma_3\) on the actual machine — the simulated values are a starting point.</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- ─── CARD 2 ─── -->
+        <article class="fw-card">
+          <div class="fw-icon" aria-hidden="true">🌊</div>
+          <div class="fw-body">
+            <div class="fw-eyebrow">Direction 02 · Disturbance Modelling</div>
+            <h3>Higher-fidelity disturbance models</h3>
+            <p>
+              The current model uses a fixed regenerative-chatter law
+              \(F_{cut} = K_c\, a_p\, (f_z - \Delta y_1)\). In reality, several
+              effects make the disturbance non-stationary: tool wear, thermal
+              expansion, workpiece inhomogeneity, and chip-segmentation
+              dynamics.
+            </p>
+            <ul class="fw-list">
+              <li><strong>Tool wear.</strong> Model \(K_c\) as a slowly increasing function of cumulative cutting energy.</li>
+              <li><strong>Thermal drift.</strong> Add a slow stiffness drift \(k_1(T)\) coupled to a heat-equation surrogate.</li>
+              <li><strong>Chip-segmentation.</strong> Replace the linear regenerative term with a piecewise model that captures the saw-tooth chip morphology of titanium-class materials.</li>
+              <li><strong>Sensor noise.</strong> Coloured (1/f) accelerometer noise rather than white — re-check robustness.</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- ─── CARD 3 ─── -->
+        <article class="fw-card">
+          <div class="fw-icon" aria-hidden="true">🧠</div>
+          <div class="fw-body">
+            <div class="fw-eyebrow">Direction 03 · Machine Learning</div>
+            <h3>Machine-learning-based gain tuning</h3>
+            <p>
+              The adaptive laws \(\dot\lambda, \dot T_p, \dot\phi\) are
+              hand-derived from a Lyapunov candidate. They are <em>safe</em>
+              by construction but possibly <em>suboptimal</em>. A small neural
+              network could replace the analytical laws with learned ones,
+              while a Lyapunov-style safety filter guarantees stability is
+              preserved.
+            </p>
+            <ul class="fw-list">
+              <li><strong>Architecture.</strong> A 3-input (\(s, \dot s, \int s\)), 3-output MLP — 32→16→3 hidden units, \(\tanh\) activations.</li>
+              <li><strong>Training.</strong> Reinforcement learning (PPO) in simulation, with reward \(-y_1^2 - 10^{-4}U^2\).</li>
+              <li><strong>Safety layer.</strong> Project the network output into the set where \(\dot V \leq 0\) holds — Control-Barrier-Function style.</li>
+              <li><strong>Transfer.</strong> Domain-randomise the plant parameters during training to ease sim-to-real transfer.</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- ─── CARD 4 ─── -->
+        <article class="fw-card">
+          <div class="fw-icon" aria-hidden="true">📐</div>
+          <div class="fw-body">
+            <div class="fw-eyebrow">Direction 04 · Multi-Axis</div>
+            <h3>Extension to multi-axis milling</h3>
+            <p>
+              A real milling head has 3–5 degrees of freedom interacting with
+              chatter in each direction. The current PSSMC handles a single
+              axis (\(y_1\)). Extending to multi-axis requires either three
+              independent PSSMC loops (decentralised) or a single coupled
+              controller (centralised).
+            </p>
+            <ul class="fw-list">
+              <li><strong>Decentralised.</strong> Three diagonal Lyapunov functions \(V = V_x + V_y + V_z\); cross-axis coupling treated as bounded disturbance.</li>
+              <li><strong>Centralised.</strong> Single \(s \in \mathbb{R}^3\); proof uses a positive-definite matrix Lyapunov function. Stronger stability guarantee, larger control authority required.</li>
+              <li><strong>Spindle-tilt coupling.</strong> Add the rotational DOF \(\theta\) for high-end 5-axis machines.</li>
+              <li><strong>Path tracking.</strong> Couple PSSMC chatter rejection with a higher-level G-code path tracker.</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- ─── CARD 5 ─── -->
+        <article class="fw-card">
+          <div class="fw-icon" aria-hidden="true">⚖️</div>
+          <div class="fw-body">
+            <div class="fw-eyebrow">Direction 05 · Benchmarks</div>
+            <h3>Head-to-head against modern controllers</h3>
+            <p>
+              The current comparison is against classical SMC — a meaningful
+              but minimum baseline. To properly position the PSSMC against the
+              state of the art, three head-to-head benchmarks are planned.
+            </p>
+            <ul class="fw-list">
+              <li><strong>Model-Predictive Control (MPC).</strong> A linear MPC with a 50-step horizon, \(R = 10^{-4} I\), \(Q = \text{diag}(10^3, 1)\). Measure RMS, energy, and solver latency.</li>
+              <li><strong>Fractional-order SMC.</strong> Replace \(\dot e + \lambda e\) with \(D^\alpha e + \lambda e\) for \(\alpha \in [0.5, 1]\). Test whether the extra fractional degree of freedom matches PSSMC's adaptivity.</li>
+              <li><strong>Super-twisting algorithm.</strong> Second-order SMC with continuous control — the closest 'cousin' to PSSMC. Compare against PSSMC on chatter, energy, and robustness to parameter mismatch.</li>
+              <li><strong>Reporting.</strong> A Pareto plot of RMS vs energy across all five controllers — to make the trade-offs visible at a glance.</li>
+            </ul>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- ── CLOSING ── -->
+      <div class="closing-note">
+        <h3>An Open Invitation</h3>
+        <p>
+          Each of these directions is a self-contained research project. If
+          you are working on related problems — adaptive sliding-mode control,
+          chatter suppression, real-time CNC, or learning-based controllers —
+          and any of the five directions resonates, the simulation script and
+          full Lyapunov proof are openly documented on the previous pages.
+          The next chapter of the PSSMC is collaborative, not solo.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- PAGE NAV -->
+    <nav class="page-nav" aria-label="Page navigation">
+      <a class="page-nav-btn" href="page-5.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Page 5 — Results &amp; Discussion
+      </a>
+      <span class="page-nav-indicator">Page 6 of 6 &nbsp;&middot;&nbsp; Chapter 11</span>
+      <a class="page-nav-btn primary" href="Kasprowiak.html">
+        Study Front
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </nav>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">Page 6 · Chapter 11 · Kasprowiak Study · PSSMC Mathematics · University of Dar es Salaam, Department of Mechanical and Industrial Engineering.</p>
+  </footer>
+
+  <!-- PAGE-SPECIFIC SCRIPT (Pages dropdown only) -->
+  <script>
+  (function(){
+    var btn = document.getElementById('pagesBtn');
+    var dd  = document.getElementById('pagesDropdown');
+    if(!btn || !dd) return;
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e){
+      if(!dd.contains(e.target) && e.target !== btn){
+        dd.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+  })();
+  </script>
+
+</body>
+</html>

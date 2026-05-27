@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 3 – Dynamic Plant Formulation – PSSMC</title>
+  <meta name="description" content="Two first-order sub-systems combined
+    into a second-order control-ready plant transfer function for the
+    PSSMC chatter suppression study." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Plotly -->
+  <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <!-- Scripts -->
+  <script defer src="../assets/js/main.js"></script>
+
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.buildStep3Chart) window.buildStep3Chart();
+    });
+  </script>
+</head>
+
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring" />
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18"
+              class="mark-wave" />
+        <path d="M18 22h12" class="mark-line" />
+      </svg>
+      <span>PSSMC</span>
+    </a>
+
+    <nav class="stage-nav" aria-label="Stage navigation">
+      <a href="../index.html">Home</a>
+      <a href="./step-1.html">Step 1</a>
+      <a href="./step-2.html">Step 2</a>
+      <a href="./step-3.html" aria-current="page">Step 3</a>
+      <a href="./step-4.html">Step 4</a>
+      <button type="button" data-overlay="ol-construction">Step 5</button>
+      <button class="theme-btn" data-theme-toggle
+              aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+
+  
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+ 
+
+  <!-- ── GLOSSARY FAB ─────────────────────────────────────── -->
+  <button class="glossary-fab" id="glossaryBtn" aria-label="Open maths glossary" title="Open Glossary — s, j, ω, poles explained">?</button>
+
+  <!-- ── GLOSSARY BACKDROP ────────────────────────────────── -->
+  <div class="glossary-backdrop" id="glossaryBackdrop"></div>
+
+  <!-- ── GLOSSARY DRAWER ──────────────────────────────────── -->
+  <aside class="glossary-drawer" id="glossaryDrawer" aria-label="Mathematics Glossary">
+    <button class="glossary-close" id="glossaryClose" aria-label="Close glossary">✕</button>
+    <h2>Maths Glossary</h2>
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:1.2rem;line-height:1.7;">
+      New to control theory? This panel explains the key symbols and ideas used on this page — no prior background needed.
+    </p>
+
+    <details class="gloss-term">
+      <summary>The variable <em>s</em> <span class="gloss-tag">Laplace</span></summary>
+      <p>
+        <strong>s</strong> is the complex frequency variable in the Laplace domain. Instead of writing differential equations in time (hard!), we transform them into algebra in <em>s</em>. Think of <em>s</em> as a shorthand for "how fast things change": large |s| = fast dynamics, small |s| = slow dynamics.<br><br>
+        Formally: \(s = \sigma + j\omega\) where \(\sigma\) controls growth/decay and \(\omega\) controls oscillation frequency.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>The symbol <em>j</em> <span class="gloss-tag">Complex numbers</span></summary>
+      <p>
+        <strong>j</strong> (engineers write <em>j</em>, mathematicians write <em>i</em>) is the imaginary unit: \(j = \sqrt{-1}\). It appears in <em>s</em> because real systems can oscillate — the imaginary part \(j\omega\) carries frequency information. You don't need to "compute" with it — just know that \(j\omega\) means "pure oscillation at frequency \(\omega\)".
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>The symbol <em>ω</em> (omega) <span class="gloss-tag">Frequency</span></summary>
+      <p>
+        <strong>ω</strong> is angular frequency in radians per second. It relates to ordinary frequency <em>f</em> (Hz) by \(\omega = 2\pi f\). For example, a vibration at 10 Hz corresponds to \(\omega = 62.8\) rad/s. In a transfer function, poles and zeros at specific \(\omega\) values determine where the system resonates or attenuates.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>What is a Pole? <span class="gloss-tag">Stability</span></summary>
+      <p>
+        A <strong>pole</strong> is a value of <em>s</em> that makes the transfer function blow up to infinity — it's where the denominator equals zero. Poles determine the natural behaviour of the system:<br><br>
+        • <strong>Left-half plane</strong> (negative real part) → system is <em>stable</em><br>
+        • <strong>Right-half plane</strong> (positive real part) → system is <em>unstable</em> <br>
+        • <strong>Imaginary axis</strong> → system oscillates forever (marginally stable)<br><br>
+        For our cutting process: pole at \(s = -44.1\) rad/s — safely stable.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>Transfer Function G(s) <span class="gloss-tag">System model</span></summary>
+      <p>
+        A <strong>transfer function</strong> is a mathematical description of how a system transforms its input into its output — in the Laplace domain. For our plant:<br><br>
+        \[G_p(s) = \frac{F_c(s)}{D_{\text{ref}}(s)}\]<br>
+        This says: "for every unit change in commanded depth, here is the cutting force response across all frequencies." It's compact, powerful, and allows stability analysis without running a full simulation.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>First-Order Lag <span class="gloss-tag">Dynamics</span></summary>
+      <p>
+        A <strong>first-order lag</strong> is the simplest dynamic model — it describes how a system gradually approaches a new value after a step change, like a room heating up after you turn on a heater.<br><br>
+        \[G(s) = \frac{K}{\tau s + 1}\]<br>
+        • \(K\) = how much the output changes in steady state (gain)<br>
+        • \(\tau\) = how fast it reaches that value (time constant)<br>
+        • After one \(\tau\), the output is at 63.2% of its final value.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>Time Constant τ (tau) <span class="gloss-tag">Speed of response</span></summary>
+      <p>
+        The <strong>time constant</strong> τ measures how quickly a first-order system responds:<br><br>
+        • After <strong>1τ</strong>: 63.2% of final value<br>
+        • After <strong>2τ</strong>: 86.5% of final value<br>
+        • After <strong>5τ</strong>: ~99.3% — effectively settled<br><br>
+        Our cutting process: τ<sub>c</sub> = 0.0227 s (very fast).<br>
+        Our servo: τ<sub>s</sub> = 0.17 s (7.5× slower).
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>State-Space Representation <span class="gloss-tag">Advanced</span></summary>
+      <p>
+        <strong>State-space</strong> is another way to write the same dynamics — as a set of first-order differential equations using vectors and matrices:<br><br>
+        \[\dot{\mathbf{x}} = A\mathbf{x} + Bu, \quad y = C\mathbf{x}\]<br>
+        • \(\mathbf{x}\) = state vector (what we track: force + its rate)<br>
+        • \(A\) = system dynamics matrix<br>
+        • \(B\) = how input enters the system<br>
+        • \(C\) = what we measure (output)<br><br>
+        State-space is preferred for controller design because it handles multi-variable systems naturally.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>Stiffness k = ∂F<sub>c</sub>/∂d <span class="gloss-tag">Our assumption</span></summary>
+      <p>
+        We model the cutting process as a <strong>spring</strong>: \(F_c = k \cdot d\). This means we assume mass = 0 and damping = 0 — we are only estimating <strong>stiffness</strong>.<br><br>
+        The stiffness comes from the power-law model (Step 2) by taking a partial derivative:<br><br>
+        \[k = \frac{\partial F_c}{\partial d} = b \cdot \frac{F_c}{d}\]<br>
+        This is valid near an operating point and changes with cutting conditions.
+      </p>
+    </details>
+
+    <details class="gloss-term">
+      <summary>Laplace Transform <span class="gloss-tag">Maths tool</span></summary>
+      <p>
+        The <strong>Laplace transform</strong> converts a time-domain signal \(f(t)\) into a function of the complex variable \(s\). The key power: derivatives in time become multiplications by \(s\):<br><br>
+        \[\frac{d}{dt} \longleftrightarrow s\]<br>
+        This turns differential equations (hard) into algebraic equations (easy). We solve in the <em>s</em>-domain, then convert back to time if needed.
+      </p>
+    </details>
+  </aside>
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="step-hero">
+      <div>
+        <p class="eyebrow">Step 3 of 5</p>
+        <h1>Dynamic Plant Formulation</h1>
+        <p class="lead">
+          The static force model from Step&nbsp;2 
+          is lifted into the time domain by 
+          identifying two first&#8209;order dynamic sub&#8209;systems: 
+          the cutting process and the CNC servo actuator. 
+          We derive the stiffness \(k = b \cdot F_c/d\) 
+          from the power-law model, 
+          cascade the two transfer functions into a second&#8209;order plant, 
+          and express the result in state&#8209; 
+          space form ready for the PSSMC controller in Step&nbsp;4.
+        </p>
+      </div>
+      <div class="step-hero-actions">
+        <a class="btn btn-ghost" href="./step-2.html">&#8592; Step 2</a>
+        <a class="btn btn-secondary btn-sm" id="heroGlossBtn" type="button">Glossary</a>
+        <a class="btn btn-ghost" href="./step-4.html">Step 4 &#8594;</a>
+      </div>
+    </section>
+
+
+
+   <div class="step-body">
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 1. MODELLING PHILOSOPHY                         -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">Modelling philosophy</h2>
+
+      <div class="two-col">
+
+        <article class="info-card">
+          <h2>From static to dynamic</h2>
+          <p>
+            The power&#8209;law model of Step&nbsp;2 is a
+            <em>static</em> map: given \((V_c, d, f)\) it returns
+            a steady&#8209;state force \(\hat F_c\). A controller,
+            however, must act on the <em>transient</em> behaviour —
+            how quickly force responds when depth of cut is changed,
+            and how the servo actuator limits that response.
+          </p>
+          <p>
+            The standard approach in machining control is to model
+            each dynamic element as a first&#8209;order lag in the
+            Laplace domain. Two lags are identified here: one for
+            the cutting process \(G_c(s)\) and one for the CNC
+            servo \(G_s(s)\). Their series connection forms the
+            plant \(G_p(s)\) seen by the controller.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-why-first-order">
+            Why first-order lags?
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>Block diagram</h2>
+          <p>
+            The signal flow from controller output to measured
+            cutting force passes through two cascaded blocks:
+          </p>
+
+          <!-- ASCII block diagram styled -->
+          <div class="math-block" style="font-family: var(--font-body);
+               font-size: var(--text-sm); text-align: center;
+               line-height: 2.2; letter-spacing: 0.02em;">
+            \[
+              d_{\text{ref}}(s)
+              \;\longrightarrow\;
+              \boxed{G_s(s)}
+              \;\longrightarrow\;
+              d_{\text{actual}}(s)
+              \;\longrightarrow\;
+              \boxed{G_c(s)}
+              \;\longrightarrow\;
+              F_c(s)
+            \]
+          </div>
+
+          <p>
+            The servo block \(G_s(s)\) converts the commanded depth
+            change into an actual tool displacement. The cutting
+            process block \(G_c(s)\) converts that displacement into
+            a cutting force. The product is the plant transfer
+            function \(G_p(s) = G_c(s)\,G_s(s)\).
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-laplace">
+            Laplace transform refresher
+          </button>
+        </article>
+
+      </div>
+
+
+    <div class="step-body">
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 0. KEY ASSUMPTIONS                              -->
+      <!-- ════════════════════════════════════════════════ -->
+      <div class="assumption-callout fade-in">
+        <strong>Modelling assumptions for this step:</strong><br>
+        
+        <br> The idea is to model the tool–workpiece contact as a 
+        <strong>pure spring</strong>: mass&nbsp;=&nbsp;0, damping&nbsp;=&nbsp;0. 
+        This lets us estimate <strong>stiffness only</strong>
+        \(F_c = k \cdot d\), 
+        which is valid for quasi-static operating-point linearisation. 
+        Two dynamics are then stacked on top: 
+        a first-order cutting-process lag (time constant from our own data) 
+        and a first-order servo lag (time constant adopted from literature). <br>
+
+        <br> 
+        The resulting second-order transfer function 
+        is a simplified model of the true dynamics, 
+        but it captures the essential behaviour 
+        needed for PSSMC controller design in Step&nbsp;4.
+        <br>
+       <br>
+      </div>
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 1. STIFFNESS DERIVATION                         -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm fade-in">Step 3a — Stiffness from the power-law model</h2>
+
+      <div class="two-col fade-in">
+
+        <article class="info-card">
+          <h2>Why \(F_c = kx\)?</h2>
+          <p>
+            Setting mass&nbsp;= 0 and damping&nbsp;= 0 reduces the mechanical model to a spring: the cutting force is <em>proportional</em> to depth of cut. This is justified when transient inertia and viscous effects are small compared to elastic restoring forces — a reasonable assumption at the operating points in our fifteen runs.
+          </p>
+          <div class="math-block">
+            \[ F_c = k \cdot d \quad \Rightarrow \quad k = \frac{F_c}{d} \]
+          </div>
+        </article>
+
+        <article class="info-card">
+          <h2>Stiffness from power-law (Step 2)</h2>
+          <p>
+            The power-law model gives \(\hat F_c = C_0\,V_c^a\,d^b\,f^c\). Taking the partial derivative with respect to depth of cut \(d\):
+          </p>
+          <div class="math-block">
+            \[
+              k = \frac{\partial F_c}{\partial d}
+                = C_0\,b\,V_c^a\,d^{\,b-1}\,f^{\,c}
+            \]
+          </div>
+          <p>
+            This simplifies elegantly: since \(F_c = C_0\,V_c^a\,d^b\,f^c\), we get:
+          </p>
+          <div class="math-block">
+            \[
+              \boxed{k = b \cdot \frac{F_c}{d}}
+            \]
+          </div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted);">
+            where \(b\) is the depth-of-cut exponent from Step 2, \(F_c\) is the steady-state force, and \(d\) is the nominal depth. \(k\) is <em>live</em> — it updates with the operating point sliders below.
+          </p>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 2. INTERACTIVE OPERATING POINT                  -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm fade-in">Interactive operating point</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-5);line-height:1.7;" class="fade-in">
+        Adjust the sliders to any of your 15 experimental runs (or any point within the data envelope). All derived quantities — \(k\), \(K_c\), poles, step response — update live.
+      </p>
+
+      <div class="slider-grid fade-in">
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">\(V_c\) — Cutting speed</span>
+            <span class="slider-value" id="val-vc">125 <small style="font-size:0.6em;font-weight:400;">m/min</small></span>
+          </div>
+          <input type="range" id="sl-vc" min="90" max="180" step="5" value="125" aria-label="Cutting speed">
+          <div class="slider-range"><span>90</span><span>180 m/min</span></div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">\(d\) — Depth of cut</span>
+            <span class="slider-value" id="val-d">0.4 <small style="font-size:0.6em;font-weight:400;">mm</small></span>
+          </div>
+          <input type="range" id="sl-d" min="0.1" max="0.8" step="0.05" value="0.4" aria-label="Depth of cut">
+          <div class="slider-range"><span>0.1</span><span>0.8 mm</span></div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">\(f\) — Feed rate</span>
+            <span class="slider-value" id="val-f">0.25 <small style="font-size:0.6em;font-weight:400;">mm/rev</small></span>
+          </div>
+          <input type="range" id="sl-f" min="0.125" max="0.5" step="0.025" value="0.25" aria-label="Feed rate">
+          <div class="slider-range"><span>0.125</span><span>0.5 mm/rev</span></div>
+        </div>
+
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">\(\tau_c\) — Cutting time constant</span>
+            <span class="slider-value" id="val-tc">0.0227 <small style="font-size:0.6em;font-weight:400;">s</small></span>
+          </div>
+          <input type="range" id="sl-tc" min="0.0075" max="0.071" step="0.0005" value="0.0227" aria-label="Cutting time constant">
+          <div class="slider-range"><span>0.0075</span><span>0.071 s</span></div>
+        </div>
+      </div>
+
+      <!-- Derived quantities bar -->
+      <div class="derived-bar fade-in">
+        <div class="derived-card">
+          <div class="derived-symbol">\(F_c\)</div>
+          <div class="derived-val" id="dv-Fc">—</div>
+          <div class="derived-desc">Steady-state cutting force (N)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(k\)</div>
+          <div class="derived-val" id="dv-k">—</div>
+          <div class="derived-desc">Stiffness = b·F_c/d (N/mm)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(K_c\)</div>
+          <div class="derived-val" id="dv-Kc">—</div>
+          <div class="derived-desc">Cutting process gain (N/mm)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(p_c\)</div>
+          <div class="derived-val" id="dv-pc">—</div>
+          <div class="derived-desc">Cutting pole (rad/s)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(p_s\)</div>
+          <div class="derived-val" id="dv-ps">−5.88</div>
+          <div class="derived-desc">Servo pole (rad/s) — fixed</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(\tau_s\)</div>
+          <div class="derived-val">0.17 s</div>
+          <div class="derived-desc">Servo time constant (literature)</div>
+        </div>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 3. TRANSFER FUNCTIONS                           -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm fade-in">Transfer functions</h2>
+
+      <div class="two-col fade-in">
+
+        <article class="info-card">
+          <h2>Cutting process \(G_c(s)\)</h2>
+          <p>The cutting process is a first-order lag with gain \(K_c = k\) and time constant \(\tau_c\) identified from the mean time constant of all 15 runs:</p>
+          <div class="math-block">
+            \[
+              G_c(s) = \frac{K_c}{\tau_c\,s + 1}
+            \]
+          </div>
+          <div class="math-block" id="eq-Gc">\[ G_c(s) = \frac{393}{0.0227\,s + 1} \]</div>
+          <p>Single real pole:</p>
+          <div class="math-block" id="eq-pc">\[ p_c = -\frac{1}{\tau_c} \approx -44.1\;\text{rad/s} \]</div>
+        </article>
+
+        <article class="info-card">
+          <h2>CNC servo \(G_s(s)\)</h2>
+          <p>The servo is modelled as a unity-gain first-order lag. Its time constant \(\tau_s = 0.17\) s is adopted from Park et al. (1998), Fig. 4 — measured graphically as the time to reach 63.2% of the step input on a FANUC-driven z-axis:</p>
+          <div class="math-block">
+            \[
+              G_s(s) = \frac{1}{\tau_s\,s + 1} = \frac{1}{0.17\,s + 1}
+            \]
+          </div>
+          <div class="math-block">
+            \[ p_s = -\frac{1}{0.17} \approx -5.88\;\text{rad/s} \]
+          </div>
+          <div class="honest-note">
+            <span class="note-label">⚠ Honest note</span>
+            \(\tau_s = 0.17\,\text{s}\) is taken directly from literature — not identified from our own lathe. In a production system, this should be measured experimentally by applying a step feedrate override and recording the time to reach 63.2% of the commanded value.
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Combined plant -->
+      <article class="info-card fade-in" style="margin-bottom:var(--space-6)">
+        <h2>Combined plant \(G_p(s)\)</h2>
+        <p>The PSSMC controller sees the series connection of both sub-systems:</p>
+        <div class="math-block">
+          \[
+            G_p(s) = G_c(s)\cdot G_s(s)
+            = \frac{K_c}{(\tau_c\,s+1)(\tau_s\,s+1)}
+          \]
+        </div>
+        <div class="math-block" id="eq-Gp">
+          \[
+            G_p(s) = \frac{393}{(0.0227s+1)(0.17s+1)}
+          \]
+        </div>
+        <p>Expanding the denominator gives the standard second-order form:</p>
+        <div class="math-block" id="eq-Gp2">
+          \[
+            G_p(s) = \frac{393}{3.859\times10^{-3}\,s^2 + 0.1927\,s + 1}
+          \]
+        </div>
+      </article>
+
+
+
+       <!-- ════════════════════════════════════════════════ -->
+      <!-- 8. REGENERATIVE CHATTER MODEL                   -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">
+        Regenerative chatter — closed-loop instability model
+      </h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Regenerative delay equation</h2>
+        <p>
+          Chatter arises because the current cut interacts with the
+          surface waviness left by the <em>previous</em> pass. The
+          dynamic chip thickness \(h(t)\) therefore depends on both
+          the current tool displacement \(x(t)\) and the displacement
+          one spindle revolution earlier \(x(t - T)\), where
+          \(T = 60/n\) is the spindle period:
+        </p>
+
+        <div class="math-block">
+          \[
+            h(t) = f_0 + x(t-T) - x(t)
+          \]
+        </div>
+
+        <p>
+          The resulting dynamic cutting force perturbation is:
+        </p>
+
+        <div class="math-block">
+          \[
+            \Delta F_c(t)
+            = K_c\,b_w\,\bigl[x(t-T) - x(t)\bigr]
+          \]
+        </div>
+
+        <p>
+          where \(b_w\) is the width of cut (mm) and \(K_c\) is the
+          specific cutting force coefficient (N/mm²) in the
+          Merchant sense. In the Laplace domain, the delay term
+          \(x(t-T)\) becomes \(e^{-sT}X(s)\), giving the
+          characteristic equation of the regenerative loop:
+        </p>
+
+        <div class="math-block">
+          \[
+            1 + K_c\,b_w\,G_p(s)
+              \bigl(1 - e^{-sT}\bigr) = 0
+          \]
+        </div>
+
+        <p>
+          The PSSMC in Step&nbsp;4 stabilises this loop by
+          continuously adjusting \(b_w\) (via depth of cut \(d\))
+          to keep the characteristic roots in the left&#8209;half plane.
+        </p>
+        <button class="btn btn-secondary btn-sm" type="button"
+                data-overlay="ol-stability-lobe">
+          Stability lobe diagram
+        </button>
+      </article>
+
+
+
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4. STATE-SPACE DERIVATION                       -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm fade-in">State-space formulation</h2>
+
+      <div class="two-col fade-in">
+
+        <article class="info-card">
+          <h2>Derivation</h2>
+          <p>Expanding the second-order denominator and rearranging:</p>
+          <div class="math-block">
+            \[
+              \tau_c\tau_s\,\ddot F_c + (\tau_c+\tau_s)\,\dot F_c + F_c = K_c\cdot u
+            \]
+          </div>
+          <p>Define state variables \(x_1 = F_c\), \(x_2 = \dot F_c\). Then:</p>
+          <div class="math-block">
+            \[
+              \begin{cases}
+                \dot x_1 = x_2 \\[4pt]
+                \dot x_2 = -\dfrac{1}{\tau_c\tau_s}\,x_1
+                           -\dfrac{\tau_c+\tau_s}{\tau_c\tau_s}\,x_2
+                           +\dfrac{K_c}{\tau_c\tau_s}\,u
+              \end{cases}
+            \]
+          </div>
+        </article>
+
+        <article class="info-card">
+          <h2>Matrix form</h2>
+          <p>Writing \(\dot{\mathbf{x}} = A\mathbf{x} + Bu\), \(y = C\mathbf{x}\):</p>
+          <div class="math-block" id="eq-matrices">
+            \[
+              A = \begin{bmatrix}
+                    0 & 1 \\
+                    -\frac{1}{\tau_c\tau_s} & -\frac{\tau_c+\tau_s}{\tau_c\tau_s}
+                  \end{bmatrix}
+              \quad
+              B = \begin{bmatrix} 0 \\ \frac{K_c}{\tau_c\tau_s} \end{bmatrix}
+              \quad
+              C = \begin{bmatrix} 1 & 0 \end{bmatrix}
+            \]
+          </div>
+          <p>Numerical values at nominal operating point:</p>
+          <div class="math-block" id="eq-matrices-num">
+            \[
+              A = \begin{bmatrix}
+                    0 & 1 \\
+                    -259.1 & -8.62
+                  \end{bmatrix}
+              \quad
+              B = \begin{bmatrix} 0 \\ 101,832 \end{bmatrix}
+            \]
+          </div>
+          <p style="font-size:var(--text-xs);color:var(--color-text-muted);">Values update live with the sliders above.</p>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 5. STEP RESPONSE PLOT                           -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm fade-in">Step response simulation</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-4);line-height:1.7;" class="fade-in">
+        Step input of \(\Delta d = 0.1\,\text{mm}\) applied at \(t = 0\). The plot shows the cutting force response \(F_c(t)\) computed using the state-space model. Adjust the sliders above to see how the response changes.
+      </p>
+      <div class="chart-wrap fade-in">
+        <div id="step-plot" class="plot-frame"></div>
+        <p class="chart-caption" id="plot-caption">
+          Nominal operating point: \(V_c = 125\,\text{m/min}\), \(d = 0.4\,\text{mm}\), \(f = 0.25\,\text{mm/rev}\),
+          \(\tau_c = 0.0227\,\text{s}\), \(\tau_s = 0.17\,\text{s}\).
+        </p>
+      </div>
+        
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 6. RUN DATA TABLE                               -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm fade-in" style="margin-top:var(--space-8);">
+        Fifteen-run data — time constants &amp; derived stiffness
+      </h2>
+
+      <div class="data-table-wrap fade-in">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Run</th>
+              <th>\(V_c\) (m/min)</th>
+              <th>\(f\) (mm/rev)</th>
+              <th>\(d\) (mm)</th>
+              <th>\(F_c\) (N)</th>
+              <th>\(\tau_c\) (s)</th>
+              <th>\(k = b\cdot F_c/d\)</th>
+              <th>Vib. (mm/s)</th>
+            </tr>
+          </thead>
+          <tbody id="run-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Mean callout -->
+      <div class="callout fade-in">
+        <p>
+          <strong>Mean \(\tau_c\)</strong> across all 15 runs = <strong>0.02274 s</strong>.
+          This value is used as the default operating-point time constant. The spread (0.0075 – 0.071 s) reflects the range of vibration frequencies across different cutting conditions.
+          &nbsp;<strong>Mean \(F_c\)</strong> (Fz) across all 15 runs = <strong>242,000 N</strong> (raw data units — note: data stored in milli-units; physical \(F_c\) values are used in stiffness calculation after unit normalisation).
+        </p>
+      </div>
+
+
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 10. HANDOVER CALLOUT                            -->
+      <!-- ════════════════════════════════════════════════ -->
+      <div class="callout">
+        <p>
+          <strong>Handover to Step&nbsp;4:</strong>
+          the PSSMC controller design receives three objects from
+          this step: (1) the second&#8209;order plant transfer
+          function \(G_p(s)\) with known poles at
+          \(-44.1\) and \(-5.88\,\text{rad/s}\),
+          (2) the state&#8209;space triple
+          \((\mathbf{A},\mathbf{B},\mathbf{C})\) in controllable
+          canonical form, and (3) the regenerative delay model
+          parameterised by the spindle period \(T\).
+          These three items fully specify the plant that the
+          sliding surface and predictive horizon must stabilise.
+        </p>
+      </div>
+
+    </div><!-- end step-body -->
+
+
+
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+      <p class="footer-sub">Servo τ<sub>s</sub> 
+        source: Park et al., <em> Fig. 4 — measured graphically 
+        as the time to reach 63.2% 
+        of the step input on a FANUC-driven z-axis. 
+        Machine Tools &amp; Manufacture</em>, 38 (1998) 911–930.
+      </p>
+    </div>
+  </footer>
+
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  OVERLAYS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- Why first-order -->
+  <div class="overlay" id="ol-why-first-order" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-wfo-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-wfo-title">Why first-order lags?</h2>
+      <p>
+        A first&#8209;order lag is the simplest dynamic model that
+        captures a finite response time. It requires only one
+        parameter (the time constant) and is identifiable from a
+        single step&#8209;response measurement. For a controller
+        design that will be validated in simulation before hardware
+        implementation, parsimony is valuable: a low&#8209;order
+        model is easier to analyse, and design conservatism can
+        compensate for unmodelled higher&#8209;order dynamics.
+      </p>
+      <p>
+        The assumption is validated by the fact that both the cutting
+        frequency data and the servo specification are well described
+        by single&#8209;pole fits — adding a second pole to either
+        sub&#8209;system does not significantly improve the fit to
+        available data.
+      </p>
+    </div>
+  </div>
+
+  <!-- Laplace refresher -->
+  <div class="overlay" id="ol-laplace" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-lap-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-lap-title">Laplace transform — quick reference</h2>
+      <p>
+        The Laplace transform converts a time&#8209;domain ODE into an
+        algebraic equation in the complex frequency variable \(s\):
+      </p>
+      <div class="math-block">
+        \[
+          \mathcal{L}\{f(t)\} = F(s)
+          = \int_0^\infty f(t)\,e^{-st}\,\mathrm{d}t
+        \]
+      </div>
+      <p>
+        For a first&#8209;order ODE
+        \(\tau\dot y + y = K u\), taking the Laplace transform
+        (zero initial conditions) and rearranging gives
+        the transfer function:
+      </p>
+      <div class="math-block">
+        \[
+          \tau s\,Y(s) + Y(s) = K\,U(s)
+          \;\Rightarrow\;
+          G(s) = \frac{Y(s)}{U(s)} = \frac{K}{\tau s + 1}
+        \]
+      </div>
+    </div>
+  </div>
+
+  <!-- Median-weighted mean -->
+  <div class="overlay" id="ol-median-weight" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-mw-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-mw-title">Median-weighted mean derivation</h2>
+      <p>
+        The raw arithmetic mean of all 15 equivalent frequencies is
+        \(\bar f = 10.72\,\text{Hz}\). However, Runs 4 and 15
+        (high&#8209;force outliers) contribute frequencies of
+        16.96 and 21.12&thinsp;Hz that are unrepresentative of
+        nominal cutting conditions.
+      </p>
+      <p>
+        A median&#8209;based trimming procedure removes the top
+        two values and recomputes the mean over the remaining 13:
+      </p>
+      <div class="math-block">
+        \[
+          \bar f_{\text{eq,med}}
+          = \frac{1}{13}
+            \sum_{\substack{i=1\\i\neq 4,15}}^{15}
+            f_{\text{eq},i}
+          = \frac{122.76}{13}
+          \approx 7.00\;\text{Hz}
+        \]
+      </div>
+      <p>
+        Substituting into the time&#8209;constant formula:
+        \(\tau_c = 1/(2\pi\times7.00) = 0.0227\,\text{s}\).
+      </p>
+    </div>
+  </div>
+
+  <!-- Kc sensitivity -->
+  <div class="overlay" id="ol-kc-sensitivity" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-kcs-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-kcs-title">Sensitivity of K<sub>c</sub> to operating point</h2>
+      <p>
+        \(K_c\) varies with the operating point because it is
+        a partial derivative of a nonlinear model. Evaluating at
+        the three cutting&#8209;speed levels with
+        \(d^*=0.4\), \(f^*=0.25\):
+      </p>
+      <div class="math-block">
+        \[
+          K_c(90)  \approx 456\;\text{N/mm}, \quad
+          K_c(125) \approx 393\;\text{N/mm}, \quad
+          K_c(180) \approx 337\;\text{N/mm}
+        \]
+      </div>
+      <p>
+        The 26&thinsp;% variation across the speed range justifies
+        treating \(K_c\) as a nominal value with a bounded uncertainty,
+        which the robust sliding&#8209;mode controller in Step&nbsp;4
+        handles via its switching gain.
+      </p>
+    </div>
+  </div>
+
+  <!-- Rise time derivation -->
+  <div class="overlay" id="ol-rise-time" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-rt-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-rt-title">Rise time → time constant</h2>
+      <p>
+        For a first&#8209;order system
+        \(y(t) = 1 - e^{-t/\tau}\), the 10&thinsp;% and 90&thinsp;%
+        crossing times are:
+      </p>
+      <div class="math-block">
+        \[
+          t_{10} = -\tau\ln 0.9 \approx 0.105\,\tau, \qquad
+          t_{90} = -\tau\ln 0.1 \approx 2.303\,\tau
+        \]
+      </div>
+      <div class="math-block">
+        \[
+          t_r = t_{90} - t_{10}
+              = \tau(\ln 9)
+              \approx 2.197\,\tau
+        \]
+      </div>
+      <div class="math-block">
+        \[
+          \therefore\quad
+          \tau_s = \frac{t_r}{\ln 9}
+                 = \frac{0.374}{2.197}
+                 \approx 0.17\;\text{s}
+        \]
+      </div>
+    </div>
+  </div>
+
+  <!-- Integral action -->
+  <div class="overlay" id="ol-integral-action" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-ia-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ia-title">Role of integral action</h2>
+      <p>
+        A PI or PID position controller contains an integrator
+        \((1/s)\) in the forward path. By the final&#8209;value
+        theorem, for a step reference \(R(s) = R_0/s\):
+      </p>
+      <div class="math-block">
+        \[
+          e_{ss}
+          = \lim_{s\to 0}\,s \cdot \frac{1}{1+G_{\text{ol}}(s)}
+            \cdot \frac{R_0}{s}
+          = \frac{R_0}{1 + \lim_{s\to0}G_{\text{ol}}(s)}
+        \]
+      </div>
+      <p>
+        With an integrator in \(G_{\text{ol}}\),
+        \(\lim_{s\to0}G_{\text{ol}}(s) = \infty\), so
+        \(e_{ss} = 0\). The closed&#8209;loop DC gain is therefore
+        exactly 1, justifying \(K_s = 1\).
+      </p>
+    </div>
+  </div>
+
+  <!-- Overdamped -->
+  <div class="overlay" id="ol-overdamped" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-od-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-od-title">Overdamped vs underdamped response</h2>
+      <p>
+        The damping ratio \(\zeta\) determines the qualitative
+        character of the step response:
+      </p>
+      <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                 color: var(--color-text-muted);
+                 font-size: var(--text-sm); line-height: 1.9;">
+        <li>
+          \(\zeta < 1\) — <strong>underdamped</strong>: complex poles,
+          oscillatory transient with overshoot.
+        </li>
+        <li>
+          \(\zeta = 1\) — <strong>critically damped</strong>: repeated
+          real poles, fastest non&#8209;oscillatory response.
+        </li>
+        <li>
+          \(\zeta > 1\) — <strong>overdamped</strong>: two distinct
+          real poles, sluggish monotonic response. This plant: \(\zeta=1.55\).
+        </li>
+      </ul>
+      <p>
+        The overdamped character means no overshoot in the force
+        response to a depth&#8209;of&#8209;cut step — desirable for
+        avoiding force spikes during chatter suppression manoeuvres.
+      </p>
+    </div>
+  </div>
+
+  <!-- Stability lobe -->
+  <div class="overlay" id="ol-stability-lobe" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-sl-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-sl-title">Stability lobe diagram</h2>
+      <p>
+        The stability lobe diagram (SLD) is the classical tool for
+        predicting chatter&#8209;free cutting conditions. It plots
+        the critical depth of cut \(b_{w,\text{lim}}\) as a function
+        of spindle speed, with the boundary derived by setting the
+        real part of the characteristic equation's roots to zero:
+      </p>
+      <div class="math-block">
+        \[
+          b_{w,\text{lim}}
+          = -\frac{1}{2\,K_c\,\text{Re}\bigl[G_p(i\omega_c)\bigr]}
+        \]
+      </div>
+      <p>
+        where \(\omega_c\) is the chatter frequency. The PSSMC acts
+        as an <em>active</em> SLD shifter: by reducing \(d\) (and
+        hence \(b_w\)) when vibration grows, it keeps the system
+        below the lobe boundary without requiring the operator to
+        change the spindle speed.
+      </p>
+    </div>
+  </div>
+
+  <!-- Controllability -->
+  <div class="overlay" id="ol-controllability" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-co-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-co-title">Controllability &amp; observability</h2>
+      <p>
+        The controllability matrix
+        \(\mathcal{C} = [\mathbf{B}\;\mathbf{AB}]\)
+        and observability matrix
+        \(\mathcal{O} = [\mathbf{C}^\top\;(\mathbf{CA})^\top]^\top\)
+        are:
+      </p>
+      <div class="math-block">
+        \[
+          \mathcal{C}
+          = \begin{bmatrix} 0 & 101836 \\ 101836 & -5.08\times10^6 \end{bmatrix}
+        \]
+        \[
+          \det(\mathcal{C}) = -101836^2 \neq 0
+          \;\Rightarrow\;\text{fully controllable}
+        \]
+      </div>
+      <div class="math-block">
+        \[
+          \mathcal{O}
+          = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+        \]
+        \[
+          \det(\mathcal{O}) = 1 \neq 0
+          \;\Rightarrow\;\text{fully observable}
+        \]
+      </div>
+      <p>
+        Full controllability confirms that the PSSMC can place the
+        closed&#8209;loop poles anywhere in the complex plane.
+        Full observability confirms that a state observer (if needed)
+        can reconstruct both states from the force measurement alone.
+      </p>
+    </div>
+  </div>
+
+
+  <!-- Under construction -->
+  <div class="overlay" id="ol-construction" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-uc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-uc-title">Stage under construction</h2>
+      <p>
+        Step&nbsp;4 (PSSMC controller derivation) and Step&nbsp;5
+        (MATLAB/Simulink simulation) are still being completed.
+        Content will appear here as each stage is finalised.
+      </p>
+      <a class="btn btn-ghost" href="./step-3.html">
+        &#8592; Stay on Step 3
+      </a>
+    </div>
+  </div>
+  </main>
+
+</body>
+</html>

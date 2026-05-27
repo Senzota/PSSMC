@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 4 – PSSMC Controller Design – PSSMC</title>
+  <meta name="description" content="Complete derivation of the Predictive
+    Smoothed Sliding Mode Controller — sliding surface, equivalent control,
+    smooth switching, adaptive parameters, and Lyapunov stability proof." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };s
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script defer src="../assets/js/main.js"></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring" />
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave" />
+        <path d="M18 22h12" class="mark-line" />
+      </svg>
+      <span>PSSMC</span>
+    </a>
+    <nav class="stage-nav" aria-label="Stage navigation">
+      <a href="../index.html">Home</a>
+      <a href="./step-1.html">Step 1</a>
+      <a href="./step-2.html">Step 2</a>
+      <a href="./step-3.html">Step 3</a>
+      <a href="./step-4.html" aria-current="page">Step 4</a>
+      <button type="button" data-overlay="ol-construction">Step 5</button>
+      <button class="theme-btn" data-theme-toggle
+              aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="step-hero">
+      <div>
+        <p class="eyebrow">Step 4 of 5</p>
+        <h1>PSSMC Controller Design</h1>
+        <p class="lead">
+          The Predictive Smoothed Sliding Mode Controller is the central
+          intellectual contribution of this research. Built in a deliberate
+          sequence &mdash; sliding surface, equivalent control, smooth
+          switching, predictive extension, and three adaptive mechanisms
+          &mdash; the result is a controller whose behaviour is both
+          mathematically rigorous and physically intuitive.
+        </p>
+      </div>
+      <div class="step-hero-actions">
+        <a class="btn btn-ghost" href="./step-3.html">&#8592; Step 3</a>
+        <button class="btn btn-primary" type="button"
+                data-overlay="ol-construction">
+          Step 5 &#8594;
+        </button>
+      </div>
+    </section>
+
+
+    <div class="step-body">
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.0 OVERVIEW                                    -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">4.0 Overview</h2>
+
+      <div class="two-col">
+        <article class="info-card">
+          <h2>The central question</h2>
+          <p>
+            Given that regenerative chatter arises from the
+            self&#8209;reinforcing interaction between tool vibration
+            and the surface left by the previous cut &mdash; can a
+            controller be designed that not only <em>reacts</em> to
+            chatter when it appears, but <em>anticipates</em> it before
+            it grows dangerous, and does so efficiently without wasting
+            computational resources during calm cutting conditions?
+          </p>
+          <p>
+            The PSSMC answers that question affirmatively. Its output
+            at every instant is a single scalar: the
+            <strong>commanded depth of cut</strong> \(d_c(t)\).
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-signal-chain">
+            Signal chain d<sub>c</sub> → F<sub>c</sub>
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>Design sequence</h2>
+          <p>
+            The controller is assembled layer by layer. Each layer
+            solves a specific limitation of its predecessor:
+          </p>
+          <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 2;">
+            <li><strong>§4.1</strong> — Control objective &amp; error signal</li>
+            <li><strong>§4.2</strong> — Sliding surface construction</li>
+            <li><strong>§4.3</strong> — Equivalent control derivation</li>
+            <li><strong>§4.4</strong> — Smooth switching law (tanh)</li>
+            <li><strong>§4.5</strong> — Predictive extension</li>
+            <li><strong>§4.6</strong> — Three adaptive parameters</li>
+            <li><strong>§4.7</strong> — Complete assembled control law</li>
+            <li><strong>§4.8</strong> — Lyapunov stability proof</li>
+            <li><strong>§4.9</strong> — Real-time algorithm</li>
+          </ul>
+        </article>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.1 CONTROL OBJECTIVE                           -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        4.1 Control objective &amp; error signal
+      </h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Tracking error definition</h2>
+        <p>
+          The objective of the PSSMC is to drive the actual cutting
+          force \(F_c(t)\) to a desired reference value \(F_{\text{ref}}\)
+          by dynamically adjusting \(d_c(t)\). Cutting force is chosen
+          as the controlled variable because it is the primary physical
+          quantity that mediates between the geometric parameters of the
+          cut and the vibratory dynamics of the tool&#8209;workpiece system.
+        </p>
+        <p>
+          The tracking error is defined as the signed difference between
+          the desired and actual force:
+        </p>
+        <div class="math-block">
+          \[
+            e(t) = F_{\text{ref}} - F_c(t)
+          \]
+        </div>
+        <p>
+          Since \(F_{\text{ref}}\) is treated as a constant operating
+          setpoint, the time derivative of the error reduces to:
+        </p>
+        <div class="math-block">
+          \[
+            \dot{e}(t)
+            = \dot{F}_{\text{ref}} - \dot{F}_c(t)
+            = -\dot{F}_c(t)
+          \]
+        </div>
+        <p>
+          This relationship is used repeatedly in the derivations that
+          follow. Its physical meaning is direct: the rate at which the
+          error changes is precisely the rate at which the cutting force
+          changes, with opposite sign.
+        </p>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.2 SLIDING SURFACE                             -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">4.2 The sliding surface</h2>
+
+      <div class="two-col">
+        <article class="info-card">
+          <h2>Construction</h2>
+          <p>
+            Rather than driving the error directly to zero, the SMC
+            approach defines a surface in error space and drives the
+            system onto it. Once on the surface, the error decays to
+            zero automatically. The sliding surface is:
+          </p>
+          <div class="math-block">
+            \[
+              s(t) = \dot{e}(t) + \lambda\,e(t)
+            \]
+          </div>
+          <p>
+            where \(\lambda > 0\) is the sliding gain. The surface
+            \(s(t) = 0\) is a line in the \((e, \dot{e})\) phase plane
+            with slope \(-\lambda\). Any trajectory that reaches this
+            line and stays on it must satisfy:
+          </p>
+          <div class="math-block">
+            \[
+              \dot{e} = -\lambda\,e
+              \quad\Longrightarrow\quad
+              e(t) = e(0)\,e^{-\lambda t}
+            \]
+          </div>
+          <p>
+            This is <strong>exponential decay</strong>. Once on the
+            surface, stability is guaranteed regardless of plant
+            dynamics, cutting parameters, or the disturbance environment.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-phase-plane">
+            Phase plane geometry
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>Interpretation of s(t)</h2>
+          <p>
+            The sign of \(s(t)\) encodes the instantaneous state of
+            the system relative to the surface:
+          </p>
+          <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 2;">
+            <li>
+              \(s(t) > 0\) — system is above the surface; controller
+              pushes it downward toward \(s = 0\)
+            </li>
+            <li>
+              \(s(t) < 0\) — system is below the surface; controller
+              pushes it upward
+            </li>
+            <li>
+              \(s(t) = 0\) — system is on the surface; error is
+              decaying exponentially, no additional forcing needed
+            </li>
+          </ul>
+          <p>
+            The controller's entire task can now be stated with elegant
+            simplicity: <strong>keep \(s(t) = 0\) at all times.</strong>
+            Everything else — suppression of force deviation, rejection
+            of vibration&#8209;induced disturbances — follows
+            automatically.
+          </p>
+        </article>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.3 EQUIVALENT CONTROL                          -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        4.3 Equivalent control — derivation from first principles
+      </h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-4)">
+        <h2>Step-by-step derivation</h2>
+        <p>
+          The equivalent control \(u_{eq}\) maintains the system on the
+          sliding surface once it has reached it. It is derived from
+          the invariance condition \(\dot{s}(t) = 0\):
+        </p>
+
+        <p><strong>Step 1 — enforce the surface condition:</strong></p>
+        <div class="math-block">
+          \[
+            \dot{s}(t) = \ddot{e}(t) + \lambda\,\dot{e}(t) = 0
+            \;\Rightarrow\;
+            \dot{e}(t) = -\lambda\,e(t)
+          \]
+        </div>
+
+        <p>
+          Substituting \(\dot{e}(t) = -\dot{F}_c(t)\):
+        </p>
+        <div class="math-block">
+          \[
+            \dot{F}_c(t) = \lambda\,e(t)
+          \]
+        </div>
+
+        <p><strong>Step 2 — invoke the plant model from Step 3:</strong></p>
+        <div class="math-block">
+          \[
+            \tau_c\,\dot{F}_c(t) + F_c(t) = K_s \cdot d_a(t)
+            \;\Rightarrow\;
+            \dot{F}_c(t) = \frac{K_s\,d_a(t) - F_c(t)}{\tau_c}
+          \]
+        </div>
+
+        <p><strong>Step 3 — match required rate to plant rate:</strong></p>
+        <div class="math-block">
+          \[
+            \frac{K_s\,d_{eq}(t) - F_c(t)}{\tau_c} = \lambda\,e(t)
+          \]
+        </div>
+
+        <p>
+          <strong>Step 4 — solve for the equivalent depth&#8209;of&#8209;cut
+          command:</strong>
+        </p>
+        <div class="math-block">
+          \[
+            \boxed{
+              u_{eq}(t) = d_{eq}(t)
+              = \frac{1}{K_s}
+                \bigl[F_c(t) + \tau_c\,\lambda\,e(t)\bigr]
+            }
+          \]
+        </div>
+
+        <p>
+          The two additive terms each have a clear physical role:
+          \(F_c(t)/K_s\) is a <em>force compensation</em> term that
+          counteracts the force the process is currently generating;
+          \(\tau_c\lambda\,e(t)/K_s\) is an <em>error correction</em>
+          term that drives \(F_c(t)\) toward \(F_{\text{ref}}\) at the
+          rate dictated by \(\lambda\).
+        </p>
+        <button class="btn btn-secondary btn-sm" type="button"
+                data-overlay="ol-ueq-physical">
+          Physical interpretation of u<sub>eq</sub>
+        </button>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.4 SWITCHING CONTROL                           -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        4.4 Switching control — smooth restoration
+      </h2>
+
+      <div class="two-col">
+        <article class="info-card">
+          <h2>Classical sign function &amp; chattering</h2>
+          <p>
+            The standard switching control in classical SMC is:
+          </p>
+          <div class="math-block">
+            \[
+              u_{sw} = K \cdot \text{sign}(s(t))
+            \]
+          </div>
+          <p>
+            The sign function is maximally aggressive — it applies the
+            full gain \(K\) in whichever direction is needed,
+            instantaneously switching between \(+K\) and \(-K\) as
+            \(s(t)\) crosses zero. In the neighbourhood of the surface,
+            where \(s(t)\) oscillates rapidly due to measurement noise,
+            this generates high&#8209;frequency switching of the
+            depth&#8209;of&#8209;cut command. In a CNC machine, this
+            <strong>chattering</strong> excites mechanical resonances,
+            accelerates tool wear, and potentially introduces the very
+            vibrations the controller is designed to suppress.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-chattering">
+            Why chattering is harmful
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>tanh replacement</h2>
+          <p>
+            The chattering problem is resolved by replacing the
+            discontinuous sign function with the hyperbolic tangent:
+          </p>
+          <div class="math-block">
+            \[
+              u_{sw}(t)
+              = K \cdot \tanh\!\left(\frac{s(t)}{\varepsilon(t)}\right)
+            \]
+          </div>
+          <p>
+            The tanh function is infinitely differentiable and behaves
+            exactly as needed:
+          </p>
+          <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 2;">
+            <li>
+              \(|s| \gg \varepsilon\): saturates at \(\pm 1\),
+              delivering the full restoring force \(\pm K\)
+            </li>
+            <li>
+              \(|s| \approx \varepsilon\): output decreases smoothly
+              and continuously
+            </li>
+            <li>
+              \(s = 0\): equals exactly zero &mdash; no chattering
+            </li>
+          </ul>
+          <p>
+            The parameter \(\varepsilon(t)\) is the
+            <strong>boundary layer thickness</strong> — it defines
+            the transition zone width. Its adaptive design is presented
+            in §4.6.3.
+          </p>
+        </article>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.5 PREDICTIVE EXTENSION                        -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        4.5 Predictive extension — anticipating the surface
+      </h2>
+
+      <div class="two-col">
+        <article class="info-card">
+          <h2>The delay problem</h2>
+          <p>
+            The plant model from Step&nbsp;3 reveals an unavoidable
+            physical reality: the CNC servo introduces a delay of
+            \(\tau_s = 0.17\,\text{s}\) and the cutting process
+            introduces a further \(\tau_c = 0.0227\,\text{s}\) delay.
+            The total delay in the \(d_c \rightarrow F_c\) chain is
+            approximately <strong>0.19 s</strong>.
+          </p>
+          <p>
+            A controller acting only on \(s(t)\) is purely reactive —
+            it responds to what has <em>already</em> happened. During
+            0.19&thinsp;s of corrective lag, chatter can grow
+            substantially. The predictive extension transforms the
+            controller into a proactive system that acts on the
+            <em>predicted future</em> surface value
+            \(\hat{s}(t + T_p)\).
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Trend-based prediction</h2>
+          <p>
+            Rather than solving the full nonlinear system forward in
+            time, the predicted surface is approximated by a
+            first&#8209;order Taylor expansion:
+          </p>
+          <div class="math-block">
+            \[
+              \boxed{
+                \hat{s}(t + T_p)
+                = s(t) + \dot{s}(t)\cdot T_p(t)
+              }
+            \]
+          </div>
+          <p>
+            The surface rate \(\dot{s}(t)\) is estimated from two
+            consecutive samples using a backward finite difference:
+          </p>
+          <div class="math-block">
+            \[
+              \dot{s}(t)
+              \approx \frac{s(t) - s(t-\Delta t)}{\Delta t}
+            \]
+          </div>
+          <p>
+            This requires storing only the previous sample of \(s\) —
+            a single scalar — making the prediction computationally
+            trivial. Over the short horizons
+            \(T_p \in [0.0075,\, 0.0710]\,\text{s}\) used here,
+            the linear approximation is well&#8209;justified.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-taylor">
+            Taylor expansion accuracy
+          </button>
+        </article>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.6 ADAPTIVE PARAMETERS                         -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        4.6 Adaptive parameters — the novel contribution
+      </h2>
+
+      <div class="callout" style="margin-bottom: var(--space-6)">
+        <p>
+          Standard SMC controllers use fixed gains chosen as a
+          compromise across the operating range. This research resolves
+          that compromise by making three controller parameters
+          <strong>continuously adaptive</strong> — each driven by a
+          physically meaningful signal and using tanh to ensure smooth,
+          bounded variation consistent with the overall smoothing
+          philosophy.
+        </p>
+      </div>
+
+      <!-- 4.6.1 Adaptive lambda -->
+      <article class="info-card" style="margin-bottom: var(--space-4)">
+        <h2>4.6.1 &nbsp; Adaptive sliding gain \(\lambda(t)\)</h2>
+        <p>
+          The sliding gain \(\lambda\) governs the error decay rate on
+          the surface. The instantaneous rate of change of the sliding
+          surface, \(|\dot{s}(t)|\), is a natural measure of how
+          rapidly the machine's behaviour is evolving. Making \(\lambda\)
+          a continuous, monotonically increasing function of
+          \(|\dot{s}(t)|\) via tanh gives:
+        </p>
+        <div class="math-block">
+          \[
+            \boxed{
+              \lambda(t)
+              = \lambda_{\min}
+                + (\lambda_{\max} - \lambda_{\min})
+                \cdot \tanh\!\left(\frac{|\dot{s}(t)|}{\sigma}\right)
+            }
+          \]
+        </div>
+        <p>
+          Since \(\lambda\) is physically the inverse of the cutting
+          process time constant, its bounds are derived directly from
+          the 15 experimental runs:
+        </p>
+        <div class="math-block">
+          \[
+            \lambda_{\min}
+            = \frac{1}{\tau_c^{\max}}
+            = \frac{1}{0.0710}
+            \approx 14.1\;\text{s}^{-1}
+            \quad\text{(Run 7 — slowest dynamics)}
+          \]
+          \[
+            \lambda_{\max}
+            = \frac{1}{\tau_c^{\min}}
+            = \frac{1}{0.0075}
+            \approx 133.3\;\text{s}^{-1}
+            \quad\text{(Run 15 — fastest dynamics)}
+          \]
+          \[
+            \sigma
+            = \frac{1}{\tau_c^{\text{mean}}}
+            = \frac{1}{0.0227}
+            \approx 44.1\;\text{s}^{-1}
+            \quad\text{(nominal operating condition)}
+          \]
+        </div>
+        <p>
+          When \(|\dot{s}|/\sigma \ll 1\): the tanh approaches zero,
+          \(\lambda(t) \approx \lambda_{\min}\) — the controller is
+          gentle. When \(|\dot{s}|/\sigma \gg 1\): tanh saturates,
+          \(\lambda(t) \approx \lambda_{\max}\) — the controller is
+          maximally aggressive. Between these extremes the gain
+          transitions smoothly — never jumping, never saturating
+          abruptly.
+        </p>
+      </article>
+
+      <!-- 4.6.2 Adaptive Tp -->
+      <article class="info-card" style="margin-bottom: var(--space-4)">
+        <h2>4.6.2 &nbsp; Adaptive prediction horizon \(T_p(t)\)</h2>
+        <p>
+          A longer horizon is beneficial when the machine is vibrating
+          strongly; a shorter horizon is appropriate when the machine
+          is calm. The vibration amplitude \(A(t)\) — directly
+          measurable from the accelerometer — is the natural driving
+          variable:
+        </p>
+        <div class="math-block">
+          \[
+            \boxed{
+              T_p(t)
+              = T_p^{\min}
+                + (T_p^{\max} - T_p^{\min})
+                \cdot \tanh\!\left(\frac{A(t)}{A_{\text{ref}}}\right)
+            }
+          \]
+        </div>
+        <p>
+          The bounds are taken directly from the range of cutting
+          process time constants across the 15 runs:
+        </p>
+        <div class="math-block">
+          \[
+            T_p^{\min} = \tau_c^{\min} = 0.0075\;\text{s}
+            \quad\text{(Run 15)},
+            \qquad
+            T_p^{\max} = \tau_c^{\max} = 0.0710\;\text{s}
+            \quad\text{(Run 7)}
+          \]
+          \[
+            A_{\text{ref}} = A_{\max} = 0.0066\;\text{m/s}
+            \quad\text{(maximum observed — Run 15)}
+          \]
+        </div>
+        <p>
+          The adaptive \(T_p\) serves a dual purpose: it improves
+          control performance by matching the prediction depth to the
+          disturbance severity, and it conserves computational
+          resources by keeping the prediction window short during
+          calm cutting.
+        </p>
+      </article>
+
+      <!-- 4.6.3 Adaptive epsilon -->
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>4.6.3 &nbsp; Adaptive boundary layer \(\varepsilon(t)\)</h2>
+        <p>
+          A thick boundary layer eliminates chattering but allows a
+          nonzero steady&#8209;state error residual; a thin layer
+          achieves high precision but risks reintroducing chattering
+          during heavy vibration. Making \(\varepsilon\) adapt with
+          \(A(t)\) resolves this tension continuously:
+        </p>
+        <div class="math-block">
+          \[
+            \boxed{
+              \varepsilon(t)
+              = \varepsilon_{\min}
+                + (\varepsilon_{\max} - \varepsilon_{\min})
+                \cdot \tanh\!\left(\frac{A(t)}{A_{\text{ref}}}\right)
+            }
+          \]
+        </div>
+        <p>
+          A critical design feature: \(\varepsilon(t)\) and \(T_p(t)\)
+          share the same driving signal \(A(t)\) and the same functional
+          form. They adapt simultaneously and in the same direction —
+          when amplitude grows, both the prediction horizon extends and
+          the boundary layer widens, reinforcing each other in
+          disturbance rejection. When amplitude falls, both contract,
+          restoring precision and efficiency. This
+          <strong>architectural consistency</strong> is deliberate:
+          all adaptive mechanisms respond to the same ground truth —
+          the instantaneous severity of the vibration environment.
+        </p>
+        <p style="color: var(--color-text-faint); font-size: var(--text-sm);">
+          Values of \(\varepsilon_{\min} \in [0.01, 0.05]\) and
+          \(\varepsilon_{\max} \in [0.1, 0.5]\) are to be determined
+          through simulation tuning in Step&nbsp;5.
+        </p>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.7 COMPLETE CONTROL LAW                        -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">4.7 Complete PSSMC control law</h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Assembled control law</h2>
+        <p>
+          Assembling all components, the complete control law is:
+        </p>
+        <div class="math-block">
+          \[
+            \boxed{
+              d_c(t)
+              = \underbrace{
+                  \frac{1}{K_s}
+                  \bigl[F_c(t) + \tau_c\,\lambda(t)\,e(t)\bigr]
+                }_{\displaystyle u_{eq}(t)\ —\ \text{maintains surface}}
+              +\;
+              \underbrace{
+                  K \cdot \tanh\!\left(
+                    \frac{\hat{s}(t + T_p(t))}{\varepsilon(t)}
+                  \right)
+                }_{\displaystyle u_{sw}(t)\ —\ \text{restores surface}}
+            }
+          \]
+        </div>
+
+        <p>with the three adaptive components:</p>
+
+        <div class="math-block">
+          \[
+            \lambda(t)
+            = 14.1 + 119.2\cdot\tanh\!\left(\frac{|\dot{s}(t)|}{44.1}\right)
+            \;\;\text{s}^{-1}
+          \]
+          \[
+            T_p(t)
+            = 0.0075 + 0.0635
+              \cdot\tanh\!\left(\frac{A(t)}{0.0066}\right)
+            \;\;\text{s}
+          \]
+          \[
+            \varepsilon(t)
+            = \varepsilon_{\min}
+              + (\varepsilon_{\max}-\varepsilon_{\min})
+              \cdot\tanh\!\left(\frac{A(t)}{0.0066}\right)
+          \]
+          \[
+            \hat{s}(t+T_p)
+            = s(t) + \dot{s}(t)\cdot T_p(t)
+          \]
+        </div>
+
+        <p>
+          This is a fully specified, closed&#8209;form control law.
+          At every sampling instant, given measurements of \(F_c(t)\)
+          and \(A(t)\) and the stored previous value \(s(t-\Delta t)\),
+          the controller computes \(d_c(t)\) through a sequence of
+          algebraic and elementary operations — <strong>no differential
+          equations, no matrix inversions, no iterative solvers.</strong>
+        </p>
+        <button class="btn btn-secondary btn-sm" type="button"
+                data-overlay="ol-computational-cost">
+          Computational cost per sample
+        </button>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.8 LYAPUNOV STABILITY                          -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        4.8 Lyapunov stability analysis
+      </h2>
+
+      <div class="two-col">
+        <article class="info-card">
+          <h2>Lyapunov candidate function</h2>
+          <p>
+            A simulation demonstrates performance only at the specific
+            conditions tested. A Lyapunov proof provides a mathematical
+            guarantee that holds universally: for <em>any</em> initial
+            condition and <em>any</em> bounded disturbance, the system
+            converges to the neighbourhood of the sliding surface and
+            remains there.
+          </p>
+          <p>
+            The standard SMC candidate is chosen as:
+          </p>
+          <div class="math-block">
+            \[
+              V(s) = \tfrac{1}{2}\,s^2(t)
+            \]
+          </div>
+          <p>
+            This satisfies the first two Lyapunov conditions by
+            inspection:
+          </p>
+          <ul style="margin: 0 0 0 var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 2;">
+            <li>
+              \(V(s) = \tfrac{1}{2}s^2 > 0\) for all \(s \neq 0\)
+              &mdash; always positive (Right on track)
+            </li>
+            <li>
+              \(V(0) = 0\) &mdash; zero precisely at the surface (Belisimoo!!)
+            </li>
+          </ul>
+        </article>
+
+        <article class="info-card">
+          <h2>Proof of negative definiteness</h2>
+          <p>
+            Differentiating the candidate:
+          </p>
+          <div class="math-block">
+            \[
+              \dot{V}(s) = s(t)\cdot\dot{s}(t)
+            \]
+          </div>
+          <p>
+            With the PSSMC law applied, the closed&#8209;loop surface
+            dynamics are:
+          </p>
+          <div class="math-block">
+            \[
+              \dot{s}(t)
+              = -K\cdot\tanh\!\left(\frac{s(t)}{\varepsilon(t)}\right)
+                + \delta(t)
+            \]
+          </div>
+          <p>
+            where \(|\delta(t)| \leq \Delta\) bounds all disturbances.
+            Applying the key tanh inequality
+            \(s\cdot\tanh(s/\varepsilon) \geq |s| - \varepsilon\ln\cosh(1)\):
+          </p>
+          <div class="math-block">
+            \[
+              \dot{V}
+              \leq -(K-\Delta)|s|
+                   + K\varepsilon\ln\cosh(1)
+            \]
+          </div>
+          <p>
+            The stability condition is therefore:
+          </p>
+          <div class="math-block">
+            \[
+              \boxed{K > \Delta}
+            \]
+          </div>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-practical-stability">
+            Practical stability vs asymptotic stability
+          </button>
+        </article>
+      </div>
+
+      <!-- Stability summary table -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-6)">
+        4.8.4 &nbsp; Stability conditions summary
+      </h2>
+
+      <div class="data-table-wrap" style="margin-bottom: var(--space-8)">
+        <table class="data-table" aria-label="Lyapunov stability conditions">
+          <thead>
+            <tr>
+              <th>Condition</th>
+              <th>Requirement</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>\(V(s) > 0\)</td>
+              <td>\(\tfrac{1}{2}s^2 > 0\) for \(s \neq 0\)</td>
+              <td> Satisfied by construction</td>
+            </tr>
+            <tr>
+              <td>\(\dot{V}(s) < 0\) outside boundary layer</td>
+              <td>Switching gain \(K > \Delta\)</td>
+              <td>Enforced by design</td>
+            </tr>
+            <tr>
+              <td>Error convergence</td>
+              <td>\(e(t) \to 0\) as \(t \to \infty\)</td>
+              <td>Guaranteed on surface</td>
+            </tr>
+            <tr>
+              <td>Chattering elimination</td>
+              <td>tanh replaces sign</td>
+              <td> By functional substitution</td>
+            </tr>
+            <tr>
+              <td>Adaptive parameter stability</td>
+              <td>
+                \(\lambda(t)\), \(T_p(t)\), \(\varepsilon(t)\)
+                remain bounded
+              </td>
+              <td> tanh outputs bounded in \([0,1]\)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.9 REAL-TIME ALGORITHM                         -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">4.9 Real-time implementation algorithm</h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Execution sequence per sampling instant \(\Delta t\)</h2>
+
+        <div style="background: var(--color-surface-2);
+                    border: 1px solid var(--color-border);
+                    border-radius: var(--radius-md);
+                    padding: 1.2rem 1.4rem;
+                    font-family: 'Courier New', monospace;
+                    font-size: var(--text-sm);
+                    line-height: 2;
+                    color: var(--color-text-muted);
+                    overflow-x: auto;
+                    margin-bottom: var(--space-4);">
+          <span style="color: var(--color-primary); font-weight:700;">INITIALISE:</span><br>
+          &nbsp;&nbsp;s_prev = 0 &nbsp;&nbsp;&nbsp;&nbsp;// previous surface value<br>
+          &nbsp;&nbsp;e_prev = 0 &nbsp;&nbsp;&nbsp;&nbsp;// previous error<br><br>
+          <span style="color: var(--color-primary); font-weight:700;">AT EACH TIME STEP t:</span><br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 1 — MEASURE:</span><br>
+          &nbsp;&nbsp;Read Fc(t) &nbsp;&nbsp;&nbsp;// cutting force — dynamometer<br>
+          &nbsp;&nbsp;Read A(t) &nbsp;&nbsp;&nbsp;&nbsp;// vibration amplitude — accelerometer<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 2 — ERROR:</span><br>
+          &nbsp;&nbsp;e(t) = Fref − Fc(t)<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 3 — SURFACE:</span><br>
+          &nbsp;&nbsp;e_dot = [e(t) − e_prev] / Δt<br>
+          &nbsp;&nbsp;s(t) = e_dot + λ(t)·e(t)<br>
+          &nbsp;&nbsp;s_dot = [s(t) − s_prev] / Δt<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 4 — ADAPTIVE PARAMETERS:</span><br>
+          &nbsp;&nbsp;λ(t) = λ_min + (λ_max − λ_min)·tanh(|s_dot|/σ)<br>
+          &nbsp;&nbsp;Tp(t) = Tp_min + (Tp_max − Tp_min)·tanh(A(t)/Aref)<br>
+          &nbsp;&nbsp;ε(t) = ε_min + (ε_max − ε_min)·tanh(A(t)/Aref)<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 5 — PREDICT SURFACE:</span><br>
+          &nbsp;&nbsp;s_hat = s(t) + s_dot·Tp(t)<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 6 — COMPUTE CONTROL:</span><br>
+          &nbsp;&nbsp;u_eq = (1/Ks)·[Fc(t) + τc·λ(t)·e(t)]<br>
+          &nbsp;&nbsp;u_sw = K·tanh(s_hat / ε(t))<br>
+          &nbsp;&nbsp;dc(t) = u_eq + u_sw<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 7 — OUTPUT:</span><br>
+          &nbsp;&nbsp;Send dc(t) → CNC Servo → Cutting Process → Fc(t+Δt)<br><br>
+          <span style="color: var(--color-text-muted); font-weight:600;">STEP 8 — STORE:</span><br>
+          &nbsp;&nbsp;s_prev = s(t)<br>
+          &nbsp;&nbsp;e_prev = e(t)<br><br>
+          <span style="color: var(--color-primary); font-weight:700;">REPEAT</span>
+        </div>
+
+        <p>
+          The algorithm requires no matrix operations, no nonlinear
+          solvers, and no online optimisation. Its computational
+          footprint per sample consists of a fixed number of additions,
+          multiplications, and tanh evaluations — well within the
+          real&#8209;time capability of any modern CNC controller.
+        </p>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.10 PARAMETER TABLE                            -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">4.10 Identified parameter values</h2>
+
+      <div class="data-table-wrap">
+        <table class="data-table" aria-label="PSSMC identified parameters">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Symbol</th>
+              <th>Value</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Specific cutting force</td>
+              <td>\(K_s\)</td>
+              <td>4838.94</td>
+              <td>Step 2 — OLS power-law fit</td>
+            </tr>
+            <tr>
+              <td>Cutting process time constant</td>
+              <td>\(\tau_c\)</td>
+              <td>0.0227 s</td>
+              <td>Step 3 — median-weighted mean</td>
+            </tr>
+            <tr>
+              <td>Servo time constant</td>
+              <td>\(\tau_s\)</td>
+              <td>0.17 s</td>
+              <td>Step 3 — rise-time specification</td>
+            </tr>
+            <tr>
+              <td>Minimum sliding gain</td>
+              <td>\(\lambda_{\min}\)</td>
+              <td>14.1 s⁻¹</td>
+              <td>\(1/\tau_c^{\max}\) — Run 7</td>
+            </tr>
+            <tr>
+              <td>Maximum sliding gain</td>
+              <td>\(\lambda_{\max}\)</td>
+              <td>133.3 s⁻¹</td>
+              <td>\(1/\tau_c^{\min}\) — Run 15</td>
+            </tr>
+            <tr>
+              <td>Sensitivity threshold</td>
+              <td>\(\sigma\)</td>
+              <td>44.1 s⁻¹</td>
+              <td>\(1/\tau_c^{\text{mean}}\)</td>
+            </tr>
+            <tr>
+              <td>Minimum prediction horizon</td>
+              <td>\(T_p^{\min}\)</td>
+              <td>0.0075 s</td>
+              <td>\(\tau_c^{\min}\) — Run 15</td>
+            </tr>
+            <tr>
+              <td>Maximum prediction horizon</td>
+              <td>\(T_p^{\max}\)</td>
+              <td>0.0710 s</td>
+              <td>\(\tau_c^{\max}\) — Run 7</td>
+            </tr>
+            <tr>
+              <td>Reference amplitude</td>
+              <td>\(A_{\text{ref}}\)</td>
+              <td>0.0066 m/s</td>
+              <td>Maximum observed — Run 15</td>
+            </tr>
+            <tr>
+              <td>Switching gain</td>
+              <td>\(K\)</td>
+              <td style="color:var(--color-text-faint)">To be tuned</td>
+              <td>Step 5 — Simulation</td>
+            </tr>
+            <tr>
+              <td>Min boundary layer</td>
+              <td>\(\varepsilon_{\min}\)</td>
+              <td style="color:var(--color-text-faint)">To be tuned</td>
+              <td>Step 5 — Simulation</td>
+            </tr>
+            <tr>
+              <td>Max boundary layer</td>
+              <td>\(\varepsilon_{\max}\)</td>
+              <td style="color:var(--color-text-faint)">To be tuned</td>
+              <td>Step 5 — Simulation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4.11 NOVEL CONTRIBUTIONS                        -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        4.11 Novel contributions
+      </h2>
+
+      <div class="params-grid" style="margin-bottom: var(--space-6)">
+        <div class="param-card">
+          <div class="param-symbol" style="font-size: var(--text-lg)">
+            ①
+          </div>
+          <div class="param-value" style="font-size: var(--text-base);
+               font-weight:600; margin-bottom: 0.3rem;">
+            Trend-based predictive surface
+          </div>
+          <div class="param-meaning">
+            Rather than requiring a high&#8209;fidelity forward model,
+            the controller estimates the future sliding surface from
+            the current trend using a first&#8209;order Taylor expansion.
+            This preserves the predictive advantage without the
+            computational cost of full state prediction.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol" style="font-size: var(--text-lg)">
+            ②
+          </div>
+          <div class="param-value" style="font-size: var(--text-base);
+               font-weight:600; margin-bottom: 0.3rem;">
+            Continuous adaptive sliding gain
+          </div>
+          <div class="param-meaning">
+            \(\lambda(t)\) responds continuously to the rate of change
+            of the sliding surface — scaling from gentle correction
+            during smooth cutting to aggressive correction during intense
+            vibration. This eliminates the performance compromise of
+            fixed&#8209;gain designs.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol" style="font-size: var(--text-lg)">
+            ③
+          </div>
+          <div class="param-value" style="font-size: var(--text-base);
+               font-weight:600; margin-bottom: 0.3rem;">
+            Amplitude-driven joint adaptation
+          </div>
+          <div class="param-meaning">
+            \(T_p(t)\) and \(\varepsilon(t)\) are co&#8209;adapted via
+            the same signal and the same functional form, ensuring
+            architectural consistency and enabling simultaneous tuning
+            of anticipation depth and chattering suppression with a
+            single observable input.
+          </div>
+        </div>
+      </div>
+
+      <!-- Handover callout -->
+      <div class="callout">
+        <p>
+          <strong>Handover to Step&nbsp;5:</strong>
+          the complete PSSMC control law, state&#8209;space plant
+          \((\mathbf{A},\mathbf{B},\mathbf{C})\), and the nine
+          identified parameters are passed to MATLAB/Simulink for
+          closed&#8209;loop simulation. Step&nbsp;5 will tune the three
+          remaining parameters (\(K\), \(\varepsilon_{\min}\),
+          \(\varepsilon_{\max}\)) and compare PSSMC performance against
+          conventional SMC and PID controllers under identical chatter
+          excitation conditions.
+        </p>
+      </div>
+
+    </div><!-- end step-body -->
+  </main>
+
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">
+      University of Dar es Salaam &mdash;
+      Department of Mechanical and Industrial Engineering.
+    </p>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  OVERLAYS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- Signal chain -->
+  <div class="overlay" id="ol-signal-chain" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-sc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-sc-title">Signal chain d<sub>c</sub> → F<sub>c</sub></h2>
+      <p>
+        The controller output \(d_c(t)\) passes through two physical
+        sub&#8209;systems before producing the measured output
+        \(F_c(t)\):
+      </p>
+      <div class="math-block">
+        \[
+          d_c(t)
+          \;\xrightarrow{\displaystyle G_s(s)}\;
+          d_a(t)
+          \;\xrightarrow{\displaystyle G_c(s)}\;
+          F_c(t)
+        \]
+      </div>
+      <p>
+        The total delay in this chain is
+        \(\tau_c + \tau_s = 0.0227 + 0.17 \approx 0.19\,\text{s}\).
+        The controller does not act on feed rate — it controls depth
+        of cut directly, continuously, and in real time.
+      </p>
+    </div>
+  </div>
+
+  <!-- Phase plane -->
+  <div class="overlay" id="ol-phase-plane" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-pp-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-pp-title">Phase plane geometry of the sliding surface</h2>
+      <p>
+        The \((e, \dot{e})\) phase plane is the two&#8209;dimensional
+        state space of the error dynamics. The sliding surface
+        \(s = \dot{e} + \lambda e = 0\) is a straight line through the
+        origin with slope \(-\lambda\). Trajectories above the line
+        (positive \(s\)) are pushed downward; trajectories below
+        (negative \(s\)) are pushed upward. Once any trajectory
+        reaches the line, it follows it to the origin at the
+        exponential rate \(e^{-\lambda t}\).
+      </p>
+      <div class="math-block">
+        \[
+          \text{On the surface: }
+          \frac{d\dot{e}}{de}
+          = \frac{-\lambda\,e}{e}
+          = -\lambda
+          \quad\Rightarrow\quad
+          \text{slope} = -\lambda
+        \]
+      </div>
+    </div>
+  </div>
+
+  <!-- u_eq physical -->
+  <div class="overlay" id="ol-ueq-physical" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-ueq-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ueq-title">Physical interpretation of u<sub>eq</sub></h2>
+      <p>
+        The equivalent control
+        \(u_{eq} = \frac{1}{K_s}[F_c(t) + \tau_c\lambda\,e(t)]\)
+        has two additive terms with distinct roles:
+      </p>
+      <ul style="margin: var(--space-3) 0 var(--space-4) var(--space-4);
+                 color: var(--color-text-muted);
+                 font-size: var(--text-sm); line-height: 1.9;">
+        <li>
+          <strong>\(F_c(t)/K_s\)</strong> — force compensation: commands
+          a depth of cut proportional to the current force, effectively
+          neutralising whatever force the process is generating and
+          preventing it from causing the system to drift.
+        </li>
+        <li>
+          <strong>\(\tau_c\lambda\,e(t)/K_s\)</strong> — error correction:
+          commands an additional increment proportional to the current
+          tracking error, driving \(F_c(t)\) toward \(F_{\text{ref}}\)
+          at the rate dictated by \(\lambda\).
+        </li>
+      </ul>
+      <p>
+        Together, these terms ensure that on the sliding surface, the
+        cutting force tracks the reference exactly and the error decays
+        at the prescribed exponential rate.
+      </p>
+    </div>
+  </div>
+
+  <!-- Chattering -->
+  <div class="overlay" id="ol-chattering" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-ch-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ch-title">Why chattering is harmful in CNC turning</h2>
+      <p>
+        Chattering in a depth&#8209;of&#8209;cut controller is
+        particularly destructive because the CNC servo actuator has
+        finite mechanical bandwidth. Rapidly alternating commands
+        between \(+K\) and \(-K\) at kHz rates excite ball&#8209;screw
+        resonances, cause premature bearing wear, and generate periodic
+        force variations that are indistinguishable from chatter itself
+        — making the controller the primary source of the vibration it
+        is supposed to suppress. The tanh replacement eliminates this
+        pathology by guaranteeing that \(u_{sw} = 0\) exactly when
+        \(s = 0\).
+      </p>
+    </div>
+  </div>
+
+  <!-- Taylor accuracy -->
+  <div class="overlay" id="ol-taylor" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-tay-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-tay-title">Accuracy of the Taylor prediction</h2>
+      <p>
+        The first&#8209;order Taylor expansion
+        \(\hat{s}(t+T_p) \approx s(t) + \dot{s}(t)T_p\)
+        incurs a truncation error of order \(O(T_p^2)\):
+      </p>
+      <div class="math-block">
+        \[
+          \hat{s}(t+T_p) - s(t+T_p)
+          = \tfrac{1}{2}\ddot{s}(\xi)\,T_p^2
+          \quad \xi \in (t,\, t+T_p)
+        \]
+      </div>
+      <p>
+        For \(T_p^{\max} = 0.071\,\text{s}\), the error is of order
+        \(0.071^2 / 2 \approx 2.5 \times 10^{-3}\,\text{s}^2\) times
+        the second derivative of \(s\). Since \(\ddot{s}\) remains
+        bounded by the physical constraints of the cutting process, the
+        approximation is well&#8209;justified over the horizon ranges
+        used in this study.
+      </p>
+    </div>
+  </div>
+
+  <!-- Practical stability -->
+  <div class="overlay" id="ol-practical-stability" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-ps-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ps-title">Practical stability vs asymptotic stability</h2>
+      <p>
+        <strong>Asymptotic stability</strong> requires
+        \(s(t) \to 0\) exactly as \(t \to \infty\). The tanh
+        boundary layer prevents this: inside the layer
+        (\(|s| \leq \varepsilon\)), the restoring force is modulated
+        and the system state may settle at a small nonzero \(s\).
+      </p>
+      <p>
+        <strong>Practical stability</strong> (ultimate boundedness)
+        is weaker but sufficient: the state converges to and remains
+        within a compact neighbourhood of the surface whose radius
+        shrinks as \(\varepsilon \to 0\). In chatter suppression, the
+        controller does not need to drive the force error to exactly
+        zero — it needs to keep the deviation small enough that the
+        regenerative mechanism cannot sustain itself. Practical
+        stability is precisely the right guarantee for this application.
+      </p>
+    </div>
+  </div>
+
+  <!-- Computational cost -->
+  <div class="overlay" id="ol-computational-cost" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-cc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-cc-title">Computational cost per sample</h2>
+      <p>
+        Each execution of the algorithm requires exactly:
+      </p>
+      <ul style="margin: var(--space-3) 0 var(--space-4) var(--space-4);
+                 color: var(--color-text-muted);
+                 font-size: var(--text-sm); line-height: 2;">
+        <li>2 divisions, 6 multiplications, 8 additions</li>
+        <li>3 tanh evaluations (each equivalent to ~20 FLOPs on modern hardware)</li>
+        <li>1 absolute value, 2 scalar stores</li>
+      </ul>
+      <p>
+        Total: approximately 80–100 floating&#8209;point operations.
+        At a 1&thinsp;kHz sampling rate, this requires roughly
+        0.1&thinsp;MFLOPS — orders of magnitude below the capability
+        of any industrial PLC or DSP used in CNC control since 2010.
+      </p>
+    </div>
+  </div>
+
+  <!-- Under construction -->
+  <div class="overlay" id="ol-construction" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-uc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-uc-title">Stage under construction</h2>
+      <p>
+        Step&nbsp;5 (MATLAB/Simulink closed&#8209;loop simulation and
+        comparison of PSSMC vs SMC vs PID) is currently in progress.
+        Content will appear here as the work is finalised.
+      </p>
+      <a class="btn btn-ghost" href="./step-4.html">
+        &#8592; Stay on Step 4
+      </a>
+    </div>
+  </div>
+
+
+</body>
+</html>

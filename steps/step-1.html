@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 1 – Experimental Cutting Data – PSSMC</title>
+  <meta name="description" content="Fifteen turning experiments on medium
+    carbon steel. Raw cutting force, vibration amplitude and frequency
+    data across a face-centred parameter design." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Plotly -->
+  <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <!-- Scripts -->
+  <script defer src="../assets/js/main.js"></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.buildStep1Chart) window.buildStep1Chart();
+    });
+  </script>
+
+  <style>
+    /* ── FRAMEWORK BUTTON ─────────────────────────────── */
+    .framework-wrap {
+      display: flex;
+      justify-content: center;
+      margin: var(--space-8) 0 var(--space-4);
+    }
+
+    .framework-btn {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0;
+    }
+
+    /* Spinning ring */
+    .framework-btn::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2.5px solid transparent;
+      border-top-color: var(--color-primary);
+      border-right-color: var(--color-primary);
+      animation: spin-ring 2.8s linear infinite;
+    }
+
+    /* Second ring — slower, opposite */
+    .framework-btn::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+      border-bottom-color: var(--color-primary);
+      border-left-color: oklch(from var(--color-primary) l c h / 0.4);
+      animation: spin-ring 4.5s linear infinite reverse;
+    }
+
+    @keyframes spin-ring {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Inner circle */
+    .framework-inner {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 3px;
+      transition: background var(--transition-interactive),
+                  box-shadow var(--transition-interactive);
+      /* Pulse glow */
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow:
+          0 0 0 0 oklch(from var(--color-primary) l c h / 0),
+          0 0 12px oklch(from var(--color-primary) l c h / 0.08);
+      }
+      50% {
+        box-shadow:
+          0 0 0 8px oklch(from var(--color-primary) l c h / 0.06),
+          0 0 24px oklch(from var(--color-primary) l c h / 0.18);
+      }
+    }
+
+    .framework-btn:hover .framework-inner,
+    .framework-btn:focus-visible .framework-inner {
+      background: var(--color-surface-2);
+      box-shadow:
+        0 0 0 10px oklch(from var(--color-primary) l c h / 0.08),
+        0 0 32px oklch(from var(--color-primary) l c h / 0.22);
+    }
+
+    .framework-label {
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      line-height: 1;
+    }
+
+    .framework-sub {
+      font-family: var(--font-body);
+      font-size: 0.58rem;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+
+    /* ── FRAMEWORK OVERLAY extras ─────────────────────── */
+   .pipeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin: var(--space-4) 0;
+    }
+
+    .pipeline-step {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+
+    .pipeline-step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pipeline-step-body strong {
+      display: block;
+      font-size: var(--text-sm);
+      color: var(--color-text);
+      margin-bottom: 2px;
+    }
+
+    .pipeline-step-body span {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .pipeline-connector {
+      width: 2px;
+      height: 12px;
+      background: var(--color-border);
+      margin-left: 13px;
+    }
+
+
+    /* ── PARAMETER CARDS — centered ─────────────────────*/
+    .params-grid .param-card {
+      text-align: center;
+    }
+
+    .params-grid .param-meaning {
+      text-align: center;
+    }
+  </style>
+
+</head>
+
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring" />
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18"
+              class="mark-wave" />
+        <path d="M18 22h12" class="mark-line" />
+      </svg>
+      <span>PSSMC</span>
+    </a>
+
+    <nav class="stage-nav" aria-label="Stage navigation">
+      <a href="../index.html">Home</a>
+      <a href="./step-1.html" aria-current="page">Step 1</a>
+      <a href="./step-2.html">Step 2</a>
+      <a href="./step-3.html">Step 3</a>
+      <a href="./step-4.html">Step 4</a>
+      <button type="button" data-overlay="ol-construction">Step 5</button>
+      <button class="theme-btn" data-theme-toggle
+              aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- ══ FRAMEWORK BUTTON ══════════════════════════════ -->
+    <div class="framework-wrap">
+      <button class="framework-btn" type="button"
+              data-overlay="ol-framework"
+              aria-label="Open research framework overview">
+        <div class="framework-inner">
+          <span class="framework-label">Framework</span>
+          <span class="framework-sub">tap to explore</span>
+        </div>
+      </button>
+    </div>
+
+
+    <!-- STEP HERO -->
+    <section class="step-hero">
+      <div>
+        <p class="eyebrow">Step 1 of 5</p>
+        <h1>Experimental Cutting Data</h1>
+        <p class="lead">
+          A conventional lathe cannot suppress chatter on its own — but
+          the data it produces can be used to build a mathematical model
+          of the cutting process. That model is then simulated to
+          represent the behaviour of a servo&#8209;equipped machine,
+          and a Predictive Smoothed Sliding Mode Controller is designed
+          and tested entirely within that simulation. This page
+          documents the fifteen turning experiments that start
+          that journey.
+        </p>
+      </div>
+      <div class="step-hero-actions">
+        <a class="btn btn-ghost" href="../gateway.html">&#8592; Pathway</a>
+        <a class="btn btn-primary" href="./step-2.html">Step 2 &#8594;</a>
+      </div>
+    </section>
+
+
+    <div class="step-body">
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 1. EXPERIMENTAL SETUP                           -->
+      <!-- ════════════════════════════════════════════════ -->
+      <div class="two-col">
+
+        <article class="info-card">
+          <h2>Workpiece &amp; machine</h2>
+          <p>
+            The workpiece material is medium&#8209;carbon steel
+            (C&nbsp;=&nbsp;0.3509&thinsp;%, S&nbsp;=&nbsp;0.0092&thinsp;%)
+            in the form of a round bar
+            <strong>47&thinsp;mm diameter × 150&thinsp;mm long</strong>.
+            All cuts were performed on a <strong>conventional lathe</strong>
+            without cutting fluid, using a carbide insert tool and
+            tool&#8209;holder assembly to keep tool&#8209;geometry effects
+            constant across all fifteen runs.
+          </p>
+          <p>
+            Vibration was measured by placing a vibration meter at the
+            surface of the cutting tool mounted on the tool post.
+            The three&#8209;component force was recorded for each run.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-dynamometer">
+            About force measurement
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>Face-centred design</h2>
+          <p>
+            The experiment follows a
+            <strong>face&#8209;centred central composite design
+            (FCCCD)</strong>. For three factors each at three levels
+            this places runs at:
+          </p>
+          <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 1.9;">
+            <li>8 corner points (all combinations of &minus;1 and +1)</li>
+            <li>6 face&#8209;centre points (one factor at centre, others at &plusmn;1)</li>
+            <li>1 centre point (all factors at 0)</li>
+          </ul>
+          <p>
+            This gives 15 distinct operating conditions that provide
+            good coverage of the design space with enough degrees of
+            freedom to estimate all main effects and two&#8209;factor
+            interactions.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-fcccd">
+            FCCCD geometry
+          </button>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 2. PARAMETER LEVELS                             -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        Parameter levels
+      </h2>
+
+      <div class="params-grid">
+        <div class="param-card">
+          <div class="param-symbol">V<sub>c</sub></div>
+          <div class="param-value">90 / 125 / 180 m/min</div>
+          <div class="param-meaning">
+            Cutting speed — low / centre / high.
+            Converted to spindle speed via
+            \( n = 1000\,V_c / (\pi D) \)
+            where \(D = 47\,\text{mm}\).
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol"><em>f</em></div>
+          <div class="param-value">0.125 / 0.25 / 0.5 mm/rev</div>
+          <div class="param-meaning">
+            Feed rate per revolution — controls chip thickness
+            and is the dominant driver of cutting force in this study.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol"><em>d</em></div>
+          <div class="param-value">0.1 / 0.4 / 0.8 mm</div>
+          <div class="param-meaning">
+            Depth of cut — the parameter the PSSMC controller
+            will adjust in real time to suppress chatter in simulation.
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 3. FORCE COMPONENTS                             -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        Force component definitions
+      </h2>
+
+      <div class="two-col">
+
+        <article class="info-card">
+          <h2>Three-force model</h2>
+          <p>
+            In orthogonal turning, the resultant cutting force
+            \(\mathbf{F}\) is resolved into three mutually perpendicular
+            components acting at the tool tip:
+          </p>
+          <div class="math-block">
+            \[
+              \mathbf{F} = F_c\,\hat{e}_c
+                         + F_f\,\hat{e}_f
+                         + F_p\,\hat{e}_p
+            \]
+          </div>
+          <p>
+            <strong>\(F_c\)</strong> — cutting force (tangential):
+           This force acts in the direction of primary cutting motion and It is the
+           largest component and the one modelled in Step&nbsp;2.
+
+          </p>
+          <p>
+            <strong>\(F_f\)</strong> — feed force (axial):
+            typically 30–50&thinsp;% of \(F_c\).
+          </p>
+          <p>
+            <strong>\(F_p\)</strong> — passive force (radial):             
+            acts perpendicular to the machined surface. 
+            More over this is the primary driver of tool deflection and regenerative chatter.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Equivalent vibration frequency</h2>
+          <p>
+            The vibration signal is processed to yield an
+            <em>equivalent frequency</em> \(f_{\text{eq}}\) —
+            the dominant spectral peak of the vibration signal
+            for each run. From this, the cutting&#8209;process
+            time constant for each run is computed as:
+          </p>
+          <div class="math-block">
+            \[
+              \tau_c^{(i)} = \frac{1}{2\pi\,f_{\text{eq},i}}
+            \]
+          </div>
+          <p>
+            The mean time constant across all 15 runs:
+          </p>
+          <div class="math-block">
+            \[
+              \bar{\tau}_c
+              = \frac{1}{15}\sum_{i=1}^{15}\tau_c^{(i)}
+              \approx 0.0227\;\text{s}
+            \]
+          </div>
+          <p>
+            This value feeds directly into the dynamic plant model
+            of Step&nbsp;3. Note: averaging the time constants
+            directly (not the frequencies) gives the correct mean.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-fft">
+            Why average τc not f<sub>eq</sub>?
+          </button>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4. SPINDLE SPEED DERIVATION                     -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        Spindle speed derivation
+      </h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>From cutting speed to spindle speed</h2>
+        <p>
+          The lathe accepts spindle speed \(n\) in rev/min, not
+          cutting speed \(V_c\) in m/min. The conversion uses the
+          workpiece diameter \(D = 47\,\text{mm}\):
+        </p>
+        <div class="math-block">
+          \[
+            n = \frac{1000\,V_c}{\pi\,D}
+          \]
+        </div>
+        <p>
+          The three cutting&#8209;speed levels map to:
+        </p>
+        <div class="math-block">
+          \[
+            n_{90}  = \frac{1000 \times 90 }{\pi \times 47}
+                    \approx 610\;\text{rev/min}
+          \]
+          \[
+            n_{125} = \frac{1000 \times 125}{\pi \times 47}
+                    \approx 847\;\text{rev/min}
+          \]
+          \[
+            n_{180} = \frac{1000 \times 180}{\pi \times 47}
+                    \approx 1219\;\text{rev/min}
+          \]
+        </div>
+      </article>
+
+      
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 5. RAW DATA TABLE                               -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        Raw data — 15 experimental runs
+      </h2>
+
+      <div class="data-table-wrap">
+        <table class="data-table"
+               aria-label="Experimental cutting data, 15 runs">
+          <thead>
+            <tr>
+              <th>Run</th>
+              <th>V<sub>c</sub> (m/min)</th>
+              <th><em>f</em> (mm/rev)</th>
+              <th><em>d</em> (mm)</th>
+              <th>F<sub>c</sub> (N)</th>
+              <th>F<sub>f</sub> (N)</th>
+              <th>F<sub>p</sub> (N)</th>
+              <th>Vibration (m/s)</th>
+              <th>f<sub>eq</sub> (Hz)</th>
+              <th>&tau;<sub>c</sub> (s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>125</td><td>0.250</td><td>0.4</td><td>300</td><td>138</td><td>112</td><td>0.0045</td><td>14.40</td><td>0.011052</td></tr>
+            <tr><td>2</td><td>125</td><td>0.125</td><td>0.1</td><td>70</td><td>32</td><td>26</td><td>0.0012</td><td>3.84</td><td>0.041447</td></tr>
+            <tr><td>3</td><td>90</td><td>0.125</td><td>0.4</td><td>170</td><td>78</td><td>64</td><td>0.0026</td><td>8.32</td><td>0.019129</td></tr>
+            <tr><td>4</td><td>90</td><td>0.500</td><td>0.4</td><td>575</td><td>264</td><td>216</td><td>0.0053</td><td>16.96</td><td>0.009384</td></tr>
+            <tr><td>5</td><td>180</td><td>0.125</td><td>0.4</td><td>150</td><td>69</td><td>56</td><td>0.0024</td><td>7.68</td><td>0.020723</td></tr>
+            <tr><td>6</td><td>125</td><td>0.250</td><td>0.4</td><td>155</td><td>71</td><td>58</td><td>0.0025</td><td>8.00</td><td>0.019894</td></tr>
+            <tr><td>7</td><td>90</td><td>0.250</td><td>0.1</td><td>100</td><td>46</td><td>38</td><td>0.0007</td><td>2.24</td><td>0.071051</td></tr>
+            <tr><td>8</td><td>125</td><td>0.250</td><td>0.4</td><td>160</td><td>74</td><td>60</td><td>0.0020</td><td>6.40</td><td>0.024868</td></tr>
+            <tr><td>9</td><td>180</td><td>0.250</td><td>0.8</td><td>340</td><td>156</td><td>128</td><td>0.0057</td><td>18.24</td><td>0.008726</td></tr>
+            <tr><td>10</td><td>180</td><td>0.250</td><td>0.1</td><td>80</td><td>37</td><td>30</td><td>0.0011</td><td>3.52</td><td>0.045214</td></tr>
+            <tr><td>11</td><td>125</td><td>0.125</td><td>0.8</td><td>145</td><td>67</td><td>54</td><td>0.0022</td><td>7.04</td><td>0.022607</td></tr>
+            <tr><td>12</td><td>125</td><td>0.500</td><td>0.1</td><td>200</td><td>92</td><td>75</td><td>0.0031</td><td>9.92</td><td>0.016044</td></tr>
+            <tr><td>13</td><td>90</td><td>0.250</td><td>0.8</td><td>320</td><td>147</td><td>120</td><td>0.0042</td><td>13.44</td><td>0.011842</td></tr>
+            <tr><td>14</td><td>180</td><td>0.500</td><td>0.4</td><td>325</td><td>149</td><td>122</td><td>0.0043</td><td>13.76</td><td>0.011566</td></tr>
+            <tr><td>15</td><td>125</td><td>0.500</td><td>0.8</td><td>600</td><td>276</td><td>225</td><td>0.0066</td><td>21.12</td><td>0.007536</td></tr>
+          </tbody>
+          <tfoot>
+            <tr style="font-weight:600; color: var(--color-text);">
+              <td colspan="9" style="text-align:right; padding-right: var(--space-4);">
+                Mean &tau;<sub>c</sub>
+              </td>
+              <td>0.022739</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 6. CHART                                        -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">
+        Cutting force across all runs
+      </h2>
+
+      <div class="chart-wrap">
+        <div id="chart-step1" class="plot-frame"
+             aria-label="Cutting force across 15 experimental runs">
+        </div>
+        <p class="chart-caption">
+          Each point is one run. <strong>Marker size</strong> scales
+          with vibration amplitude; <strong>colour</strong> deepens
+          with cutting force. Runs&nbsp;4 and&nbsp;15 — highest feed
+          rate with maximum depth of cut — produce the highest forces
+          and vibrations: the chatter&#8209;risk conditions the
+          controller must handle.
+        </p>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 7. KEY OBSERVATIONS                             -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        Key observations
+      </h2>
+
+      <div class="two-col">
+
+        <article class="info-card">
+          <h2>Force trends</h2>
+          <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 1.9;">
+            <li>
+              <strong>Feed rate</strong> \(f\) has the strongest
+              positive effect — doubling \(f\) roughly doubles \(F_c\).
+            </li>
+            <li>
+              <strong>Depth of cut</strong> \(d\) raises \(F_c\)
+              sub&#8209;linearly — doubling \(d\) increases \(F_c\)
+              by roughly 45&thinsp;%.
+            </li>
+            <li>
+              <strong>Cutting speed</strong> \(V_c\) works in
+              <em>reverse</em> — higher speed reduces force through
+              thermal softening of the chip.
+            </li>
+          </ul>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-thermal">
+            Thermal softening explained
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>Time constant range</h2>
+          <p>
+            The individual time constants span from
+            <strong>0.00754&thinsp;s</strong> (Run&nbsp;15 — highest
+            frequency, fastest dynamics) to
+            <strong>0.07105&thinsp;s</strong> (Run&nbsp;7 — lowest
+            frequency, slowest dynamics) — a ten&#8209;fold range.
+          </p>
+          <p>
+            The mean time constant:
+          </p>
+          <div class="math-block">
+            \[
+              \bar{\tau}_c
+              = \frac{1}{15}\sum_{i=1}^{15}
+                \frac{1}{2\pi\,f_{\text{eq},i}}
+              \approx 0.0227\;\text{s}
+            \]
+          </div>
+          <p>
+            This ten&#8209;fold range across operating conditions is
+            precisely why the PSSMC uses an adaptive sliding gain
+            \(\lambda(t)\) in Step&nbsp;4 — a fixed gain cannot
+            serve the full range.
+          </p>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 8. HANDOVER CALLOUT                             -->
+      <!-- ════════════════════════════════════════════════ -->
+      <div class="callout" style="margin-top: var(--space-6)">
+        <p>
+          <strong>Handover to Step&nbsp;2:</strong>
+          the four columns V<sub>c</sub>, \(f\), \(d\), and
+          F<sub>c</sub> are taken into the OLS regression that
+          builds the power&#8209;law force model.
+          The \(\tau_c^{(i)}\) column — and its mean 0.0227&thinsp;s —
+          is reserved for the dynamic plant model in Step&nbsp;3.
+          F<sub>f</sub> and F<sub>p</sub> are archived for completeness
+          but are not used in the modelling pipeline.
+        </p>
+      </div>
+
+    </div><!-- end step-body -->
+  </main>
+
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">
+      University of Dar es Salaam &mdash;
+      Department of Mechanical and Industrial Engineering.
+    </p>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  OVERLAYS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- FRAMEWORK -->
+  <div class="overlay" id="ol-framework" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-fw-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-fw-title">Research Framework</h2>
+      <p style="color:var(--color-text-muted); font-size:var(--text-sm);
+                margin-bottom: var(--space-4);">
+        A conventional lathe cannot suppress chatter autonomously.
+        This research uses experimental data from such a machine to
+        construct a mathematical model — then designs and validates
+        a controller entirely within simulation, representing the
+        behaviour of a servo&#8209;equipped machine.
+      </p>
+
+      <div class="pipeline-steps">
+
+        <div class="pipeline-step">
+          <div class="pipeline-step-num">1</div>
+          <div class="pipeline-step-body">
+            <strong>Experimental Data — Conventional Lathe</strong>
+            <span>
+              15 turning runs on medium&#8209;carbon steel. Cutting
+              force, vibration amplitude, and equivalent frequency
+              recorded for each combination of speed, feed, and depth
+              of cut. No servo. No automation. Raw physical data.
+            </span>
+          </div>
+        </div>
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-step-num">2</div>
+          <div class="pipeline-step-body">
+            <strong>Power-Law Force Model — OLS Regression</strong>
+            <span>
+              The 15 data points are fitted to a power&#8209;law model
+              \(\hat F_c = C_0\,V_c^a\,d^b\,f^c\) using ordinary
+              least squares. This gives the static relationship between
+              cutting parameters and cutting force.
+            </span>
+          </div>
+        </div>
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-step-num">3</div>
+          <div class="pipeline-step-body">
+            <strong>Dynamic Plant Model — First-Order Transfer Functions</strong>
+            <span>
+              The static model is lifted into the time domain.
+              The cutting process time constant \(\bar\tau_c = 0.0227\,\text{s}\)
+              is derived from the experimental frequencies. A CNC servo
+              time constant \(\tau_s = 0.17\,\text{s}\) is introduced
+              to represent the servo&#8209;equipped machine in simulation.
+              Together they form the second&#8209;order plant \(G_p(s)\).
+            </span>
+          </div>
+        </div>
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-step-num">4</div>
+          <div class="pipeline-step-body">
+            <strong>PSSMC Controller Design</strong>
+            <span>
+              A Predictive Smoothed Sliding Mode Controller is derived
+              from first principles — sliding surface, equivalent control,
+              tanh switching, predictive horizon, and three adaptive
+              parameters. Lyapunov stability is proved analytically.
+            </span>
+          </div>
+        </div>
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-step-num">5</div>
+          <div class="pipeline-step-body">
+            <strong>MATLAB / Simulink Simulation &amp; Validation</strong>
+            <span>
+              The PSSMC is closed around the plant model in Simulink.
+              Performance under regenerative chatter excitation is
+              compared against conventional SMC and PID controllers.
+              Three tuning parameters are finalised through simulation.
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <p style="color:var(--color-text-faint); font-size:var(--text-xs);
+                margin-top: var(--space-4); text-align:center;">
+        University of Dar es Salaam &mdash;
+        Department of Mechanical and Industrial Engineering
+      </p>
+    </div>
+  </div>
+
+  <!-- Force measurement -->
+  <div class="overlay" id="ol-dynamometer" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-dyn-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-dyn-title">Force &amp; vibration measurement</h2>
+      <p>
+        Cutting force components were recorded using a three&#8209;component
+        measurement setup mounted between the tool holder and the lathe.
+        The three components — tangential \(F_c\), axial \(F_f\), and
+        radial \(F_p\) — were resolved simultaneously for each run.
+      </p>
+      <p>
+        Vibration was measured by placing a vibration meter directly at
+        the surface of the cutting tool on the tool post. The dominant
+        vibration frequency for each run was extracted and recorded as
+        the equivalent frequency \(f_{\text{eq}}\).
+      </p>
+    </div>
+  </div>
+
+  <!-- FCCCD geometry -->
+  <div class="overlay" id="ol-fcccd" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-fcccd-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-fcccd-title">Face-centred CCD geometry</h2>
+      <p>
+        In coded variable space \(\xi \in \{-1, 0, +1\}\) the
+        fifteen runs occupy:
+      </p>
+      <div class="math-block">
+        \[
+          \text{Corner points: }(\xi_1,\xi_2,\xi_3)\in\{-1,+1\}^3
+          \quad(8\text{ runs})
+        \]
+        \[
+          \text{Face centres: one }\xi_i=0,\text{ others }\in\{-1,+1\}
+          \quad(6\text{ runs})
+        \]
+        \[
+          \text{Centre point: }(0,0,0)\quad(1\text{ run})
+        \]
+      </div>
+      <p>
+        The coded variables map to natural variables via
+        \(\xi_i = (x_i - x_{i,0})/\Delta x_i\).
+      </p>
+    </div>
+  </div>
+
+  <!-- Why average tau not feq -->
+  <div class="overlay" id="ol-fft" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-fft-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-fft-title">Why average &tau;<sub>c</sub>, not f<sub>eq</sub>?</h2>
+      <p>
+        The time constant is the quantity of physical interest.
+        Averaging the frequencies first and then inverting gives
+        a different (and incorrect) result because the inverse
+        operation is nonlinear:
+      </p>
+      <div class="math-block">
+        \[
+          \frac{1}{2\pi\,\bar f_{\text{eq}}}
+          \;\neq\;
+          \overline{\left(\frac{1}{2\pi\,f_{\text{eq}}}\right)}
+        \]
+      </div>
+      <p>
+        Computing \(\tau_c^{(i)} = 1/(2\pi f_{\text{eq},i})\)
+        for each run and <em>then</em> averaging correctly weights
+        each operating condition equally in the time&#8209;constant
+        domain, which is the domain used in the plant model.
+      </p>
+      <div class="math-block">
+        \[
+          \bar\tau_c
+          = \frac{1}{15}\sum_{i=1}^{15}\frac{1}{2\pi f_{\text{eq},i}}
+          \approx 0.0227\;\text{s}
+        \]
+      </div>
+    </div>
+  </div>
+
+  <!-- Thermal softening -->
+  <div class="overlay" id="ol-thermal" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-thermal-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-thermal-title">Thermal softening</h2>
+      <p>
+        At higher cutting speeds the heat flux at the
+        tool&#8209;chip interface increases, raising the
+        temperature of the chip. Above roughly 600&thinsp;&deg;C
+        the flow stress of steel decreases, reducing the shear
+        force required to form the chip. The net effect is that
+        \(F_c\) decreases with \(V_c\), captured in the Step&nbsp;2
+        model by a negative exponent on \(V_c\).
+
+    </p>
+      <div class="math-block">
+        \[
+          \tau_s(T) \approx \tau_0
+          \left(1 - \frac{T - T_0}{T_m - T_0}\right)^\alpha
+        \]
+      </div>
+      <p>
+        where \(\tau_0\) is the flow stress at reference temperature
+        \(T_0\), \(T_m\) is the melting point, and \(\alpha\) is a
+        material&#8209;specific softening exponent. The net effect is
+        that \(F_c\) decreases with \(V_c\), captured in the model
+        by a negative exponent on \(V_c\).
+      </p>
+    </div>
+
+      </p>
+    </div>
+  </div>
+
+  <!-- Under construction -->
+  <div class="overlay" id="ol-construction" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-uc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-uc-title">Stage under construction</h2>
+      <p>
+        Step&nbsp;5 (MATLAB/Simulink simulation and controller
+        comparison) is currently in progress. Content will appear
+        here as the work is finalised.
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>

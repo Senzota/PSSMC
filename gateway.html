@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Pathway – PSSMC</title>
+  <meta name="description" content="Central navigation hub for the PSSMC
+    research archive. Five stages from experimental data to controller
+    simulation." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./assets/css/style.css" />
+
+  <!-- Scripts -->
+  <script defer src="./assets/js/main.js"></script>
+</head>
+
+<body>
+  <!-- Skip link -->
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+
+    <a class="brand-mark" href="./index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring" />
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18"
+              class="mark-wave" />
+        <path d="M18 22h12" class="mark-line" />
+      </svg>
+      <span>PSSMC</span>
+    </a>
+
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="./index.html">Home</a>
+      <a href="./gateway.html" aria-current="page">Research Pathway</a>
+      <button class="theme-btn" data-theme-toggle
+              aria-label="Switch colour theme" type="button"></button>
+    </nav>
+
+  </header>
+
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- HERO -->
+    <div class="gateway-hero">
+      <p class="eyebrow">Central navigation hub</p>
+      <h1>Research Pathway</h1>
+      <p class="lead">
+        Five stages, one continuous argument &mdash; from the turning lathe
+        to a predictive controller. Follow the journey in sequence or jump
+        directly to any completed stage.
+      </p>
+    </div>
+
+
+    <!-- PENTAGON MAP -->
+    <div class="pentagon-wrap" aria-label="Stage map">
+      <div class="pentagon-grid">
+
+        <!-- Step 1 — top centre -->
+        <a class="pnode node-1" href="./steps/step-1.html">
+          <span class="pn-step">Step 1</span>
+          <strong>Experimental Data</strong>
+        </a>
+
+        <!-- Step 2 — top right -->
+        <a class="pnode node-2" href="./steps/step-2.html">
+          <span class="pn-step">Step 2</span>
+          <strong>Power-Law Model</strong>
+        </a>
+
+        <!-- Step 3 — bottom right -->
+        <a class="pnode node-3" href="./steps/step-3.html">
+          <span class="pn-step">Step 3</span>
+          <strong>Dynamic Plant</strong>
+        </a>
+
+        <!-- Step 4 — bottom left (construction) -->
+        <a class="pnode node-4" href="./steps/step-4.html">
+          <span class="pn-step">Step 4</span>
+          <strong>PSSMC Design</strong>
+        </a>
+
+        <!-- Step 5 — top left (construction) -->
+        <button class="pnode node-5 muted" type="button"
+                data-overlay="ol-construction">
+          <span class="pn-step">Step 5</span>
+          <strong>Simulation</strong>
+        </button>
+
+        <!-- Centre node -->
+        <a class="center-node" href="./steps/step-1.html"
+           aria-label="Begin study at Step 1">
+          Explore<br>Study
+        </a>
+
+      </div>
+
+      <p class="gateway-note">
+        3 of 5 stages are currently available &mdash;
+        Steps&nbsp;4 and&nbsp;5 coming soon.
+      </p>
+    </div>
+
+
+    <!-- STAGE LIST — accessible fallback for pentagon -->
+    <section class="preview-section" aria-labelledby="stage-list-heading">
+
+      <p class="eyebrow">All stages</p>
+      <h2 id="stage-list-heading" class="section-title">
+        At a glance
+      </h2>
+
+      <div class="preview-grid">
+
+        <a class="stage-card" href="./steps/step-1.html">
+          <span class="stage-step">Step 1</span>
+          <h3>Experimental Cutting Data</h3>
+          <p>
+            Fifteen turning runs on AISI&nbsp;1045 steel sweeping cutting
+            speed, feed rate, and depth of cut.
+          </p>
+          <span class="badge badge-live">Available</span>
+        </a>
+
+        <a class="stage-card" href="./steps/step-2.html">
+          <span class="stage-step">Step 2</span>
+          <h3>Empirical Power-Law Model</h3>
+          <p>
+            OLS regression in log&#8209;space fits a three&#8209;parameter
+            force model with R&sup2;&nbsp;=&nbsp;0.881.
+          </p>
+          <span class="badge badge-live">Available</span>
+        </a>
+
+        <a class="stage-card" href="./steps/step-3.html">
+          <span class="stage-step">Step 3</span>
+          <h3>Dynamic Plant Formulation</h3>
+          <p>
+            Two first&#8209;order sub&#8209;systems combined into the
+            second&#8209;order plant the PSSMC will regulate.
+          </p>
+          <span class="badge badge-live">Available</span>
+        </a>
+
+        <a class="stage-card" href="./steps/step-4.html">
+          <span class="stage-step">Step 4</span>
+          <h3>PSSMC Controller Design</h3>
+          <p>
+            Step-by-step walkthrough of the controller design process, from
+            sliding surface to control law.
+          </p>
+          <span class="badge badge-live">Available</span>
+
+        </a>
+
+        <button class="stage-card muted" type="button"
+                data-overlay="ol-construction">
+          <span class="stage-step">Step 5</span>
+          <h3>Simulation &amp; Evaluation</h3>
+          <p>
+            MATLAB/Simulink closed&#8209;loop comparison of PSSMC,
+            conventional SMC, and PID.
+          </p>
+          <span class="badge badge-soon">Pending</span>
+        </button>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">
+      University of Dar es Salaam &mdash;
+      Department of Mechanical and Industrial Engineering.
+    </p>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  OVERLAYS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- Under construction -->
+  <div class="overlay" id="ol-construction" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-uc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-uc-title">Stage under construction</h2>
+      <p>
+        Step&nbsp;5 (MATLAB/Simulink simulation) are still being completed.
+        The navigation structure is already in place and the content
+        will appear here as each stage is finalised.
+      </p>
+      <a class="btn btn-ghost" href="./steps/step-3.html">
+        &#8592; Back to Step 3
+      </a>
+    </div>
+  </div>
+
+
+</body>
+</html>

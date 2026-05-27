@@ -1,0 +1,680 @@
+==============================================================
+BUILD PROMPT: step-5.html  +  The Plant Overlay
+PSSMC Research Archive — Step 5 of 5
+==============================================================
+
+────────────────────────────────────────────────────────────
+0. CONTEXT — WHAT THIS PROJECT IS
+────────────────────────────────────────────────────────────
+This is a multi-page academic research website called "PSSMC Research Archive".
+It documents a research project on a Predictive Smoothed Sliding Mode Controller
+(PSSMC) for chatter suppression in CNC milling.
+
+The site has 5 steps (pages). You are building step-5.html — the final page.
+It lives inside a sub-folder called "studies/" (or whatever folder the other
+step pages are in). All other pages (step-1.html through step-4.html) are
+already complete and working.
+
+The CSS file is at: ../assets/css/style.css
+The JS file is at:  ../assets/js/main.js
+Both are already loaded in all other pages — use the same links.
+
+────────────────────────────────────────────────────────────
+1. SITE DESIGN SYSTEM (read-only — do NOT change)
+────────────────────────────────────────────────────────────
+
+CSS VARIABLES (from style.css):
+  Surfaces:  --color-bg:#faf8f3  --color-surface:#fffdf9  --color-surface-2:#f3ede2
+  Borders:   --color-border: rgba(58,43,26,0.13)
+  Text:      --color-text:#221a13  --color-text-muted:#68594e  --color-text-faint:#b0a090
+  Accent:    --color-primary:#7a5c3a  --color-primary-dark:#52371c
+  Shadows:   --shadow-sm  --shadow-md  --shadow-lg
+  Radius:    --radius-sm:10px  --radius-md:18px  --radius-lg:24px  --radius-xl:32px
+  Fonts:     --font-display:'Cormorant Garamond',Georgia,serif
+             --font-body:'Inter','Helvetica Neue',sans-serif
+  Type:      --text-xs  --text-sm  --text-base  --text-lg  --text-xl  --text-2xl
+  Spacing:   --space-1 through --space-20
+
+DARK MODE: [data-theme="dark"] overrides all above with warm dark values.
+The main.js handles the theme toggle automatically via [data-theme-toggle].
+
+EXISTING COMPONENT CLASSES (defined in style.css, use them directly):
+
+  Layout:
+    .site-header        — sticky top header
+    .brand-mark         — logo link (SVG + "PSSMC" text)
+    .stage-nav          — horizontal nav links
+    .stage-nav a[aria-current="page"] — active page style
+    .theme-btn          — dark/light toggle button (needs data-theme-toggle)
+    .skip-link          — accessibility skip link
+    .step-hero          — large hero section with heading + lead text
+    .step-hero h1       — big display heading
+    .step-hero .lead    — large body text
+    .step-hero-actions  — flex row of buttons
+    .step-body          — main content area (max-width container, padding)
+    .two-col            — 2-column grid (becomes 1-col on mobile)
+    .info-card          — card with h2 + p content
+    .section-title-sm   — small section heading inside step-body
+    .site-footer        — footer bar
+    .footer-brand       — brand name in footer
+    .eyebrow            — small uppercase label above h1
+
+  Buttons:
+    .btn .btn-primary   — filled accent button
+    .btn .btn-secondary — outlined button
+    .btn .btn-ghost     — ghost/text button
+    .btn .btn-sm        — smaller size modifier
+
+  Overlays (IMPORTANT — handled by main.js automatically):
+    .overlay            — position:fixed fullscreen backdrop+panel wrapper
+    .overlay[hidden]    — display:none (hidden by default)
+    .overlay-backdrop   — blurred backdrop (needs data-close-overlay)
+    .overlay-panel      — the white panel (role="dialog" aria-modal="true")
+    .overlay-close      — X button (needs data-close-overlay)
+
+  Trigger pattern:
+    <button data-overlay="ol-SOMEID">Open</button>
+    Then at bottom of page:
+    <div class="overlay" id="ol-SOMEID" hidden>
+      <div class="overlay-backdrop" data-close-overlay></div>
+      <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-SOMEID-title">
+        <button class="overlay-close" data-close-overlay aria-label="Close">&times;</button>
+        <h2 id="ol-SOMEID-title">Title here</h2>
+        <p>Content here...</p>
+      </div>
+    </div>
+    main.js already wires up all [data-overlay] and [data-close-overlay] — no extra JS needed.
+
+────────────────────────────────────────────────────────────
+2. HEADER PATTERN (copy exactly from other pages)
+────────────────────────────────────────────────────────────
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <circle cx="32" cy="32" r="26" class="mark-ring"/>
+      <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave"/>
+      <path d="M18 22h12" class="mark-line"/>
+    </svg>
+    <span>PSSMC</span>
+  </a>
+  <nav class="stage-nav" aria-label="Stage navigation">
+    <a href="../index.html">Home</a>
+    <a href="../gateway.html">Pathway</a>
+    <a href="./step-1.html">Step 1</a>
+    <a href="./step-2.html">Step 2</a>
+    <a href="./step-3.html">Step 3</a>
+    <a href="./step-4.html">Step 4</a>
+    <a href="./step-5.html" aria-current="page">Step 5</a>
+    <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+  </nav>
+</header>
+
+────────────────────────────────────────────────────────────
+3. FOOTER PATTERN
+────────────────────────────────────────────────────────────
+
+<footer class="site-footer">
+  <span class="footer-brand">FShuma</span>
+  <p class="footer-sub">PSSMC · Simulation &amp; Results · Step 5 of 5</p>
+</footer>
+
+────────────────────────────────────────────────────────────
+4. SIMULATION PHYSICS BACKGROUND (for overlay text)
+────────────────────────────────────────────────────────────
+
+THE SYSTEM: Kasprowiak Two-DOF regenerative chatter model.
+  - Tool: mass m1=0.2kg, stiffness k1=2.2e9 N/m, damping c1=0 (no damping)
+  - Workpiece: mass m2=3.0kg, stiffness k2=1.7e8 N/m, damping c2=0 (no damping)
+  - Cutting params: fz=0.2mm/rev, ap=0.5mm, Kc=1500 N/mm²
+  - No damping is the hardest test case — energy never decays naturally.
+
+THREE CONTROLLERS compared:
+  1. No Control — pure undamped vibration, constant ±100μm amplitude forever
+  2. Standard SMC (fixed gains) — λ=44.1, K_sw=500, φ=1000 (fixed boundary layer)
+  3. PSSMC (novel) — same K_sw but λ(t), Tp(t), φ(t) all adapt online
+
+PSSMC EQUATIONS:
+  Sliding surface:  s = ė + λ(t)·e
+  Predictive surface: s_pred = s + Tp(t)·ṡ
+  Control law: U = U_eq + K_sw·tanh(s_pred / φ(t))
+  U_eq = -(k1·x1 + (c1 - λ(t)·m1)·ẋ1)
+  Adaptive laws: λ̇ = -g1·s², Ṫp = -g2·s², φ̇ = -g3·|s|
+  Gains: g1=1000, g2=5.0, g3=100
+
+SIMULATION RESULTS:
+  - Chatter reduction: ~49.5% (PSSMC vs SMC, measured as std of Δs)
+  - Energy reduction: ~58.1% (PSSMC vs SMC, integral of U²)
+  - RMS y1: No Control=70.7μm, SMC=78.7μm, PSSMC=39.8μm
+  - Simulation: t ∈ [0, 0.01s], N=2000 points, Radau solver
+
+────────────────────────────────────────────────────────────
+5. DATA GENERATION (Python — run this first to get the data)
+────────────────────────────────────────────────────────────
+
+Run this Python script to generate all simulation data as JavaScript arrays.
+The script outputs a block of JS array declarations to paste into the HTML.
+
+```python
+import numpy as np
+from scipy.integrate import solve_ivp
+
+m1=0.2; k1=2.2e9; c1=0
+m2=3.0; k2=1.7e8; c2=0
+fz=0.2; ap=0.5; Kc=1500
+lam_smc=44.1; K_sw=500; phi_smc=1000
+lam0=44.1; Tp0=5e-4; phi0=0.01
+g1=1e3; g2=5.0; g3=1e2
+lam_min=1.0; Tp_min=1e-6; phi_min=1e-4
+
+def sys_nc(t, x):
+    x1,x2,x3,x4 = x
+    Fc=(fz-x1+x3)*ap*Kc
+    return [x2,(-k1*x1+Fc)/m1, x4,(-k2*x3-Fc)/m2]
+
+def sys_smc(t, x):
+    x1,x2,x3,x4,uc = x
+    Fc=(fz-x1+x3)*ap*Kc
+    e=-x1; ed=-x2; s=ed+lam_smc*e
+    ueq=-(k1*x1-lam_smc*m1*x2)
+    usw=K_sw*np.tanh(s/phi_smc)
+    u=ueq+usw
+    return [x2,(-k1*x1+Fc+u)/m1, x4,(-k2*x3-Fc-u)/m2, u**2]
+
+def sys_ps(t, x):
+    x1,x2,x3,x4,lam,Tp,phi,uc = x
+    lam=max(lam,lam_min); Tp=max(Tp,Tp_min); phi=max(phi,phi_min)
+    Fc=(fz-x1+x3)*ap*Kc
+    e=-x1; ed=-x2; s=ed+lam*e
+    x2d=(-k1*x1+Fc)/m1; sdot=-x2d+lam*ed
+    s_pred=s+Tp*sdot
+    ld = (-g1*s**2) if lam>lam_min else max(0.,-g1*s**2)
+    Td = (-g2*s**2) if Tp>Tp_min  else max(0.,-g2*s**2)
+    pd = (-g3*abs(s)) if phi>phi_min else max(0.,-g3*abs(s))
+    ueq=-(k1*x1-lam*m1*x2)
+    usw=K_sw*np.tanh(s_pred/phi)
+    u=ueq+usw
+    return [x2,(-k1*x1+Fc+u)/m1, x4,(-k2*x3-Fc-u)/m2, ld,Td,pd, u**2]
+
+N=2000; t_eval=np.linspace(0,0.01,N)
+opts=dict(method='Radau',rtol=1e-6,atol=1e-9)
+snc =solve_ivp(sys_nc, (0,0.01),[1e-4,0,0,0],t_eval=t_eval,**opts)
+ssmc=solve_ivp(sys_smc,(0,0.01),[1e-4,0,0,0,0],t_eval=t_eval,**opts)
+sps =solve_ivp(sys_ps, (0,0.01),[1e-4,0,0,0,lam0,Tp0,phi0,0],t_eval=t_eval,**opts)
+
+t=snc.t
+Fc_nc=(fz-snc.y[0]+snc.y[2])*ap*Kc
+Fc_smc=(fz-ssmc.y[0]+ssmc.y[2])*ap*Kc
+Fc_ps=(fz-sps.y[0]+sps.y[2])*ap*Kc
+
+lam_t=sps.y[4]
+s_smc=(-ssmc.y[1])+lam_smc*(-ssmc.y[0])
+s_ps=(-sps.y[1])+lam_t*(-sps.y[0])
+
+U_smc=[]; Ueq_smc=[]; Usw_smc=[]
+U_ps=[];  Ueq_ps=[];  Usw_ps=[]
+for i in range(N):
+    x1,x2=ssmc.y[0,i],ssmc.y[1,i]
+    s=(-x2)+lam_smc*(-x1)
+    ueq=-(k1*x1-lam_smc*m1*x2)
+    usw=K_sw*np.tanh(s/phi_smc)
+    U_smc.append(ueq+usw); Ueq_smc.append(ueq); Usw_smc.append(usw)
+for i in range(N):
+    x1,x2=sps.y[0,i],sps.y[1,i]
+    lam=max(sps.y[4,i],lam_min); Tp=max(sps.y[5,i],Tp_min); phi=max(sps.y[6,i],phi_min)
+    Fc=(fz-x1+sps.y[2,i])*ap*Kc
+    s=(-x2)+lam*(-x1)
+    x2d=(-k1*x1+Fc)/m1; sdot=-x2d+lam*(-x2); s_pred=s+Tp*sdot
+    ueq=-(k1*x1-lam*m1*x2)
+    usw=K_sw*np.tanh(s_pred/phi)
+    U_ps.append(ueq+usw); Ueq_ps.append(ueq); Usw_ps.append(usw)
+
+chatter_smc=float(np.std(np.diff(s_smc)))
+chatter_ps=float(np.std(np.diff(s_ps)))
+energy_smc=float(np.trapz(ssmc.y[4],ssmc.t))
+energy_ps=float(np.trapz(sps.y[7],sps.t))
+pct_chatter=(chatter_smc-chatter_ps)/max(chatter_smc,1e-12)*100
+pct_energy=(energy_smc-energy_ps)/max(energy_smc,1e-12)*100
+rms_ps=float(np.sqrt(np.mean(sps.y[0]**2)))
+
+def fmt(name,arr,sc=1.,dec=4):
+    arr2=[round(float(v)*sc,dec) for v in arr]
+    rows=[arr2[i:i+10] for i in range(0,len(arr2),10)]
+    body=',\n  '.join(','.join(str(x) for x in r) for r in rows)
+    return f'const _{name} = [\n  {body}\n];'
+
+print(fmt('T',t))
+print(fmt('Y1_NC',snc.y[0],1e6))
+print(fmt('Y1_SMC',ssmc.y[0],1e6))
+print(fmt('Y1_PS',sps.y[0],1e6))
+print(fmt('FC_NC',Fc_nc))
+print(fmt('FC_SMC',Fc_smc))
+print(fmt('FC_PS',Fc_ps))
+print(fmt('S_SMC',s_smc))
+print(fmt('S_PS',s_ps))
+print(fmt('LAM',sps.y[4]))
+print(fmt('TP',sps.y[5]))
+print(fmt('PHI',sps.y[6]))
+print(fmt('E_NC',-snc.y[0],1e6))
+print(fmt('ED_NC',-snc.y[1],1e3))
+print(fmt('E_SMC',-ssmc.y[0],1e6))
+print(fmt('ED_SMC',-ssmc.y[1],1e3))
+print(fmt('E_PS',-sps.y[0],1e6))
+print(fmt('ED_PS',-sps.y[1],1e3))
+print(fmt('U_SMC',U_smc))
+print(fmt('UEQ_SMC',Ueq_smc))
+print(fmt('USW_SMC',Usw_smc))
+print(fmt('U_PS',U_ps))
+print(fmt('UEQ_PS',Ueq_ps))
+print(fmt('USW_PS',Usw_ps))
+
+print(f'\n// METRICS')
+print(f'const _PCT_CHATTER = {pct_chatter:.2f};')
+print(f'const _PCT_ENERGY  = {pct_energy:.2f};')
+print(f'const _RMS_PS      = {rms_ps*1e6:.2f};')
+```
+
+────────────────────────────────────────────────────────────
+6. PAGE STRUCTURE — step-5.html
+────────────────────────────────────────────────────────────
+
+Build a single self-contained HTML file: step-5.html
+
+HEAD:
+  - charset UTF-8, viewport, title "Step 5 – Simulation & Results – PSSMC"
+  - Google Fonts: Cormorant Garamond (500,600,700,italic) + Inter (400,500,600,700) + JetBrains Mono (400,600)
+  - MathJax CDN (for inline LaTeX like \( s = \dot{e} + \lambda e \))
+  - Plotly CDN: https://cdn.plot.ly/plotly-2.26.0.min.js
+  - Link to ../assets/css/style.css
+  - Defer link to ../assets/js/main.js
+  - <style> block with PAGE-LOCAL styles only (metrics band, chart cards, plant banner, anim controls, sim note, highlight box, local CSS vars for chart colours)
+
+LOCAL CSS VARS for chart colours (in :root and [data-theme="dark"]):
+  :root { --c-none:#b0a090; --c-smc:#7a5c3a; --c-pssmc:#01696f; }
+  [data-theme="dark"] { --c-none:#6a5e52; --c-smc:#c49a6a; --c-pssmc:#4f98a3; }
+
+BODY SECTIONS (in order):
+
+1. skip-link + header (exact pattern from section 2 above)
+
+2. <main id="main">
+
+3. HERO SECTION (.step-hero):
+   - eyebrow: "Step 5 of 5"
+   - h1: "Simulation & Results"
+   - lead: explain this page shows Python/SciPy closed-loop simulation of
+     Kasprowiak two-DOF model comparing No Control vs SMC vs PSSMC,
+     real sim time 10ms, no structural damping (hardest case).
+   - step-hero-actions:
+     * <a class="btn btn-ghost" href="./step-4.html">← Step 4</a>
+     * <button class="btn btn-primary" data-overlay="ol-plant">⚙ The Plant — Live Simulator</button>
+
+4. <div class="step-body">
+
+   A. SIM NOTE box (small info bar):
+      Text: "All results are generated by Python scipy.integrate.solve_ivp(Radau),
+      rtol=1e-6, atol=1e-9. System: Kasprowiak two-DOF model. c₁=c₂=0 (no damping).
+      N=2000 points, t∈[0, 0.01 s]."
+
+   B. SECTION: "5.1 Key Performance Metrics" (.section-title-sm)
+      Brief prose paragraph.
+      Then a metrics band — 4 cards:
+        Card 1: id="met-chatter" value="—" label="Chatter Reduction" sub="PSSMC vs SMC"
+        Card 2: id="met-energy"  value="—" label="Energy Saved"      sub="PSSMC vs SMC"
+        Card 3: id="met-rms"     value="—" label="RMS y₁ (PSSMC)"    sub="Tool displacement"
+        Card 4: static "10 ms"   label="Simulation Time"  sub="2000 pts · Radau"
+      JS fills card 1-3 from _PCT_CHATTER, _PCT_ENERGY, _RMS_PS on page load.
+
+   C. PLANT BANNER (prominent call-to-action):
+      Background tinted with --color-primary at low opacity, border using --color-primary.
+      Left: heading "⚙ The Plant — Interactive Simulator" + description text:
+        "Watch the tool vibrate in real-time. Toggle SMC and PSSMC live.
+         See amplitude, chatter index and energy update instantly.
+         No damping — pure regenerative dynamics."
+      Right: <button class="btn btn-primary" data-overlay="ol-plant">Launch The Plant</button>
+
+   D. SECTION: "5.2 Tool Displacement y₁(t)" (.section-title-sm)
+      Prose: explain y1 is tool vibration of mass m1=0.2kg over 10ms.
+      Without controller: constant ±100μm (undamped). PSSMC achieves lowest RMS.
+      Chart card with:
+        - title "y₁(t) — Tool vibration", sub "Displacement (μm) · t ∈ [0, 0.01 s]"
+        - legend dots: No Control (--c-none), SMC (--c-smc), PSSMC (--c-pssmc)
+        - div id="chart-y1" min-height:280px
+      Button: <button data-overlay="ol-y1">What am I looking at?</button>
+
+   E. SECTION: "5.3 Cutting Force F_cut(t)" (.section-title-sm)
+      Prose: regenerative cutting force. PSSMC stabilises faster.
+      Chart card:
+        - title "F_cut(t) — Cutting force", sub "Force (N) · t ∈ [0, 0.01 s]"
+        - legend: No Control, SMC, PSSMC
+        - div id="chart-fc" min-height:260px
+      Button: <button data-overlay="ol-fc">About cutting force</button>
+
+   F. SECTION: "5.4 Control Signals — U, U_eq, U_sw" (.section-title-sm)
+      Prose: U(t) = U_eq(t) + U_sw(t). U_eq cancels plant dynamics (smooth).
+      U_sw drives state to sliding surface (source of chatter in classic SMC).
+      PSSMC's adaptive φ(t) smooths U_sw → 58% energy reduction.
+      Three chart cards (one per signal):
+        Chart U:   id="chart-u",   title "U(t) — Total control input",   sub "U = U_eq + U_sw · N"
+        Chart Ueq: id="chart-ueq", title "U_eq(t) — Equivalent control", sub "Smooth — cancels plant dynamics (N)"
+        Chart Usw: id="chart-usw", title "U_sw(t) — Switching control",  sub "Chatter source in SMC · Smoothed tanh in PSSMC (N)"
+        All three: legend SMC + PSSMC only (no No Control line for these)
+        Usw: SMC line should be dash:'dot' to emphasise bang-bang nature
+      Button after Usw card: <button data-overlay="ol-usw">Why does U_sw cause chatter?</button>
+
+   G. SECTION: "5.5 Sliding Surface & Adaptive Parameters" (.section-title-sm)
+      Prose: s(t) is the error metric. s→0 = suppression. Adaptive λ(t) re-tunes slope.
+      Two-column grid (.two-col or a manual css grid-2):
+        Left card:  id="chart-s",     title "s(t) — Sliding surface", sub "s = ė + λe · SMC vs PSSMC"
+        Right card: id="chart-adapt", title "Adaptive Parameters",     sub "λ(t), Tp(t), φ(t) — PSSMC only (3 y-axes)"
+      Button: <button data-overlay="ol-adapt">About adaptive parameters</button>
+
+   H. SECTION: "5.6 Phase Portrait — Error Space" (.section-title-sm)
+      Prose: (e, ė) trajectory. Origin = perfect control. PSSMC = tightest spiral.
+      Chart card:
+        - title "Phase portrait — (e, ė)", sub "e=−y₁(μm) · ė=−ẏ₁(mm/s)"
+        - legend: No Control, SMC, PSSMC + Origin marker (red X)
+        - div id="chart-phase" min-height:360px
+        - xaxis title: "e = −y₁ (μm)", yaxis title: "ė = −ẏ₁ (mm/s)"
+        - mode:'lines' for all three, mode:'markers' for origin
+      Button: <button data-overlay="ol-phase">Phase plane explained</button>
+
+   I. SECTION: "5.7 Live Animation — Chatter Suppression" (.section-title-sm)
+      Prose: y₁(t) evolves frame-by-frame. Screen 0.5s = Real 0.01s (50× slow motion).
+      Animated chart card with:
+        - Play / Pause / Reset buttons
+        - Progress bar + time display "t = 0.000 ms"
+        - div id="chart-anim" min-height:300px
+        - Animation draws all three lines (NC, SMC, PSSMC) simultaneously growing
+
+   J. SECTION: "5.8 Discussion" (.section-title-sm)
+      Two paragraphs:
+        Para 1: Chatter suppression — PSSMC reduces chatter by ~49% vs SMC.
+          Achieved by adaptive λ(t) which re-tunes sliding surface slope in real-time.
+        Para 2: Energy efficiency — 58% reduction. Direct consequence of smooth
+          tanh switching + adaptive φ(t) eliminating bang-bang waste in SMC.
+      Highlight box:
+        "Key result: PSSMC achieves better chatter suppression AND lower energy
+         simultaneously — a tradeoff conventional SMC cannot avoid. This validates
+         the Lyapunov proof in Step 4: adaptive laws steer toward the
+         Pareto-optimal operating point without offline tuning."
+
+5. HERO bottom nav (second step-hero, minimal, just buttons):
+   <a btn-ghost href="./step-4.html">← Step 4 — Controller Design</a>
+   <a btn-primary href="../index.html">Back to Home →</a>
+
+6. FOOTER (exact pattern from section 3 above)
+
+────────────────────────────────────────────────────────────
+7. ALL OVERLAYS (place before </body>, use exact class/attribute pattern)
+────────────────────────────────────────────────────────────
+
+Build these overlays. Each follows this exact structure:
+<div class="overlay" id="ol-XXXX" hidden>
+  <div class="overlay-backdrop" data-close-overlay></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-XXXX-title">
+    <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+    <h2 id="ol-XXXX-title">TITLE</h2>
+    ...content...
+  </div>
+</div>
+
+OVERLAY 1: id="ol-plant" — "The Plant — Interactive Simulator"
+  This is THE MAIN FEATURE. The Plant is not a separate page — it lives
+  entirely inside this overlay. The overlay-panel should be wider: width:min(96vw,900px).
+  Content: a fully working real-time plant simulator.
+
+  STRUCTURE INSIDE THE PANEL:
+    - Close button (top right)
+    - Heading "⚙ The Plant — Interactive Simulator"
+    - Sub-text: "Real-time simulation · No damping · Kasprowiak Two-DOF"
+
+    ROW 1 — Power + Speed:
+      Power toggle button (OFF/ON, styled with green glow when ON)
+      Speed slider: range 1-1000 (multiplier for animation speed, label shows "Nx slower")
+
+    ROW 2 — Controller switches (only active when Power is ON):
+      Two toggle buttons: "Standard SMC" and "PSSMC"
+      Each has an LED dot (red=off, green=on)
+      Only one can be ON at a time; clicking active one turns it off
+
+    LIVE METRICS ROW (4 small metric tiles):
+      Amplitude (μm), Energy (kN·rms), Chatter (HIGH/MED/LOW), Time (ms)
+
+    CHARTS — 4 plots stacked vertically (full width of panel):
+      1. y₁(t) — Tool displacement (μm)
+      2. U(t)  — Total control force (N)
+      3. U_eq(t) — Equivalent control (N)
+      4. U_sw(t) — Switching control (N)
+
+    HOW IT WORKS (JS):
+      - Power OFF: nothing runs, buttons disabled
+      - Power ON: animation loop starts from beginning, showing No Control data
+      - SMC ON: animate through _Y1_SMC, _U_SMC, _UEQ_SMC, _USW_SMC data
+      - PSSMC ON: animate through _Y1_PS, _U_PS, _UEQ_PS, _USW_PS data
+      - Controller OFF again: revert to NC data
+      - Use a scrolling window of last 300 data points for real-time feel
+      - Plotly.react() for fast updates (not newPlot every frame)
+      - Speed slider: 1x = very fast (real ~0.01s), 1000x = very slow (10s screen)
+      - Use requestAnimationFrame loop
+      - Show "transition" toast when switching controllers
+
+OVERLAY 2: id="ol-y1" — "y₁(t) — Tool Displacement"
+  Explain: y₁ is the vibration of the cutting tool (mass m₁=0.2kg).
+  Without damping and without a controller, the regenerative chatter mechanism
+  sustains constant amplitude oscillation — ±100μm indefinitely.
+  With SMC: controller injects U(t) opposing chatter. Some improvement.
+  With PSSMC: adaptive λ(t) continuously re-tunes → lower RMS.
+  Formula box: RMS = sqrt(1/N · Σ y₁²)
+
+OVERLAY 3: id="ol-fc" — "F_cut(t) — Regenerative Cutting Force"
+  Explain: The cutting force F_cut = Kc · ap · (fz − y₁ + y₃)
+  where y₃ is the workpiece displacement. The "regenerative" effect:
+  the current cut depends on the surface left by the previous cut (y₃ term).
+  This feedback loop is what causes chatter to self-amplify.
+  Formula: F_cut(t) = Kc · ap · (fz − y₁(t) + y₃(t))
+  With Kc=1500 N/mm², ap=0.5mm, fz=0.2mm.
+
+OVERLAY 4: id="ol-usw" — "Why Does U_sw Cause Chatter?"
+  Explain: Classic SMC uses sign(s) as switching function → bang-bang control.
+  This means the actuator slams between +K_sw and -K_sw at every timestep.
+  This HIGH-FREQUENCY switching IS chatter — it appears in the tool motion.
+  PSSMC fix: replace sign(s) with tanh(s_pred/φ(t)).
+  tanh is continuous → no bang-bang → no switching-induced chatter.
+  As φ→0, tanh approaches sign (so stability is preserved).
+  Adaptive φ(t) starts large (smooth) and decreases only as needed.
+  Formula: U_sw = K_sw · tanh(s_pred / φ(t))   vs   K_sw · sign(s)
+
+OVERLAY 5: id="ol-adapt" — "Adaptive Parameters λ(t), Tₚ(t), φ(t)"
+  Explain what each parameter does:
+  λ(t): sliding surface slope. Larger λ = faster convergence but less smooth.
+    Adaptive law: λ̇ = −g₁·s² (decreases when system is far from surface)
+    Initial: λ₀ = 44.1 (= 1/τc_mean from cutting data)
+  Tₚ(t): prediction horizon. Controls how far ahead the controller looks.
+    Adaptive law: Ṫₚ = −g₂·s² (shrinks horizon as chatter reduces)
+    Initial: Tp₀ = 5×10⁻⁴ s
+  φ(t): boundary layer thickness. Controls smoothness of tanh switch.
+    Adaptive law: φ̇ = −g₃·|s| (thins layer as we approach surface)
+    Initial: φ₀ = 0.01
+  All three converge from initial values → evidence of real-time online learning.
+  Lower bounds enforced: λ_min=1, Tp_min=1e-6, φ_min=1e-4 (stability guarantee).
+
+OVERLAY 6: id="ol-phase" — "Phase Plane — Error Space"
+  Explain: The phase plane plots error e=−y₁ (horizontal) vs error rate ė=−ẏ₁ (vertical).
+  Origin (0,0) = zero error + zero error rate = perfect tracking (no chatter).
+  No Control: large circular orbit — constant-amplitude limit cycle, never converges.
+  SMC: spiral inward but with high-frequency ripple on the trajectory.
+  PSSMC: tighter spiral, smaller limit cycle → closer approach to origin.
+  The sliding surface is the line: ė + λ·e = 0 (slope −λ in phase plane).
+  Once on this line, the system slides to origin.
+
+────────────────────────────────────────────────────────────
+8. JAVASCRIPT — DATA + CHARTS + ANIMATION + PLANT
+────────────────────────────────────────────────────────────
+
+Place all JS in a single <script> block at the bottom of <body>, AFTER main.js loads.
+
+STEP 1 — Paste the array output from the Python script (section 5) here.
+  All arrays are named _T, _Y1_NC, _Y1_SMC, _Y1_PS, _FC_NC, etc.
+  And the scalar metrics: _PCT_CHATTER, _PCT_ENERGY, _RMS_PS
+
+STEP 2 — Plotly helpers:
+  Read CSS vars for colours: getComputedStyle(document.documentElement)
+  Function cNone(), cSmc(), cPs() reading --c-none, --c-smc, --c-pssmc
+  Function isDark(), bg(), gridCol(), txtCol() for theme-aware colours
+  Function layout(ytitle, extraObj) returning a Plotly layout object:
+    - paper_bgcolor and plot_bgcolor from bg()
+    - font: Inter, size 11, color from txtCol()
+    - margin: {t:8, r:16, b:44, l:72}
+    - xaxis: title 't (s)', gridcolor from gridCol(), zerolinecolor from gridCol()
+    - yaxis: title ytitle, gridcolor, zerolinecolor
+    - legend: orientation:'h', y:-0.22
+    - hovermode: 'x unified', showlegend:true
+  const CFG = {responsive:true, displayModeBar:false}
+
+STEP 3 — Fill metrics on DOMContentLoaded (or directly after script):
+  document.getElementById('met-chatter').textContent = _PCT_CHATTER.toFixed(1) + '%'
+  document.getElementById('met-energy').textContent  = _PCT_ENERGY.toFixed(1)  + '%'
+  document.getElementById('met-rms').textContent     = _RMS_PS.toFixed(1)      + ' μm'
+
+STEP 4 — Build all static charts (call immediately, not on event):
+  chart-y1:    3 traces: NC (dash:dot, thin), SMC, PSSMC. ytitle:'y₁ (μm)'
+  chart-fc:    3 traces: NC (dash:dot), SMC, PSSMC. ytitle:'F_cut (N)'
+  chart-u:     2 traces: SMC, PSSMC. ytitle:'U (N)'
+  chart-ueq:   2 traces: SMC, PSSMC. ytitle:'U_eq (N)'
+  chart-usw:   2 traces: SMC (dash:dot), PSSMC. ytitle:'U_sw (N)'
+  chart-s:     2 traces: SMC, PSSMC. ytitle:'s(t)'
+  chart-adapt: 3 traces on 3 y-axes: λ (#7a5c3a), Tp (#3a7a5c), φ (#5c3a7a)
+               Use yaxis:'y', yaxis2:'y2 overlaying y right', yaxis3:'y3 overlaying y right position:0.98'
+  chart-phase: 4 traces: NC+SMC+PSSMC (mode:lines) + Origin (mode:markers, red X symbol, size:10)
+               xaxis title: 'e = −y₁ (μm)', yaxis title: 'ė = −ẏ₁ (mm/s)'
+               Use hovermode:'closest'
+
+STEP 5 — Animation (chart-anim):
+  Variables: let animRunning=false, animIdx=0, animStart=0, animRaf=null
+  const TOTAL = _T.length (2000)
+  const ANIM_MS = 500 (0.5s screen time)
+
+  function buildAnimChart() — Plotly.newPlot with 3 traces starting at index 0
+  function animPlay() — start rAF loop
+  function animPause() — cancel rAF
+  function animReset() — cancel, idx=0, reset bar+time, rebuild chart
+  function animStep(ts):
+    progress = min((ts-animStart)/ANIM_MS, 1)
+    animIdx = floor(progress*(TOTAL-1))
+    Plotly.react with sliced arrays up to animIdx+1
+    update progress bar and time display
+    if progress < 1: request next frame, else: set complete text
+
+STEP 6 — THE PLANT (inside ol-plant overlay):
+  The Plant uses the SAME data arrays already declared above.
+  It needs its OWN Plotly divs inside the overlay panel:
+    id="plant-y1", id="plant-u", id="plant-ueq", id="plant-usw"
+  Each 180px height (compact, fits in overlay).
+
+  Plant state: let plantOn=false, plantCtrl=null ('smc'|'pssmc'|null)
+  let plantIdx=0, plantLast=null, plantRaf=null
+  const PLANT_WINDOW=300 (show last 300 points as scrolling window)
+
+  function initPlantCharts() — Plotly.newPlot all 4 plant charts with empty traces
+  function plantLoop(ts):
+    if (!plantOn) return
+    advance plantIdx by (elapsed/screenDuration)*N frames
+    plantIdx = plantIdx % N
+    get window slice: start=max(0,plantIdx-PLANT_WINDOW)
+    pick arrays based on plantCtrl: null→NC, 'smc'→SMC, 'pssmc'→PS
+    Plotly.react all 4 plant charts
+    update live metric tiles (amplitude, energy, chatter, time)
+    plantRaf = requestAnimationFrame(plantLoop)
+
+  function togglePlantPower():
+    plantOn = !plantOn
+    update power button appearance (red/green)
+    enable/disable controller buttons
+    if on: plantIdx=0; plantLast=null; initPlantCharts(); requestAnimationFrame(plantLoop)
+    if off: cancel rAF; reset all
+
+  function togglePlantCtrl(ctrl):
+    if plantCtrl===ctrl: plantCtrl=null
+    else: plantCtrl=ctrl
+    update LED dots and button states
+
+  Speed slider reads value, maps to screenDuration:
+    slider 0→1x real, slider 50→100x slower, slider 100→1000x slower
+    screenDuration = 0.01 * Math.pow(10, sliderVal/33.33)
+
+  Live metrics update every frame:
+    Amplitude: max(abs(last 50 of current y1 slice))
+    Energy: sqrt(mean(last 10 of U²)) / 1000  → kN·rms
+    Chatter: std of diff of last 30 y1 → HIGH/MED/LOW with colour
+    Time: _T[plantIdx]*1000 formatted to 3dp
+
+  When overlay closes (Escape or backdrop click), call a function that:
+    cancels plantRaf, sets plantOn=false, resets button states
+
+STEP 7 — Theme change handler:
+  Listen for click on [data-theme-toggle]
+  After 50ms delay, Plotly.relayout all chart IDs with new bg/grid/font colors
+  Chart IDs: ['chart-y1','chart-fc','chart-u','chart-ueq','chart-usw',
+              'chart-s','chart-adapt','chart-phase','chart-anim',
+              'plant-y1','plant-u','plant-ueq','plant-usw']
+
+────────────────────────────────────────────────────────────
+9. QUALITY CHECKLIST
+────────────────────────────────────────────────────────────
+
+✅ All JS arrays generated by Python script — NO hardcoded simulation values
+✅ No localStorage or sessionStorage (sandboxed environment)
+✅ All overlays use class="overlay" id="ol-XXX" hidden — main.js wires them automatically
+✅ The Plant lives ENTIRELY inside ol-plant overlay — NOT a separate file
+✅ Plant's Plotly divs have unique IDs (plant-y1, plant-u, etc.) different from page charts
+✅ Plant loop cancelled when overlay closes (prevent ghost animation)
+✅ chart-adapt uses 3 y-axes (yaxis, yaxis2, yaxis3) — unique layout, not reusing layout()
+✅ Phase portrait uses hovermode:'closest', not 'x unified'
+✅ Animation progress bar width set via style.width in JS
+✅ Metrics filled from JS constants, not hardcoded in HTML
+✅ Theme toggle relayouts all Plotly charts including plant charts
+✅ Mobile responsive: two-col grid collapses to 1 col, plant overlay scrollable
+✅ All buttons using data-overlay="ol-XXX" — no inline onclick for overlays
+✅ Plant controller buttons use onclick (since they're inside the overlay, not managed by main.js data-overlay)
+✅ MathJax equations use \( \) for inline — no $$ signs
+✅ Semantic HTML: header, main, section, article, footer, nav
+
+────────────────────────────────────────────────────────────
+10. IMPORTANT JAVASCRIPT GOTCHAS — READ CAREFULLY
+────────────────────────────────────────────────────────────
+
+1. ARRAY FORMATTING: When building the JS arrays from Python output, each
+   array must be a valid JS literal. The Python fmt() function already produces
+   correct output. DO NOT modify the array values. DO NOT add extra commas.
+   Each row ends with a comma after the last number if there are more rows,
+   but the last row before the closing ] has NO trailing comma.
+
+2. STRING ESCAPING: If you write any template literals (backticks) in JS inside
+   the HTML <script> block, be careful about backticks inside HTML attributes.
+   Prefer regular strings with + concatenation for hovertemplate.
+
+3. PLOTLY.REACT vs PLOTLY.NEWPLOT:
+   - Use Plotly.newPlot() for initial chart creation
+   - Use Plotly.react() for updates in animation loop (much faster)
+   - Plotly.react() requires the div ID, traces array, layout, config — same signature
+
+4. OVERLAY PLANT CHARTS: The plant chart divs don't exist in DOM until the
+   overlay is first opened. Initialize them lazily: check if already initialized
+   with a flag (let plantChartsInit = false). On first open, call initPlantCharts().
+
+5. CANCEL ANIMATION on overlay close: Add a listener for the ol-plant overlay's
+   backdrop and close button to also call a stopPlant() function that cancels
+   the rAF. You can do this by adding a MutationObserver on ol-plant's hidden
+   attribute, or by monkey-patching the closeAll in main.js (risky), or simply
+   by adding onclick to the close button and backdrop INSIDE the overlay that
+   ALSO call stopPlant() before the main.js handler runs.
+
+6. FONT LOADING: Fonts load asynchronously. Charts render before fonts load.
+   This is acceptable — Plotly uses its own font stack anyway.
+
+==============================================================
+END OF PROMPT
+==============================================================

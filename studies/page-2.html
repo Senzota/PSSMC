@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 2 — Control Objective &amp; Sliding Surface · PSSMC Mathematics</title>
+  <meta name="description" content="Chapter 2 and 3 of PSSMC Mathematics: tracking error definition, sliding surface design, and phase-plane geometry.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['\\[','\\]'],['$$','$$']],tags:'ams'},options:{skipHtmlTags:['script','noscript','style','textarea','pre']}}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+
+  <!-- Scripts -->
+  <script defer src="../assets/js/main.js"></script>
+
+  <style>
+    /* ── PAGES POPUP ── */
+    .pages-btn-wrap{position:relative;}
+    .pages-btn{display:inline-flex;align-items:center;gap:0.45rem;font-size:var(--text-sm);
+      padding:0.62rem 0.9rem;border-radius:999px;border:1px solid var(--color-border);
+      background:var(--color-surface);color:var(--color-text-muted);cursor:pointer;
+      white-space:nowrap;transition:color var(--transition),background var(--transition);}
+    .pages-btn:hover{color:var(--color-text);background:var(--color-surface-2);}
+    .pages-btn svg{transition:transform 240ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+    .pages-dropdown{position:absolute;top:calc(100% + 0.5rem);right:0;min-width:288px;
+      background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:100;overflow:hidden;
+      opacity:0;transform:translateY(-6px) scale(0.98);pointer-events:none;
+      transition:opacity 200ms cubic-bezier(0.16,1,0.3,1),transform 200ms cubic-bezier(0.16,1,0.3,1);}
+    .pages-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+    .pages-dropdown-header{padding:0.75rem 1rem 0.5rem;font-size:var(--text-xs);
+      text-transform:uppercase;letter-spacing:0.14em;color:var(--color-text-faint);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;
+      font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;
+      transition:background var(--transition),color var(--transition);
+      border-bottom:1px solid var(--color-border);}
+    .pages-dropdown a:last-child{border-bottom:none;}
+    .pages-dropdown a:hover{background:var(--color-surface-2);color:var(--color-text);}
+    .pages-dropdown a[aria-current="page"]{background:rgba(122,92,58,0.07);
+      color:var(--color-primary-dark);font-weight:600;}
+    .pd-num{width:24px;height:24px;border-radius:50%;background:var(--color-surface-2);
+      border:1px solid var(--color-border);display:grid;place-items:center;
+      font-size:0.7rem;font-weight:600;color:var(--color-text-faint);flex-shrink:0;}
+    a[aria-current="page"] .pd-num{background:var(--color-primary);
+      border-color:var(--color-primary);color:#fff;}
+    .pd-label{flex:1;line-height:1.3;}
+    .pd-badge{font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:999px;
+      background:rgba(122,92,58,0.11);color:var(--color-primary-dark);font-weight:500;}
+    [data-theme="dark"] .pd-badge{background:rgba(196,154,106,0.15);color:#c49a6a;}
+
+    /* ── PAGE HERO ── */
+    .page-hero{padding:clamp(2.5rem,6vw,4.5rem) clamp(1rem,4vw,3rem) var(--space-8);
+      border-bottom:1px solid var(--color-border);max-width:1080px;margin-inline:auto;}
+    .page-hero .eyebrow{margin-bottom:var(--space-3);}
+    .page-hero h1{font-family:var(--font-display);font-size:var(--text-3xl);
+      font-weight:600;line-height:1.0;margin-bottom:var(--space-5);}
+    .page-hero .lead{font-size:var(--text-lg);color:var(--color-text-muted);
+      max-width:58ch;line-height:1.7;margin-bottom:var(--space-6);}
+    .hero-chips{display:flex;flex-wrap:wrap;gap:0.5rem;}
+
+    /* ── BODY CONTENT ── */
+    .page-body{max-width:1080px;margin-inline:auto;
+      padding:clamp(2rem,5vw,4rem) clamp(1rem,4vw,3rem);}
+    .sec-heading{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:600;
+      margin-bottom:var(--space-5);margin-top:var(--space-12);padding-top:var(--space-8);
+      border-top:1px solid var(--color-border);}
+    .sec-heading:first-of-type{border-top:none;margin-top:0;padding-top:0;}
+    .sec-sub{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;
+      margin-bottom:var(--space-4);margin-top:var(--space-8);color:var(--color-primary-dark);}
+    .prose{font-size:var(--text-base);color:var(--color-text-muted);line-height:1.8;
+      margin-bottom:var(--space-5);max-width:72ch;}
+    .prose strong{color:var(--color-text);}
+
+    /* ── EQUATION BLOCK ── */
+    .eq-block{background:var(--color-surface-2);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:1.4rem 1.8rem;margin:var(--space-5) 0;
+      overflow-x:auto;text-align:center;}
+    .eq-label{display:block;font-size:var(--text-xs);text-transform:uppercase;
+      letter-spacing:0.14em;color:var(--color-text-faint);margin-bottom:0.6rem;}
+
+    /* ── HIGHLIGHT NOTE ── */
+    .highlight-note{background:rgba(122,92,58,0.06);border:1px solid var(--color-border);
+      border-left:3px solid var(--color-primary);border-radius:var(--radius-md);
+      padding:1rem 1.3rem;margin:var(--space-5) 0;font-size:var(--text-sm);
+      color:var(--color-text-muted);line-height:1.75;}
+    .highlight-note strong{color:var(--color-text);}
+
+    /* ── INTERACTIVE SLIDERS ── */
+    .slider-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:1rem;margin-bottom:var(--space-6);}
+
+    /* ── DERIVED PARAMS ── */
+    .derived-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:0.8rem;margin-bottom:var(--space-6);}
+    .derived-card{background:var(--color-surface-2);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:0.9rem 1rem;text-align:center;}
+    .derived-symbol{font-family:var(--font-display);font-size:var(--text-lg);
+      color:var(--color-primary-dark);font-weight:600;}
+    .derived-val{font-size:var(--text-base);font-weight:700;color:var(--color-text);margin:0.1rem 0;}
+    .derived-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.4;}
+
+    /* ── SURFACE STATE INDICATOR ── */
+    .surface-indicator{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+      background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:1rem 1.3rem;margin:var(--space-4) 0;}
+    .surface-state{font-size:var(--text-xs);font-weight:700;letter-spacing:0.1em;
+      text-transform:uppercase;padding:0.3rem 0.9rem;border-radius:999px;flex-shrink:0;}
+    .state-above{background:rgba(161,44,44,0.12);color:#a12c2c;}
+    .state-below{background:rgba(58,125,68,0.12);color:#3a7d44;}
+    .state-on{background:rgba(122,92,58,0.12);color:var(--color-primary-dark);}
+    [data-theme="dark"] .state-above{color:#e05252;}
+    [data-theme="dark"] .state-below{color:#6daa45;}
+    [data-theme="dark"] .state-on{color:#c49a6a;}
+    .surface-desc{font-size:var(--text-sm);color:var(--color-text-muted);flex:1;}
+
+    /* ── SIGN TABLE ── */
+    .sign-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:1rem;margin:var(--space-5) 0;}
+    .sign-card{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-md);padding:1.1rem 1.3rem;}
+    .sign-badge{display:inline-block;width:36px;height:36px;border-radius:50%;
+      font-size:1.1rem;font-weight:700;line-height:36px;text-align:center;
+      margin-bottom:0.6rem;}
+    .sign-card h3{font-family:var(--font-display);font-size:var(--text-base);
+      font-weight:600;margin-bottom:0.4rem;}
+    .sign-card p{font-size:var(--text-sm);color:var(--color-text-muted);line-height:1.6;}
+
+    /* ── PHASE PLANE CANVAS ── */
+    .canvas-wrap{background:var(--color-surface);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);overflow:hidden;margin:var(--space-4) 0;}
+    canvas{display:block;width:100%;}
+    .canvas-legend{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;
+      font-size:var(--text-xs);color:var(--color-text-faint);padding:0.5rem 0 0.8rem;
+      text-align:center;}
+    .canvas-legend span{display:flex;align-items:center;gap:0.4rem;}
+
+    /* ── DERIVATION STEPS ── */
+    .deriv-steps{display:flex;flex-direction:column;gap:var(--space-3);margin:var(--space-5) 0;}
+    .deriv-step{display:flex;align-items:flex-start;gap:var(--space-4);}
+    .deriv-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;
+      background:var(--color-primary);color:#fff;font-size:var(--text-xs);
+      font-weight:700;display:flex;align-items:center;justify-content:center;}
+    .deriv-body strong{display:block;font-size:var(--text-sm);color:var(--color-text);margin-bottom:2px;}
+    .deriv-body span{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6;}
+
+    /* ── PAGE NAV ── */
+    .page-nav{
+      border-top:1px solid var(--color-border);
+      padding:var(--space-8) clamp(1rem,4vw,3rem);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:1rem;
+      max-width:1080px;
+      margin-inline:auto;}
+
+    .page-nav-btn{display:inline-flex;align-items:center;gap:0.6rem;
+      padding:0.85rem 1.4rem;border-radius:999px;border:1px solid var(--color-border);
+      background:var(--color-surface);color:var(--color-text-muted);font-size:var(--text-sm);
+      font-weight:500;text-decoration:none;
+      transition:color var(--transition),background var(--transition),box-shadow var(--transition),transform var(--transition);}
+
+    .page-nav-btn:hover{color:var(--color-text);background:var(--color-surface-2);
+      transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+
+    .page-nav-btn.primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+    .page-nav-btn.primary:hover{background:var(--color-primary-dark);}
+
+    .page-nav-indicator{font-size:var(--text-xs);color:var(--color-text-faint);
+      text-align:center;letter-spacing:0.06em;}
+
+  </style>
+
+  
+</head>
+<body>
+<div class="page-wrapper">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring"/>
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18" class="mark-wave"/>
+        <path d="M18 22h12" class="mark-line"/>
+      </svg>
+      <span>PSSMC</span>
+    </a>
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a href="../index.html">Home</a>
+      <a href="Kasprowiak.html">Study Front</a>
+      <div class="pages-btn-wrap">
+        <button class="pages-btn" id="pagesBtn" aria-expanded="false" aria-haspopup="true">
+          Pages
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="pages-dropdown" id="pagesDropdown" role="menu">
+          <div class="pages-dropdown-header">PSSMC Mathematics — Kasprowiak</div>
+          <a href="Kasprowiak.html" role="menuitem"><span class="pd-num"></span><span class="pd-label">Front Page</span></a>
+          <a href="page-1.html" role="menuitem"><span class="pd-num">1</span><span class="pd-label">Two-DOF Model</span></a>
+          <a href="page-2.html" aria-current="page" role="menuitem"><span class="pd-num">2</span><span class="pd-label">Objective &amp; Sliding Surface</span><span class="pd-badge">Here</span></a>
+          <a href="page-3.html" role="menuitem"><span class="pd-num">3</span><span class="pd-label">Full Control Law</span></a>
+          <a href="page-4.html" role="menuitem"><span class="pd-num">4</span><span class="pd-label">Lyapunov &amp; Parameters</span></a>
+          <a href="page-5.html" role="menuitem"><span class="pd-num">5</span><span class="pd-label">Results &amp; Discussion</span><span class="pd-badge">Soon</span></a>
+        </div>
+      </div>
+      <button class="theme-btn" data-theme-toggle aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- HERO -->
+    <div class="page-hero">
+      <p class="eyebrow">Chapter 2 &amp; 3 &nbsp;&middot;&nbsp; PSSMC Mathematics</p>
+      <h1>Control Objective<br>&amp; Sliding Surface</h1>
+      <p class="lead">
+        The PSSMC suppresses chatter by driving tool displacement \(y_1(t)\) to zero.
+        A precisely designed sliding surface converts that goal into a scalar signal \(s(t)\)
+        whose sign and magnitude guide every action the controller takes.
+      </p>
+      <div class="hero-chips">
+        <button class="chip" type="button" data-overlay="ol-why-y1">Why \(y_1\), not force?</button>
+        <button class="chip" type="button" data-overlay="ol-smc-idea">The SMC idea</button>
+        <button class="chip" type="button" data-overlay="ol-lambda-phys">Physical meaning of \(\lambda\)</button>
+        <button class="chip" type="button" data-overlay="ol-sdot-deriv">Deriving \(\dot{s}(t)\)</button>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="page-body">
+
+      <!-- ═══ CH. 2 — CONTROL OBJECTIVE ═══ -->
+      <h2 class="sec-heading">2.1 &nbsp;Control Objective</h2>
+
+      <p class="prose">
+        The PSSMC targets <strong>tool displacement \(y_1(t)\)</strong> as the controlled variable.
+        When \(y_1 \to 0\), the regenerative chatter loop loses its driving signal — the surface
+        waviness left by the previous cut vanishes and the feedback mechanism that sustains chatter collapses.
+        The desired reference is therefore the zero equilibrium:
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Reference — Equation (R)</span>
+        \[ y_{\text{ref}}(t) = 0 \]
+      </div>
+
+      <h3 class="sec-sub">2.2 &nbsp;Tracking Error — Eq. (9)</h3>
+
+      <p class="prose">
+        The <strong>tracking error</strong> is the signed deviation of the tool from its desired zero position.
+        Using the state vector \(\mathbf{x} = [x_1,\, x_2,\, x_3,\, x_4]^T = [y_1,\, \dot{y}_1,\, y_2,\, \dot{y}_2]^T\):
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Tracking error — Equation (9)</span>
+        \[ e(t) = 0 - y_1(t) = -x_1(t) \]
+      </div>
+
+      <p class="prose">
+        Differentiating with respect to time — noting that \(\dot{y}_{\text{ref}} = 0\):
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Error rate — Equation (10)</span>
+        \[ \dot{e}(t) = -\dot{y}_1(t) = -x_2(t) \]
+      </div>
+
+      <div class="highlight-note">
+        <strong>Key identity:</strong> the error rate equals the negative of tool velocity.
+        This relationship — \(e = -x_1\), \(\dot{e} = -x_2\) — propagates through
+        every derivation that follows, from the sliding surface to the Lyapunov proof.
+      </div>
+
+      <!-- Interactive Error Explorer -->
+      <h3 class="sec-sub">Interactive Error Explorer</h3>
+      <p class="prose">
+        Adjust the sliders to set tool displacement \(y_1\), velocity \(\dot{y}_1\),
+        and sliding gain \(\lambda\). The error signal, sliding surface value,
+        and surface state all update live.
+      </p>
+
+      <div class="slider-grid">
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">Tool displacement \(y_1\)</span>
+            <span class="slider-value" id="val-y1">0.50 <small style="font-size:0.6em;font-weight:400">mm</small></span>
+          </div>
+          <input type="range" id="sl-y1" min="-2" max="2" step="0.01" value="0.5" aria-label="Tool displacement">
+          <div class="slider-range"><span>−2 mm</span><span>+2 mm</span></div>
+        </div>
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">Tool velocity \(\dot{y}_1\)</span>
+            <span class="slider-value" id="val-dy1">10.0 <small style="font-size:0.6em;font-weight:400">mm/s</small></span>
+          </div>
+          <input type="range" id="sl-dy1" min="-50" max="50" step="0.5" value="10" aria-label="Tool velocity">
+          <div class="slider-range"><span>−50 mm/s</span><span>+50 mm/s</span></div>
+        </div>
+        <div class="slider-card">
+          <div class="slider-header">
+            <span class="slider-name">Sliding gain \(\lambda\)</span>
+            <span class="slider-value" id="val-lam">44.1 <small style="font-size:0.6em;font-weight:400">s⁻¹</small></span>
+          </div>
+          <input type="range" id="sl-lam" min="14.1" max="133.3" step="0.1" value="44.1" aria-label="Sliding gain lambda">
+          <div class="slider-range"><span>14.1</span><span>133.3 s⁻¹</span></div>
+        </div>
+      </div>
+
+      <div class="derived-bar">
+        <div class="derived-card">
+          <div class="derived-symbol">\(e(t)\)</div>
+          <div class="derived-val" id="dv-e">—</div>
+          <div class="derived-desc">Tracking error (mm)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(\dot{e}(t)\)</div>
+          <div class="derived-val" id="dv-de">—</div>
+          <div class="derived-desc">Error rate (mm/s)</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(s(t)\)</div>
+          <div class="derived-val" id="dv-s">—</div>
+          <div class="derived-desc">Sliding surface value</div>
+        </div>
+        <div class="derived-card">
+          <div class="derived-symbol">\(|e|\)</div>
+          <div class="derived-val" id="dv-eabs">—</div>
+          <div class="derived-desc">Error magnitude (mm)</div>
+        </div>
+      </div>
+
+      <div class="surface-indicator">
+        <span class="surface-state" id="surfaceState">—</span>
+        <span class="surface-desc" id="surfaceDesc">Adjust sliders to see surface state.</span>
+      </div>
+
+      <!-- ═══ CH. 3 — SLIDING SURFACE ═══ -->
+      <h2 class="sec-heading">3.1 &nbsp;The Sliding Surface — Eq. (11)</h2>
+
+      <p class="prose">
+        Rather than driving \(e(t)\) to zero directly, SMC defines a
+        <strong>surface in error space</strong> and drives the system onto it first.
+        Once on the surface, the error decays to zero automatically.
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Sliding surface — Equation (11)</span>
+        \[ s(t) = \dot{e}(t) + \lambda\, e(t) \]
+      </div>
+
+      <p class="prose">
+        where \(\lambda > 0\) is the sliding gain. Substituting \(e = -x_1\) and \(\dot{e} = -x_2\):
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Surface in state variables — Equation (12)</span>
+        \[ s(t) = -x_2(t) - \lambda\, x_1(t) \]
+      </div>
+
+      <div class="highlight-note">
+        <strong>Physical interpretation:</strong> \(s(t)\) is a weighted combination of
+        tool velocity and position. When \(s = 0\), the tool is decelerating at exactly
+        the rate needed to reach zero with exponential decay — neither too fast (overshoot)
+        nor too slow (sluggish response).
+      </div>
+
+      <h3 class="sec-sub">3.2 &nbsp;Why This Surface Guarantees Convergence</h3>
+
+      <p class="prose">
+        When \(s(t) = 0\) for all \(t \geq t_0\), Equation (11) becomes a
+        first-order ODE in \(e(t)\):
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">On-surface ODE — Equation (13)</span>
+        \[ \dot{e}(t) + \lambda\, e(t) = 0 \]
+      </div>
+
+      <p class="prose">This has the exponential solution:</p>
+
+      <div class="eq-block">
+        <span class="eq-label">Exponential decay — Equation (14)</span>
+        \[ e(t) = e(t_0)\,e^{-\lambda(t-t_0)} \]
+      </div>
+
+      <div class="highlight-note">
+        <strong>The fundamental power of SMC:</strong> the error decays at rate \(\lambda\) —
+        a geometric property of the surface itself, <em>independent of the plant dynamics
+        or external disturbances</em>. Once on the surface, stability is guaranteed
+        regardless of parameter variations or bounded chatter forces.
+      </div>
+
+      <!-- Sign of s(t) -->
+      <h3 class="sec-sub">Sign of \(s(t)\) — Geometric Interpretation</h3>
+
+      <div class="sign-grid">
+        <div class="sign-card">
+          <div class="sign-badge" style="background:rgba(161,44,44,0.15);color:#a12c2c;">+</div>
+          <h3>\(s(t) > 0\) — Above surface</h3>
+          <p>Tool displacement is too large and growing faster than \(\lambda\) can correct.
+             Controller pushes downward toward \(s = 0\). Chatter is intensifying.</p>
+        </div>
+        <div class="sign-card">
+          <div class="sign-badge" style="background:rgba(58,125,68,0.15);color:#3a7d44;">−</div>
+          <h3>\(s(t) < 0\) — Below surface</h3>
+          <p>Tool is recovering too quickly — overshoot risk. Controller pushes upward
+             to prevent the system from crossing \(s = 0\) with excess momentum.</p>
+        </div>
+        <div class="sign-card">
+          <div class="sign-badge" style="background:rgba(122,92,58,0.15);color:var(--color-primary-dark);">0</div>
+          <h3>\(s(t) = 0\) — On surface</h3>
+          <p>Error is decaying exponentially at rate \(\lambda\). The controller's entire
+             task: <strong>keep \(s(t) = 0\) at all times</strong> through the control law.</p>
+        </div>
+      </div>
+
+      <!-- Phase Plane -->
+      <h3 class="sec-sub">Phase Plane — \(e\) vs \(\dot{e}\)</h3>
+      <p class="prose">
+        The sliding surface \(s = \dot{e} + \lambda e = 0\) is a straight line through the origin
+        with slope \(-\lambda\). Any trajectory that reaches the line follows it to the origin
+        at rate \(e^{-\lambda t}\). Adjust \(\lambda\) with the slider above to see the surface rotate.
+      </p>
+
+      <div class="canvas-wrap">
+        <canvas id="phasePlane" width="1000" height="400" aria-label="Phase plane showing sliding surface and current state"></canvas>
+      </div>
+      <div class="canvas-legend">
+        <span><span style="color:var(--color-primary);font-weight:700;">━</span> &nbsp;Sliding surface \(s=0\)</span>
+        <span><span style="color:#a12c2c;font-weight:700;">●</span> &nbsp;Current state \((e,\,\dot{e})\)</span>
+        <span><span style="color:var(--color-text-faint);">- - -</span> &nbsp;Path to surface</span>
+      </div>
+
+      <!-- 3.3 sdot -->
+      <h3 class="sec-sub">3.3 &nbsp;Time Derivative of \(s(t)\) — Eq. (15)</h3>
+
+      <p class="prose">
+        The derivative \(\dot{s}(t)\) is required by both the predictive extension (Ch.&nbsp;5)
+        and the Lyapunov stability proof (Ch.&nbsp;8). Differentiating Eq.&nbsp;(11) and
+        substituting the tool dynamics from Eq.&nbsp;(6):
+      </p>
+
+      <div class="eq-block">
+        <span class="eq-label">Surface derivative — Equation (15)</span>
+        \[ \dot{s}(t) = \frac{k_1 x_1 + c_1 x_2 - F_{\text{cut}}}{m_1} - x_2 \]
+      </div>
+
+      <div class="highlight-note">
+        <strong>Computable in real time:</strong> all terms in Eq.&nbsp;(15) — \(x_1\), \(x_2\),
+        and \(F_{\text{cut}}\) — are directly measurable state variables. No numerical
+        differentiation is required, and the computation per sample is a fixed number of
+        arithmetic operations. This expression feeds directly into the Taylor prediction
+        \(\hat{s}(t+T_p) \approx s(t) + \dot{s}(t)\,T_p\) in Page&nbsp;3.
+      </div>
+
+      <!-- Lambda bounds -->
+      <h3 class="sec-sub">Physical Bounds on \(\lambda\)</h3>
+
+      <p class="prose">
+        Since \(\lambda\) is the inverse of the cutting-process time constant \(\tau_c\),
+        its bounds are derived directly from the 15 experimental runs of Chapter&nbsp;1:
+      </p>
+
+      <div class="eq-block">
+        \[
+          \lambda_{\min} = \frac{1}{\tau_{c,\max}} = \frac{1}{0.0710} = 14.1\;\text{s}^{-1}
+          \qquad
+          \lambda_{\max} = \frac{1}{\tau_{c,\min}} = \frac{1}{0.0075} = 133.3\;\text{s}^{-1}
+        \]
+      </div>
+
+      <p class="prose">
+        The nominal value \(\lambda_0 = 1/\bar{\tau}_c = 1/0.0227 = 44.1\;\text{s}^{-1}\)
+        is used as the starting point for the adaptive law derived in Chapter&nbsp;6.
+        The ten-fold range across operating conditions is precisely why \(\lambda\) must
+        be adaptive — a fixed gain cannot serve all 15 experimental conditions simultaneously.
+      </p>
+
+      <div class="highlight-note">
+        <strong>Handover to Page 3:</strong> the surface \(s(t) = \dot{e} + \lambda e\),
+        its derivative \(\dot{s}(t)\), and the identities \(e = -x_1\), \(\dot{e} = -x_2\)
+        are passed to the full control law. The equivalent control \(u_{\text{eq}}\) is derived
+        by enforcing \(\dot{s} = 0\), and the switching control \(u_{\text{sw}}\) restores
+        the system to the surface when chatter forces push it away.
+      </div>
+
+    </div><!-- end page-body -->
+
+    <!-- PAGE NAV -->
+    <nav class="page-nav" aria-label="Page navigation">
+      <a class="page-nav-btn" href="page-1.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Page 1 — Two-DOF Model
+      </a>
+      <span class="page-nav-indicator">Page 2 of 5 &nbsp;&middot;&nbsp; Chapters 2 &amp; 3</span>
+      <a class="page-nav-btn primary" href="page-3.html">
+        Page 3 — Full Control Law
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </nav>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">Page 2 · Chapters 2 &amp; 3 · Kasprowiak Study · PSSMC Mathematics · University of Dar es Salaam, Department of Mechanical and Industrial Engineering.</p>
+  </footer>
+
+  <!-- ═══ OVERLAYS ═══ -->
+
+  <div class="overlay" id="ol-why-y1" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-wy1-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-wy1-t">Why \(y_1\), not cutting force?</h2>
+      <p>Cutting force \(F_c\) is an <em>output</em> of the chatter dynamics — it results from vibration rather than causing it directly. Controlling \(F_c\) to a setpoint does not prevent the regenerative mechanism from operating.</p>
+      <p>Tool displacement \(y_1\), by contrast, is the <strong>direct physical quantity</strong> in the regenerative loop. When \(y_1 \to 0\), the surface waviness deposited by the tool disappears, and there is no regenerative disturbance to sustain chatter on the next pass.</p>
+      <p>This choice also simplifies the error definition: the reference is simply \(y_{\text{ref}} = 0\), so all reference derivatives vanish from every derivation.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-smc-idea" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-smc-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-smc-t">The Sliding Mode Control idea</h2>
+      <p>Classical control drives the error directly to zero. SMC takes a different route: it first defines a surface \(s(t) = 0\) in the error space, then splits the control problem into two phases:</p>
+      <p><strong>Reaching phase:</strong> drive the system state from wherever it starts onto the sliding surface \(s = 0\).</p>
+      <p><strong>Sliding phase:</strong> keep the state on the surface. Once there, the closed-loop dynamics are governed entirely by the surface equation — independent of plant uncertainties or bounded disturbances.</p>
+      <p>This separation is the core power of SMC: robustness is built into the surface geometry, not into the gain tuning.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-lambda-phys" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-lam-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-lam-t">Physical meaning of \(\lambda\)</h2>
+      <p>\(\lambda\) is the <strong>convergence rate</strong> of the closed-loop error on the sliding surface. Once \(s = 0\), the error satisfies \(e(t) = e_0 e^{-\lambda t}\), so:</p>
+      <div class="eq-block">\[ t_{1/2} = \frac{\ln 2}{\lambda} \]</div>
+      <p>For \(\lambda = 44.1\;\text{s}^{-1}\) (nominal), the error halves every \(\approx 16\;\text{ms}\). In 100 ms the error is at 1.2% of its initial value.</p>
+      <p>Larger \(\lambda\) means faster decay but also more aggressive control action and higher sensitivity to measurement noise — the adaptive law in Chapter 6 balances this automatically.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="ol-sdot-deriv" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ol-sd-t">
+      <button class="overlay-close" type="button" data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-sd-t">Deriving \(\dot{s}(t)\) — Step by Step</h2>
+      <div class="deriv-steps">
+        <div class="deriv-step">
+          <div class="deriv-num">1</div>
+          <div class="deriv-body">
+            <strong>Differentiate the surface definition</strong>
+            <span>\(\dot{s}(t) = \ddot{e}(t) + \lambda\dot{e}(t)\)</span>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">2</div>
+          <div class="deriv-body">
+            <strong>Since \(e = -x_1\), then \(\ddot{e} = -\dot{x}_2\)</strong>
+            <span>From tool dynamics Eq. (6): \(\dot{x}_2 = \frac{-k_1 x_1 - c_1 x_2 + F_{\text{cut}}}{m_1}\)</span>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">3</div>
+          <div class="deriv-body">
+            <strong>And \(\lambda\dot{e} = -\lambda x_2\)</strong>
+            <span>Combining: \(\dot{s} = \frac{k_1 x_1 + c_1 x_2 - F_{\text{cut}}}{m_1} - x_2\)</span>
+          </div>
+        </div>
+        <div class="deriv-step">
+          <div class="deriv-num">4</div>
+          <div class="deriv-body">
+            <strong>All terms measurable — no differentiation needed</strong>
+            <span>\(x_1, x_2\) from state sensors; \(F_{\text{cut}}\) from force model or dynamometer.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page-wrapper -->
+
+<!-- PAGE-SPECIFIC SCRIPT -->
+<script>
+(function(){
+  'use strict';
+
+  /* ── PAGES POPUP ── */
+  const pBtn = document.getElementById('pagesBtn');
+  const pDd  = document.getElementById('pagesDropdown');
+  if(pBtn && pDd){
+    function openP(){ pDd.classList.add('open'); pBtn.setAttribute('aria-expanded','true'); }
+    function closeP(){ pDd.classList.remove('open'); pBtn.setAttribute('aria-expanded','false'); }
+    pBtn.addEventListener('click', e => { e.stopPropagation(); pDd.classList.contains('open') ? closeP() : openP(); });
+    document.addEventListener('click', closeP);
+    document.addEventListener('keydown', e => { if(e.key==='Escape') closeP(); });
+  }
+
+  /* ── INTERACTIVE SLIDERS ── */
+  const slY1  = document.getElementById('sl-y1');
+  const slDY1 = document.getElementById('sl-dy1');
+  const slLam = document.getElementById('sl-lam');
+
+  function update(){
+    if(!slY1||!slDY1||!slLam) return;
+    const y1  = parseFloat(slY1.value);
+    const dy1 = parseFloat(slDY1.value);
+    const lam = parseFloat(slLam.value);
+
+    document.getElementById('val-y1').innerHTML  = y1.toFixed(2)  + ' <small style="font-size:0.6em;font-weight:400">mm</small>';
+    document.getElementById('val-dy1').innerHTML = dy1.toFixed(1) + ' <small style="font-size:0.6em;font-weight:400">mm/s</small>';
+    document.getElementById('val-lam').innerHTML = lam.toFixed(1) + ' <small style="font-size:0.6em;font-weight:400">s⁻¹</small>';
+
+    const e   = -y1;
+    const de  = -dy1;
+    const s   = de + lam * e;
+    const eA  = Math.abs(e);
+
+    document.getElementById('dv-e').textContent    = e.toFixed(3);
+    document.getElementById('dv-de').textContent   = de.toFixed(2);
+    document.getElementById('dv-s').textContent    = s.toFixed(3);
+    document.getElementById('dv-eabs').textContent = eA.toFixed(3);
+
+    const stEl = document.getElementById('surfaceState');
+    const sdEl = document.getElementById('surfaceDesc');
+    if(Math.abs(s) < 0.5){
+      stEl.textContent = 'On Surface';
+      stEl.className   = 'surface-state state-on';
+      sdEl.textContent = 's(t) ≈ 0 — error is decaying exponentially at rate λ. Controller in maintenance mode.';
+    } else if(s > 0){
+      stEl.textContent = 'Above Surface';
+      stEl.className   = 'surface-state state-above';
+      sdEl.textContent = 's(t) > 0 — controller pushes system downward toward s = 0. Chatter intensifying.';
+    } else {
+      stEl.textContent = 'Below Surface';
+      stEl.className   = 'surface-state state-below';
+      sdEl.textContent = 's(t) < 0 — controller pushes system upward toward s = 0. Overshoot recovery.';
+    }
+    drawPhase(y1, dy1, lam);
+  }
+
+  [slY1, slDY1, slLam].forEach(s => s && s.addEventListener('input', update));
+
+  /* ── PHASE PLANE ── */
+  const canvas = document.getElementById('phasePlane');
+  function drawPhase(y1, dy1, lam){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const dk  = document.documentElement.getAttribute('data-theme') === 'dark';
+    const bg   = dk ? '#1b1814' : '#fffdf9';
+    const grid = dk ? 'rgba(245,230,210,0.06)' : 'rgba(58,43,26,0.07)';
+    const axis = dk ? 'rgba(245,230,210,0.18)' : 'rgba(58,43,26,0.22)';
+    const surf = dk ? '#c49a6a' : '#7a5c3a';
+    const dot  = dk ? '#e05252' : '#a12c2c';
+    const traj = dk ? 'rgba(224,82,82,0.35)' : 'rgba(161,44,44,0.35)';
+    const txt  = dk ? '#c0a888' : '#68594e';
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    /* Grid */
+    ctx.strokeStyle = grid; ctx.lineWidth = 1;
+    for(let x=0; x<=W; x+=W/10){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(let y=0; y<=H; y+=H/6){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    /* Axes */
+    const cx=W/2, cy=H/2;
+    ctx.strokeStyle=axis; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+
+    /* Axis labels */
+    ctx.fillStyle=txt; ctx.font='14px Inter,sans-serif';
+    ctx.fillText('e(t)',W-42,cy-10);
+    ctx.fillText('ė(t)',cx+8,18);
+
+    /* Sliding surface: ė = -λe */
+    const scale=80, dscale=2;
+    ctx.beginPath(); ctx.strokeStyle=surf; ctx.lineWidth=2.5;
+    for(let ei=-6; ei<=6; ei+=0.1){
+      const xc = cx + ei*scale;
+      const yc = cy - (-lam*ei)*dscale;
+      ei===-6 ? ctx.moveTo(xc,yc) : ctx.lineTo(xc,yc);
+    }
+    ctx.stroke();
+    ctx.fillStyle=surf; ctx.font='bold 13px Inter,sans-serif';
+    ctx.fillText('s = ė + λe = 0', cx+18, cy - (-lam*2)*dscale - 10);
+
+    /* Current state */
+    const e=-(y1||0), de=-(dy1||0);
+    const ex=cx+e*scale, ey=cy-de*dscale;
+
+    /* Dashed line to surface (foot of perpendicular) */
+    const e_s  = (e - de/lam);
+    const de_s = -lam*e_s;
+    const ex2=cx+e_s*scale, ey2=cy-de_s*dscale;
+    ctx.beginPath(); ctx.setLineDash([5,5]); ctx.strokeStyle=traj; ctx.lineWidth=1.5;
+    ctx.moveTo(ex,ey); ctx.lineTo(ex2,ey2); ctx.stroke(); ctx.setLineDash([]);
+
+    /* Dot */
+    ctx.beginPath(); ctx.arc(ex,ey,7,0,Math.PI*2);
+    ctx.fillStyle=dot; ctx.fill();
+    ctx.beginPath(); ctx.arc(ex,ey,7,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=dot; ctx.font='12px Inter,sans-serif';
+    ctx.fillText('('+e.toFixed(2)+', '+de.toFixed(1)+')', ex+10, ey-10);
+  }
+
+  /* Initial draw */
+  window.addEventListener('load', update);
+  /* Redraw on theme change */
+  new MutationObserver(()=>{ update(); }).observe(
+    document.documentElement, {attributes:true, attributeFilter:['data-theme']}
+  );
+
+})();
+</script>
+</body>
+</html>

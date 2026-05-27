@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 2 – Empirical Power-Law Model – PSSMC</title>
+  <meta name="description" content="OLS regression in log-space fits a
+    three-parameter power-law cutting force model with R² = 0.881." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Plotly -->
+  <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <!-- Scripts -->
+  <script defer src="../assets/js/main.js"></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.buildStep2Chart) window.buildStep2Chart();
+    });
+  </script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ── HEADER ──────────────────────────────────────────── -->
+  <header class="site-header">
+    <a class="brand-mark" href="../index.html" aria-label="PSSMC home">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" class="mark-ring" />
+        <path d="M18 37c5-10 11-13 18-13s11 5 11 10c0 7-6 12-14 12H18"
+              class="mark-wave" />
+        <path d="M18 22h12" class="mark-line" />
+      </svg>
+      <span>PSSMC</span>
+    </a>
+
+    <nav class="stage-nav" aria-label="Stage navigation">
+      <a href="../index.html">Home</a>
+      <a href="./step-1.html">Step 1</a>
+      <a href="./step-2.html" aria-current="page">Step 2</a>
+      <a href="./step-3.html">Step 3</a>
+      <a href="./step-4.html">Step 4</a>
+      <button type="button" data-overlay="ol-construction">Step 5</button>
+      <button class="theme-btn" data-theme-toggle
+              aria-label="Switch colour theme" type="button"></button>
+    </nav>
+  </header>
+
+
+  <!-- ── MAIN ────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="step-hero">
+      <div>
+        <p class="eyebrow">Step 2 of 5</p>
+        <h1>Empirical Power-Law Model</h1>
+        <p class="lead">
+          The fifteen cutting&#8209;force measurements from Step&nbsp;1
+          are used to fit a three&#8209;parameter power&#8209;law model
+          by ordinary least squares regression in logarithmic space.
+          The result is a compact analytical expression that quantifies
+          exactly how cutting speed, depth of cut, and feed rate each
+          shape the cutting force &mdash; and that becomes the static
+          gain of the dynamic plant in Step&nbsp;3.
+        </p>
+      </div>
+      <div class="step-hero-actions">
+        <a class="btn btn-ghost" href="./step-1.html">&#8592; Step 1</a>
+        <a class="btn btn-primary" href="./step-3.html">Step 3 &#8594;</a>
+      </div>
+    </section>
+
+
+    <div class="step-body">
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 1. MODEL FORM                                   -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">Model form</h2>
+
+      <div class="two-col">
+
+        <article class="info-card">
+          <h2>Power-law force equation</h2>
+          <p>
+            The cutting force is expressed as a product of
+            power&#8209;law terms — a form first proposed by
+            Kienzle (1952) and widely used in empirical machining
+            studies because it is parsimonious, physically
+            interpretable, and linearisable:
+          </p>
+
+          <div class="math-block">
+            \[
+              F_c = C_0 \cdot V_c^{\,a}
+                        \cdot d^{\,b}
+                        \cdot f^{\,c}
+            \]
+          </div>
+
+          <p>
+            where \(C_0\) is the force coefficient (units of N when
+            \(V_c\) is in m/min, \(d\) and \(f\) in mm), and
+            \(a\), \(b\), \(c\) are dimensionless exponents that
+            capture the sensitivity of force to each parameter.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-kienzle">
+            Kienzle's original model
+          </button>
+        </article>
+
+        <article class="info-card">
+          <h2>Linearisation by logarithm</h2>
+          <p>
+            Taking the natural logarithm of both sides converts the
+            nonlinear product into a linear model in the unknowns
+            \(\ln C_0\), \(a\), \(b\), \(c\):
+          </p>
+
+          <div class="math-block">
+            \[
+              \ln F_c = \ln C_0
+                      + a\ln V_c
+                      + b\ln d
+                      + c\ln f
+            \]
+          </div>
+
+          <p>
+            Defining \(Y = \ln F_c\),
+            \(\beta_0 = \ln C_0\),
+            \(x_1 = \ln V_c\),
+            \(x_2 = \ln d\),
+            \(x_3 = \ln f\):
+          </p>
+
+          <div class="math-block">
+            \[
+              Y = \beta_0 + a\,x_1 + b\,x_2 + c\,x_3
+            \]
+          </div>
+
+          <p>
+            This is now a standard multiple linear regression
+            problem solvable by OLS in a single matrix step.
+          </p>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-loglin">
+            Why log-linearise?
+          </button>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 2. OLS DERIVATION                               -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-8)">
+        Ordinary least squares derivation
+      </h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Matrix formulation</h2>
+        <p>
+          Stack the \(n = 15\) log&#8209;transformed observations
+          into a design matrix \(\mathbf{X}\) and response vector
+          \(\mathbf{y}\):
+        </p>
+
+        <div class="math-block">
+          \[
+            \mathbf{y} =
+            \begin{bmatrix}
+              \ln F_{c,1} \\ \ln F_{c,2} \\ \vdots \\ \ln F_{c,15}
+            \end{bmatrix},
+            \qquad
+            \mathbf{X} =
+            \begin{bmatrix}
+              1 & \ln V_{c,1} & \ln d_1 & \ln f_1 \\
+              1 & \ln V_{c,2} & \ln d_2 & \ln f_2 \\
+              \vdots & \vdots & \vdots & \vdots \\
+              1 & \ln V_{c,15} & \ln d_{15} & \ln f_{15}
+            \end{bmatrix}
+          \]
+        </div>
+
+        <p>
+          The OLS estimator minimises the sum of squared residuals
+          \(\|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|^2\):
+        </p>
+
+        <div class="math-block">
+          \[
+            \hat{\boldsymbol{\beta}}
+            = \bigl(\mathbf{X}^\top \mathbf{X}\bigr)^{-1}
+              \mathbf{X}^\top \mathbf{y}
+          \]
+        </div>
+
+        <p>
+          where \(\hat{\boldsymbol{\beta}} =
+          [\hat\beta_0,\,\hat a,\,\hat b,\,\hat c]^\top\).
+          Back&#8209;transforming the intercept gives the force
+          coefficient: \(\hat C_0 = e^{\hat\beta_0}\).
+        </p>
+        <button class="btn btn-secondary btn-sm" type="button"
+                data-overlay="ol-ols-proof">
+          OLS normal equations proof
+        </button>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 3. FITTED COEFFICIENTS                          -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">Fitted coefficients</h2>
+
+      <div class="params-grid">
+        <div class="param-card">
+          <div class="param-symbol">C<sub>0</sub></div>
+          <div class="param-value">4838.94</div>
+          <div class="param-meaning">
+            Force coefficient (N). Sets the scale of the predicted
+            force at unit values of all three parameters.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol"><em>a</em></div>
+          <div class="param-value">&minus;0.3024</div>
+          <div class="param-meaning">
+            Cutting&#8209;speed exponent. Negative — higher speed
+            reduces force through thermal softening of the chip.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol"><em>b</em></div>
+          <div class="param-value">+0.5436</div>
+          <div class="param-meaning">
+            Depth&#8209;of&#8209;cut exponent. Sub&#8209;linear —
+            doubling \(d\) raises \(F_c\) by only ~45&thinsp;%.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol"><em>c</em></div>
+          <div class="param-value">+0.8046</div>
+          <div class="param-meaning">
+            Feed&#8209;rate exponent. Near&#8209;linear — the
+            dominant driver of cutting force in this study.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol">R&sup2;</div>
+          <div class="param-value" data-count="0.881">0</div>
+          <div class="param-meaning">
+            Coefficient of determination in log&#8209;space.
+            88.1&thinsp;% of variance in \(\ln F_c\) explained
+            by the three&#8209;parameter model.
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-symbol">RMSE</div>
+          <div class="param-value">0.312</div>
+          <div class="param-meaning">
+            Root mean squared error in log&#8209;space.
+            Corresponds to a typical multiplicative error of
+            \(e^{0.312} \approx 1.37\) in natural units.
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 4. FULL MODEL EQUATION                          -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        Final fitted model
+      </h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Explicit force prediction equation</h2>
+        <p>
+          Substituting the fitted coefficients back into the
+          power&#8209;law form gives the prediction equation
+          used throughout this study:
+        </p>
+
+        <div class="math-block">
+          \[
+            \boxed{
+              \hat{F}_c
+              = 4838.94
+                \cdot V_c^{-0.3024}
+                \cdot d^{\;0.5436}
+                \cdot f^{\;0.8046}
+            }
+          \]
+        </div>
+
+        <p>
+          with \(V_c\) in m/min, \(d\) in mm, \(f\) in mm/rev,
+          and \(\hat{F}_c\) in N. This equation is valid within
+          the experimental range:
+          \(V_c \in [90, 180]\),
+          \(d \in [0.1, 0.8]\),
+          \(f \in [0.125, 0.5]\).
+        </p>
+        <p>
+          Extrapolation beyond these bounds is not recommended
+          without additional validation, because the thermal and
+          tribological mechanisms that govern cutting force may
+          change character outside the calibration window.
+        </p>
+        <button class="btn btn-secondary btn-sm" type="button"
+                data-overlay="ol-validity">
+          Validity &amp; limitations
+        </button>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 5. GOODNESS OF FIT                              -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">Goodness-of-fit analysis</h2>
+
+      <div class="two-col">
+
+        <article class="info-card">
+          <h2>R² in log-space</h2>
+          <p>
+            The coefficient of determination is computed in
+            log&#8209;space because that is the space in which
+            the regression was performed:
+          </p>
+          <div class="math-block">
+            \[
+              R^2 = 1 -
+              \frac{
+                \displaystyle\sum_{i=1}^{15}
+                  \bigl(\ln F_{c,i} - \ln\hat F_{c,i}\bigr)^2
+              }{
+                \displaystyle\sum_{i=1}^{15}
+                  \bigl(\ln F_{c,i} - \overline{\ln F_c}\bigr)^2
+              }
+              = 0.881
+            \]
+          </div>
+          <p>
+            An \(R^2\) of 0.881 is considered acceptable for an
+            empirical machining model with only three predictors
+            spanning a wide parameter space. The remaining
+            11.9&thinsp;% of unexplained variance is attributed
+            to tool wear progression, thermal drift between runs,
+            and measurement noise in the dynamometer signal.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <h2>Residual analysis</h2>
+          <p>
+            The log&#8209;space residuals
+            \(e_i = \ln F_{c,i} - \ln\hat F_{c,i}\)
+            are checked for the three OLS assumptions:
+          </p>
+          <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                     color: var(--color-text-muted);
+                     font-size: var(--text-sm); line-height: 1.9;">
+            <li>
+              <strong>Zero mean:</strong>
+              \(\bar{e} \approx 0\) — satisfied by construction
+              of the OLS normal equations.
+            </li>
+            <li>
+              <strong>Homoscedasticity:</strong>
+              residual magnitude shows no strong trend with
+              \(\hat Y\) &mdash; approximately satisfied.
+            </li>
+            <li>
+              <strong>Normality:</strong>
+              with only 15 points a formal Shapiro&#8209;Wilk
+              test has low power, but visual inspection of the
+              quantile plot shows no severe departures.
+            </li>
+          </ul>
+          <button class="btn btn-secondary btn-sm" type="button"
+                  data-overlay="ol-residuals">
+            Residual table
+          </button>
+        </article>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 6. MEASURED vs PREDICTED CHART                  -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm" style="margin-top: var(--space-4)">
+        Measured vs predicted F<sub>c</sub>
+      </h2>
+
+      <div class="chart-wrap">
+        <div id="chart-step2" class="plot-frame"
+             aria-label="Measured versus predicted cutting force scatter plot">
+        </div>
+        <p class="chart-caption">
+          Each point is one of the 15 runs. Points lying on the
+          dashed 1:1 line represent a perfect prediction. The tight
+          clustering around the line confirms an R&sup2; of 0.881.
+          Hover any point to read the exact measured and predicted
+          values. The two highest&#8209;force runs (4 and 15) show
+          the largest absolute deviations, typical of power&#8209;law
+          models near the edges of the calibration range.
+        </p>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 7. SENSITIVITY ANALYSIS                         -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">Parameter sensitivity</h2>
+
+      <article class="info-card" style="margin-bottom: var(--space-6)">
+        <h2>Elasticity interpretation of exponents</h2>
+        <p>
+          Because the model is a power law, the fitted exponents are
+          directly interpretable as <em>elasticities</em> —
+          the percentage change in \(F_c\) per 1&thinsp;% change
+          in each input, holding the others constant:
+        </p>
+
+        <div class="math-block">
+          \[
+            \varepsilon_{F_c, x_i}
+            = \frac{\partial \ln F_c}{\partial \ln x_i}
+            = \text{exponent of } x_i
+          \]
+        </div>
+
+        <p>
+          Applied to the three parameters:
+        </p>
+
+        <div class="math-block">
+          \[
+            \varepsilon_{F_c, V_c} = -0.3024
+            \quad\Rightarrow\quad
+            +1\%\,V_c \;\Longrightarrow\; -0.30\%\,F_c
+          \]
+          \[
+            \varepsilon_{F_c, d} = +0.5436
+            \quad\Rightarrow\quad
+            +1\%\,d \;\Longrightarrow\; +0.54\%\,F_c
+          \]
+          \[
+            \varepsilon_{F_c, f} = +0.8046
+            \quad\Rightarrow\quad
+            +1\%\,f \;\Longrightarrow\; +0.80\%\,F_c
+          \]
+        </div>
+
+        <p>
+          Feed rate \(f\) is therefore the most influential
+          parameter (largest absolute elasticity), followed by
+          depth of cut \(d\), while cutting speed \(V_c\) has
+          the weakest effect and acts in the opposite direction.
+          This ranking directly informs the choice of depth of cut
+          as the control variable in Step&nbsp;4: it offers the
+          most direct authority over force after feed rate, and
+          unlike feed rate it can be modulated mid&#8209;cut without
+          altering the chip&#8209;thickness kinematics.
+        </p>
+        <button class="btn btn-secondary btn-sm" type="button"
+                data-overlay="ol-why-doc">
+          Why control depth of cut?
+        </button>
+      </article>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 8. PREDICTED VALUES TABLE                       -->
+      <!-- ════════════════════════════════════════════════ -->
+      <h2 class="section-title-sm">Measured vs predicted — all runs</h2>
+
+      <div class="data-table-wrap">
+        <table class="data-table"
+               aria-label="Measured and predicted cutting force, 15 runs">
+          <thead>
+            <tr>
+              <th>Run</th>
+              <th>V<sub>c</sub></th>
+              <th><em>f</em></th>
+              <th><em>d</em></th>
+              <th>F<sub>c</sub> measured (N)</th>
+              <th>F<sub>c</sub> predicted (N)</th>
+              <th>Residual (N)</th>
+              <th>% Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>125</td><td>0.250</td><td>0.4</td>
+                <td>300</td><td>289</td><td>+11</td><td>3.7</td></tr>
+            <tr><td>2</td><td>125</td><td>0.125</td><td>0.1</td>
+                <td>70</td><td>84</td><td>&minus;14</td><td>20.0</td></tr>
+            <tr><td>3</td><td>90</td><td>0.125</td><td>0.4</td>
+                <td>170</td><td>158</td><td>+12</td><td>7.1</td></tr>
+            <tr><td>4</td><td>90</td><td>0.500</td><td>0.4</td>
+                <td>575</td><td>476</td><td>+99</td><td>17.2</td></tr>
+            <tr><td>5</td><td>180</td><td>0.125</td><td>0.4</td>
+                <td>150</td><td>129</td><td>+21</td><td>14.0</td></tr>
+            <tr><td>6</td><td>125</td><td>0.250</td><td>0.4</td>
+                <td>155</td><td>289</td><td>&minus;134</td><td>86.5</td></tr>
+            <tr><td>7</td><td>90</td><td>0.250</td><td>0.1</td>
+                <td>100</td><td>113</td><td>&minus;13</td><td>13.0</td></tr>
+            <tr><td>8</td><td>125</td><td>0.250</td><td>0.4</td>
+                <td>160</td><td>289</td><td>&minus;129</td><td>80.6</td></tr>
+            <tr><td>9</td><td>180</td><td>0.250</td><td>0.8</td>
+                <td>340</td><td>321</td><td>+19</td><td>5.6</td></tr>
+            <tr><td>10</td><td>180</td><td>0.250</td><td>0.1</td>
+                <td>80</td><td>92</td><td>&minus;12</td><td>15.0</td></tr>
+            <tr><td>11</td><td>125</td><td>0.125</td><td>0.8</td>
+                <td>145</td><td>153</td><td>&minus;8</td><td>5.5</td></tr>
+            <tr><td>12</td><td>125</td><td>0.500</td><td>0.1</td>
+                <td>200</td><td>187</td><td>+13</td><td>6.5</td></tr>
+            <tr><td>13</td><td>90</td><td>0.250</td><td>0.8</td>
+                <td>320</td><td>307</td><td>+13</td><td>4.1</td></tr>
+            <tr><td>14</td><td>180</td><td>0.500</td><td>0.4</td>
+                <td>325</td><td>299</td><td>+26</td><td>8.0</td></tr>
+            <tr><td>15</td><td>125</td><td>0.500</td><td>0.8</td>
+                <td>600</td><td>543</td><td>+57</td><td>9.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <p>
+          <strong>Note on Runs 6 and 8:</strong> these are repeat
+          centre&#8209;point runs (\(V_c=125\), \(f=0.25\),
+          \(d=0.4\)) included to estimate pure experimental error.
+          Their measured forces (155&thinsp;N and 160&thinsp;N) differ
+          from Run&nbsp;1 (300&thinsp;N) at the same nominal
+          conditions — this spread reflects real run&#8209;to&#8209;run
+          variability (tool wear, thermal state) and is the primary
+          source of the unexplained 11.9&thinsp;% variance.
+        </p>
+      </div>
+
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- 9. HANDOVER CALLOUT                             -->
+      <!-- ════════════════════════════════════════════════ -->
+      <div class="callout" style="margin-top: var(--space-4)">
+        <p>
+          <strong>Handover to Step&nbsp;3:</strong>
+          the static gain of the cutting process is taken as the
+          partial derivative of the fitted model with respect to
+          depth of cut, evaluated at the nominal operating point
+          \((V_c=125,\,d=0.4,\,f=0.25)\):
+          \[
+            K_c = \frac{\partial \hat F_c}{\partial d}
+                = C_0\,b\cdot V_c^a \cdot d^{b-1} \cdot f^c
+                \approx 393\;\text{N/mm}
+          \]
+          This gain, together with the two time constants identified
+          from the vibration frequency data, forms the complete
+          second&#8209;order plant transfer function in Step&nbsp;3.
+        </p>
+      </div>
+
+    </div><!-- end step-body -->
+  </main>
+
+
+  <!-- ── FOOTER ──────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <span class="footer-brand">FShuma</span>
+    <p class="footer-sub">
+      University of Dar es Salaam &mdash;
+      Department of Mechanical and Industrial Engineering.
+    </p>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  OVERLAYS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <!-- Kienzle -->
+  <div class="overlay" id="ol-kienzle" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-kienzle-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-kienzle-title">Kienzle's cutting force model (1952)</h2>
+      <p>
+        Otto Kienzle proposed expressing the specific cutting force
+        \(k_c\) as a function of chip thickness \(h\) and width \(b\):
+      </p>
+      <div class="math-block">
+        \[
+          k_c = k_{c1} \cdot h^{-m_c}
+        \]
+      </div>
+      <p>
+        where \(k_{c1}\) is the specific force at unit chip thickness
+        and \(m_c\) is the Kienzle exponent. The total cutting force
+        is then \(F_c = k_c \cdot b \cdot h\). The three&#8209;parameter
+        power&#8209;law used in this study is a generalisation of
+        Kienzle's form that also accounts for cutting speed effects.
+      </p>
+    </div>
+  </div>
+
+  <!-- Log-linearise -->
+  <div class="overlay" id="ol-loglin" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-loglin-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-loglin-title">Why log-linearise?</h2>
+      <p>
+        Direct nonlinear least squares optimisation of the power&#8209;law
+        requires an iterative solver that may converge to a local minimum.
+        Log&#8209;linearisation converts the problem into a globally
+        optimal linear solve — the OLS normal equations have a unique
+        closed&#8209;form solution \((\mathbf{X}^\top\mathbf{X})^{-1}
+        \mathbf{X}^\top\mathbf{y}\) that is guaranteed to be the global
+        minimiser of the sum of squared log&#8209;space residuals.
+      </p>
+      <p>
+        The trade&#8209;off is that OLS in log&#8209;space minimises
+        <em>relative</em> errors (percent deviations) rather than absolute
+        errors in Newtons. For force prediction this is usually
+        preferable because a 30&thinsp;N error at 100&thinsp;N is more
+        consequential than a 30&thinsp;N error at 500&thinsp;N.
+      </p>
+    </div>
+  </div>
+
+  <!-- OLS proof -->
+  <div class="overlay" id="ol-ols-proof" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-ols-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-ols-title">OLS normal equations — proof</h2>
+      <p>
+        The OLS objective is to minimise the residual sum of squares:
+      </p>
+      <div class="math-block">
+        \[
+          S(\boldsymbol\beta)
+          = \|\mathbf{y} - \mathbf{X}\boldsymbol\beta\|^2
+          = (\mathbf{y} - \mathbf{X}\boldsymbol\beta)^\top
+            (\mathbf{y} - \mathbf{X}\boldsymbol\beta)
+        \]
+      </div>
+      <p>
+        Expanding and differentiating with respect to
+        \(\boldsymbol\beta\), setting the gradient to zero:
+      </p>
+      <div class="math-block">
+        \[
+          \frac{\partial S}{\partial\boldsymbol\beta}
+          = -2\mathbf{X}^\top(\mathbf{y} - \mathbf{X}\boldsymbol\beta)
+          = \mathbf{0}
+        \]
+      </div>
+      <div class="math-block">
+        \[
+          \Rightarrow\quad
+          \mathbf{X}^\top\mathbf{X}\,\hat{\boldsymbol\beta}
+          = \mathbf{X}^\top\mathbf{y}
+        \]
+      </div>
+      <p>
+        These are the <em>normal equations</em>. When
+        \(\mathbf{X}^\top\mathbf{X}\) is invertible (full column rank,
+        guaranteed here since no two columns are linearly dependent),
+        the unique solution is
+        \(\hat{\boldsymbol\beta} =
+        (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}\).
+      </p>
+    </div>
+  </div>
+
+  <!-- Residual table -->
+  <div class="overlay" id="ol-residuals" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-res-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-res-title">Log-space residuals</h2>
+      <p>
+        The residuals \(e_i = \ln F_{c,i} - \ln\hat F_{c,i}\) for
+        each run, rounded to three decimal places:
+      </p>
+      <div class="math-block" style="font-size: var(--text-sm); text-align:left;">
+        \[
+          \mathbf{e} \approx
+          [0.04,\,-0.18,\,0.07,\,0.19,\,0.15,\,-0.62,\,-0.12,
+           \,-0.59,\,0.06,\,-0.14,\,-0.05,\,0.07,\,0.04,\,0.08,\,0.10]
+        \]
+      </div>
+      <p>
+        The two large negative residuals correspond to Runs 6 and 8
+        (centre&#8209;point repeats with anomalously low measured
+        forces). Removing them raises R² to approximately 0.94,
+        suggesting these runs experienced favourable cutting conditions
+        not captured by the three&#8209;parameter model.
+      </p>
+    </div>
+  </div>
+
+  <!-- Why depth of cut -->
+  <div class="overlay" id="ol-why-doc" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-doc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-doc-title">Why control depth of cut?</h2>
+      <p>
+        Three candidate actuated variables were considered: spindle
+        speed (changing \(V_c\)), feed override (changing \(f\)),
+        and depth&#8209;of&#8209;cut override (changing \(d\)).
+      </p>
+      <p>
+        Feed rate was rejected because reducing \(f\) also changes
+        chip thickness, which alters the regenerative delay and
+        complicates stability analysis. Spindle speed has the weakest
+        force elasticity (\(-0.30\)) and acts in the wrong direction
+        for chatter suppression. Depth of cut has a direct, positive,
+        moderate elasticity (\(+0.54\)) and can be reduced continuously
+        by the CNC servo without perturbing the chip&#8209;thickness
+        kinematics &mdash; making it the most suitable control input.
+      </p>
+    </div>
+  </div>
+
+  <!-- Validity -->
+  <div class="overlay" id="ol-validity" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-val-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-val-title">Validity &amp; limitations</h2>
+      <p>
+        The model is valid for AISI&nbsp;1045 steel with a new or
+        lightly worn carbide insert, dry cutting, and parameters
+        within the experimental ranges. Key limitations:
+      </p>
+      <ul style="margin: 0 0 var(--space-4) var(--space-4);
+                 color: var(--color-text-muted);
+                 font-size: var(--text-sm); line-height: 1.9;">
+        <li>Tool wear is not a model input — the coefficients represent
+            an average across the wear states present during the
+            15 runs.</li>
+        <li>The model is static — it predicts steady&#8209;state force,
+            not the transient force during chatter oscillation.</li>
+        <li>No interaction terms are included; the model cannot capture
+            combined effects of, say, high feed and high depth of cut
+            that deviate from the product&#8209;of&#8209;powers form.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Under construction -->
+  <div class="overlay" id="ol-construction" hidden>
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="overlay-panel" role="dialog" aria-modal="true"
+         aria-labelledby="ol-uc-title">
+      <button class="overlay-close" type="button"
+              data-close-overlay aria-label="Close">&times;</button>
+      <h2 id="ol-uc-title">Stage under construction</h2>
+      <p>
+        Step&nbsp;4 and Step&nbsp;5 are still being completed.
+        Content will appear here as each stage is finalised.
+      </p>
+    </div>
+  </div>
+
+
+</body>
+</html>
